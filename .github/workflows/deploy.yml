@@ -20,7 +20,7 @@ concurrency:
 jobs:
   build:
     name: Test and build
-    # Pinned: ubuntu-latest moved to Ubuntu 26 in October 2026, which setup-php does not list as supported yet.
+    # Pinned for a predictable image (ubuntu-latest moved to Ubuntu 26 in October 2026).
     runs-on: ubuntu-24.04
 
     steps:

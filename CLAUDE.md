@@ -32,6 +32,7 @@ A one-page invitation site (`/`) plus an admin panel (`/admin`) that edits every
 
 ## Gotchas
 
+- File names are case-sensitive in CI and production (Linux runners), not on this Windows machine. Pages live in `resources/js/Pages`, so `config/inertia.php` overrides Inertia's lowercase `js/pages` default; without it `assertInertia` fails only in CI.
 - `pdo_sqlsrv` returns integer columns as strings — cast integer columns used in JS arithmetic (see `Invitation::casts`, `Rsvp::casts`).
 - Named SQL Server instance: keep `DB_PORT` empty; empty `DB_USERNAME`/`DB_PASSWORD` means Windows authentication.
 - Write `.env` without a BOM (Windows PowerShell `Set-Content -Encoding utf8` adds one and breaks the first key).
