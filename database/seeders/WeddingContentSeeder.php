@@ -156,7 +156,7 @@ class WeddingContentSeeder extends Seeder
         }
     }
 
-    private function seedSettings(): void
+    protected function seedSettings(): void
     {
         // [group, key, label, type, value, help]
         $settings = [

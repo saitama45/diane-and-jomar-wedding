@@ -5,19 +5,34 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use RuntimeException;
 
 class DatabaseSeeder extends Seeder
 {
     /**
-     * Seed the admin account and the dummy wedding content. Safe to run more than once.
+     * A new database gets the admin account and all the dummy content. An existing site only gets the
+     * settings newer features need, so content removed in the admin never comes back. Safe to run on every deploy.
      */
     public function run(): void
     {
-        // `?:` (not an env default) so a blank ADMIN_PASSWORD= line never creates an empty password.
-        User::firstOrCreate(
-            ['email' => env('ADMIN_EMAIL') ?: 'admin@wedding.test'],
-            ['name' => 'Wedding Admin', 'password' => Hash::make(env('ADMIN_PASSWORD') ?: 'DianeGabriel2027')],
-        );
+        if (User::query()->exists()) {
+            $this->call(WeddingSettingsSeeder::class);
+
+            return;
+        }
+
+        // `?:` (not an env default) so a blank ADMIN_PASSWORD= line never creates an empty password,
+        // and production never falls back to the well-known development password.
+        $password = env('ADMIN_PASSWORD') ?: (app()->isProduction() ? null : 'DianeGabriel2027');
+        if (! $password) {
+            throw new RuntimeException('Set ADMIN_PASSWORD before seeding a production database.');
+        }
+
+        User::create([
+            'name' => 'Wedding Admin',
+            'email' => env('ADMIN_EMAIL') ?: 'admin@wedding.test',
+            'password' => Hash::make($password),
+        ]);
 
         $this->call(WeddingContentSeeder::class);
     }

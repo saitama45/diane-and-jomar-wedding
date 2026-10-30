@@ -25,3 +25,8 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Local-only files: the downloaded reference reel and Visual Studio publish profiles (they hold the Web Deploy password)
+/Facebook_Reel_*.mp4
+*.publishSettings
+*.pubxml.user

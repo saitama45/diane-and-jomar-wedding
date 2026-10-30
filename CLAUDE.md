@@ -6,9 +6,19 @@ A one-page invitation site (`/`) plus an admin panel (`/admin`) that edits every
 ## Commands
 
 - `php artisan serve` + `npm run dev` — local development (or `npm run build` once and only `php artisan serve`).
-- `php artisan migrate` then `php artisan db:seed` — the seeders are idempotent: settings are added only when missing, lists only while empty.
-- `php artisan test` — runs on SQLite `:memory:` (see `phpunit.xml`), never on SQL Server.
-- `php artisan storage:link` — needed for admin uploads (`/storage/uploads/...`).
+- `php artisan migrate` then `php artisan db:seed` — safe to repeat: a database with no admin user gets the admin and all dummy content; otherwise only missing settings are added (`WeddingSettingsSeeder`), so deleted content never comes back. In production a new database needs `ADMIN_PASSWORD`.
+- `php artisan test` — runs on SQLite `:memory:` (see `phpunit.xml`), never on SQL Server. Every test class uses `$seed = true`: the in-memory database is migrated once and shared between classes.
+- `php artisan storage:link` — needed for admin uploads (`/storage/uploads/...`) locally.
+
+## Deployment: pushing to `main` deploys
+
+`.github/workflows/deploy.yml`: an Ubuntu job tests and builds the release; a Windows job writes the production `.env` from GitHub secrets/variables, runs `migrate --force` + `db:seed --force` against the production database, then syncs to the MonsterASP.NET site `site103294` with Web Deploy (`/wwwroot` holds the whole app; the root `web.config` serves `public/`). Pull requests only test and build.
+
+- Production database `db76831`: the site uses `db76831.databaseasp.net` (private network only); anything outside MonsterASP, GitHub included, must use `db76831.public.databaseasp.net`.
+- The server `.env` is rewritten on every deploy, so production configuration changes go in the workflow or GitHub secrets/variables, never on the server.
+- Migrations run automatically on deploy, so they must be forward-only and additive.
+- `public/build` is mirrored; everything else uses `DoNotDeleteRule`, so uploads, logs and sessions survive and a file deleted from the repo stays on the server until removed by hand.
+- Uploads go straight into `public/storage` there (`PUBLIC_DISK_IN_WEBROOT=true`; IIS hosting has no `storage:link`). PHP upload limits: `public/.user.ini`; IIS request size: `web.config`.
 
 ## Where things live
 

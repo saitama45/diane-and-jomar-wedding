@@ -1,0 +1,281 @@
+name: CI/CD
+
+# Pull requests: test and build only. Pushes to main (or "Run workflow" on main): test, build,
+# migrate the production database, then deploy to MonsterASP.NET with Web Deploy.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One production run at a time; a newer pull-request run cancels the older one.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    name: Test and build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, xml, fileinfo, gd, zip, pdo_sqlite
+          coverage: none
+          tools: composer:v2
+
+      - name: Get Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Composer packages
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install Composer packages
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      # Fonts are downloaded and self-hosted during the build.
+      - name: Build front-end assets
+        run: |
+          npm ci
+          npm run build
+
+      # Tests use SQLite in memory and a fake mailer (phpunit.xml): no real database or email.
+      - name: Run tests
+        run: |
+          cp .env.example .env
+          php artisan key:generate --no-interaction
+          php artisan test
+
+      - name: Package the release
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        run: |
+          rm -f .env
+          composer install --no-dev --optimize-autoloader --no-interaction --no-progress
+          rm -rf node_modules tests resources/js resources/css \
+            phpunit.xml vite.config.js package.json package-lock.json .editorconfig \
+            README.md CLAUDE.md AGENTS.md .env.example
+          find . -name '.git*' -prune -exec rm -rf {} +
+          rm -rf storage/logs/* storage/framework/views/* storage/framework/sessions/* \
+            storage/framework/cache/data storage/framework/testing
+          tar -czf "$RUNNER_TEMP/release.tar.gz" .
+
+      - name: Upload the release
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: release
+          path: ${{ runner.temp }}/release.tar.gz
+          retention-days: 1
+
+  deploy:
+    name: Migrate and deploy to production
+    needs: build
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: windows-latest
+    environment:
+      name: production
+      url: ${{ vars.APP_URL || 'https://site103294.siteasp.net' }}
+
+    # MonsterASP.NET details. Only passwords and the app key are secrets; the optional
+    # repository variables (APP_URL, APP_NAME, ADMIN_EMAIL, MAIL_FROM_NAME) override the defaults here.
+    env:
+      WEBDEPLOY_SITE: site103294
+      WEBDEPLOY_URL: https://site103294.siteasp.net:8172/msdeploy.axd?site=site103294
+      WEBDEPLOY_USERNAME: site103294
+      APP_NAME: ${{ vars.APP_NAME || 'Diane & Jomar' }}
+      APP_URL: ${{ vars.APP_URL || 'https://site103294.siteasp.net' }}
+      # The website reaches the database over the host's private network; GitHub must use the public name.
+      DB_HOST_SITE: db76831.databaseasp.net
+      DB_HOST_PUBLIC: db76831.public.databaseasp.net
+      DB_PORT: '1433'
+      DB_DATABASE: db76831
+      DB_USERNAME: db76831
+      MAIL_HOST: smtp.gmail.com
+      MAIL_PORT: '587'
+      MAIL_USERNAME: info.mymailnoreply@gmail.com
+      MAIL_FROM_ADDRESS: info.mymailnoreply@gmail.com
+      MAIL_FROM_NAME: ${{ vars.MAIL_FROM_NAME || 'Admin Mail' }}
+      ADMIN_EMAIL: ${{ vars.ADMIN_EMAIL || 'admin@wedding.test' }}
+
+    steps:
+      - name: Download the release
+        uses: actions/download-artifact@v4
+        with:
+          name: release
+          path: ${{ runner.temp }}
+
+      - name: Unpack the release
+        shell: pwsh
+        run: |
+          $release = "$env:RUNNER_TEMP\release"
+          New-Item -ItemType Directory -Force $release | Out-Null
+          & "$env:SystemRoot\System32\tar.exe" -xzf "$env:RUNNER_TEMP\release.tar.gz" -C $release
+          if ($LASTEXITCODE -ne 0) { throw "tar failed with exit code $LASTEXITCODE" }
+
+      # The server's .env is rebuilt from these settings on every deploy, so GitHub is the one place
+      # to change production configuration (edits made to .env on the server are overwritten).
+      - name: Write the production .env
+        shell: pwsh
+        env:
+          APP_KEY: ${{ secrets.APP_KEY }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+        run: |
+          function Quote([string] $Name, [string] $Value) {
+            if ($Value.Contains("'")) { throw "$Name must not contain a single quote (')." }
+            return "'$Value'"
+          }
+
+          $secret = @{}
+          foreach ($name in 'APP_KEY', 'DB_PASSWORD', 'MAIL_PASSWORD') {
+            # Trimmed: a pasted secret often carries a trailing newline or space.
+            $value = "$([Environment]::GetEnvironmentVariable($name))".Trim()
+            if (-not $value) { throw "Repository secret $name is not set." }
+            $secret[$name] = Quote $name $value
+          }
+
+          $lines = @(
+            "APP_NAME=$(Quote 'APP_NAME' $env:APP_NAME)",
+            'APP_ENV=production',
+            "APP_KEY=$($secret.APP_KEY)",
+            'APP_DEBUG=false',
+            "APP_URL=$(Quote 'APP_URL' $env:APP_URL)",
+            'APP_TIMEZONE=Asia/Manila',
+            'APP_LOCALE=en',
+            'APP_FALLBACK_LOCALE=en',
+            '',
+            'LOG_CHANNEL=daily',
+            'LOG_LEVEL=warning',
+            '',
+            'DB_CONNECTION=sqlsrv',
+            "DB_HOST=$env:DB_HOST_SITE",
+            "DB_PORT=$env:DB_PORT",
+            "DB_DATABASE=$env:DB_DATABASE",
+            "DB_USERNAME=$env:DB_USERNAME",
+            "DB_PASSWORD=$($secret.DB_PASSWORD)",
+            'DB_TRUST_SERVER_CERTIFICATE=true',
+            '',
+            'SESSION_DRIVER=database',
+            'SESSION_LIFETIME=120',
+            'CACHE_STORE=database',
+            'QUEUE_CONNECTION=sync',
+            'FILESYSTEM_DISK=public',
+            'PUBLIC_DISK_IN_WEBROOT=true',
+            '',
+            'MAIL_MAILER=smtp',
+            "MAIL_HOST=$env:MAIL_HOST",
+            "MAIL_PORT=$env:MAIL_PORT",
+            "MAIL_USERNAME=$env:MAIL_USERNAME",
+            "MAIL_PASSWORD=$($secret.MAIL_PASSWORD)",
+            "MAIL_FROM_ADDRESS=$env:MAIL_FROM_ADDRESS",
+            "MAIL_FROM_NAME=$(Quote 'MAIL_FROM_NAME' $env:MAIL_FROM_NAME)"
+          )
+          # UTF-8 without a BOM: a BOM breaks the first key.
+          [IO.File]::WriteAllText("$env:RUNNER_TEMP\release\.env", ($lines -join "`n") + "`n", [Text.UTF8Encoding]::new($false))
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, fileinfo, openssl, sqlsrv, pdo_sqlsrv
+          coverage: none
+
+      - name: Ensure the SQL Server ODBC driver
+        shell: pwsh
+        run: |
+          $pattern = 'ODBC Driver 1[78] for SQL Server'
+          if (-not (Get-OdbcDriver -Name $pattern -Platform '64-bit' -ErrorAction SilentlyContinue)) {
+            choco install sqlserver-odbcdriver -y --no-progress
+            if ($LASTEXITCODE -ne 0) { throw "ODBC driver install failed with exit code $LASTEXITCODE" }
+          }
+          Get-OdbcDriver -Name $pattern -Platform '64-bit' | ForEach-Object { Write-Host "Using $($_.Name)" }
+
+      # Forward-only migrations, then the seeder: a new database gets the admin account and the dummy
+      # content (ADMIN_PASSWORD is required then); an existing one only gets newly added settings.
+      - name: Migrate the production database
+        shell: pwsh
+        working-directory: ${{ runner.temp }}/release
+        env:
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+        run: |
+          # Process variables win over .env: reach the database by its public name, cache nothing.
+          $env:DB_HOST = $env:DB_HOST_PUBLIC
+          $env:CACHE_STORE = 'array'
+          $env:ADMIN_PASSWORD = "$env:ADMIN_PASSWORD".Trim()
+
+          php artisan migrate --force --no-interaction
+          if ($LASTEXITCODE -ne 0) { throw "migrate failed with exit code $LASTEXITCODE" }
+          php artisan db:seed --force --no-interaction
+          if ($LASTEXITCODE -ne 0) { throw "db:seed failed with exit code $LASTEXITCODE" }
+
+          # Nothing from this runner (such as a log file) should reach the server.
+          Get-ChildItem storage\logs -File -ErrorAction SilentlyContinue | Remove-Item -Force
+
+      # Sync to the site's /wwwroot (the root web.config serves everything from public/).
+      - name: Deploy with Web Deploy
+        shell: pwsh
+        env:
+          WEBDEPLOY_PASSWORD: ${{ secrets.WEBDEPLOY_PASSWORD }}
+        run: |
+          if (-not $env:WEBDEPLOY_PASSWORD) { throw 'Repository secret WEBDEPLOY_PASSWORD is not set.' }
+          $password = $env:WEBDEPLOY_PASSWORD.Trim()
+          Write-Host "WEBDEPLOY_PASSWORD: $($password.Length) characters after trimming ($($env:WEBDEPLOY_PASSWORD.Length) as stored)"
+
+          $msdeploy = @(
+            "$env:ProgramFiles\IIS\Microsoft Web Deploy V3\msdeploy.exe",
+            "${env:ProgramFiles(x86)}\IIS\Microsoft Web Deploy V3\msdeploy.exe"
+          ) | Where-Object { Test-Path $_ } | Select-Object -First 1
+          if (-not $msdeploy) {
+            choco install webdeploy -y --no-progress
+            $msdeploy = "$env:ProgramFiles\IIS\Microsoft Web Deploy V3\msdeploy.exe"
+          }
+
+          $release = "$env:RUNNER_TEMP\release"
+          # Arguments go through an array so PowerShell passes each one to msdeploy unchanged
+          # (the password must not contain a comma or a double quote).
+          $connection = "computerName=$env:WEBDEPLOY_URL,userName=$env:WEBDEPLOY_USERNAME,password=$password,authType=Basic,includeAcls=False"
+
+          function Invoke-WebDeploy([string] $Source, [string] $Target, [string[]] $Rules = @()) {
+            $arguments = @(
+              '-verb:sync',
+              "-source:contentPath=$Source",
+              "-dest:contentPath=$Target,$connection",
+              '-allowUntrusted',
+              '-useChecksum',
+              '-disableLink:AppPoolExtension',
+              '-disableLink:ContentExtension',
+              '-disableLink:CertificateExtension',
+              '-retryAttempts:3',
+              '-retryInterval:5000'
+            ) + $Rules
+            & $msdeploy @arguments
+            if ($LASTEXITCODE -ne 0) { throw "msdeploy failed with exit code $LASTEXITCODE" }
+          }
+
+          # Build assets are mirrored exactly, so stale hashed files from older builds are removed.
+          Invoke-WebDeploy "$release\public\build" "$env:WEBDEPLOY_SITE/public/build"
+
+          # Everything else: uploads changed files only and never deletes anything on the server
+          # (uploaded photos in public/storage, logs, sessions and caches stay as they are).
+          Invoke-WebDeploy $release $env:WEBDEPLOY_SITE @('-enableRule:DoNotDeleteRule')
