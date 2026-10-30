@@ -1,0 +1,41 @@
+<?php
+
+use App\Http\Controllers\Admin;
+use App\Http\Controllers\CalendarController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\RsvpController;
+use Illuminate\Support\Facades\Route;
+
+Route::get('/', HomeController::class)->name('home');
+Route::post('/rsvp', [RsvpController::class, 'store'])->middleware('throttle:10,1')->name('rsvp.store');
+Route::get('/calendar/{event}.ics', CalendarController::class)->name('calendar');
+
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::middleware('guest')->group(function () {
+        Route::get('login', [Admin\AuthController::class, 'create'])->name('login');
+        Route::post('login', [Admin\AuthController::class, 'store'])->middleware('throttle:10,1');
+    });
+
+    Route::middleware('auth')->group(function () {
+        Route::post('logout', [Admin\AuthController::class, 'destroy'])->name('logout');
+        Route::get('/', Admin\DashboardController::class)->name('dashboard');
+
+        Route::get('rsvps/export', [Admin\RsvpController::class, 'export'])->name('rsvps.export');
+        Route::patch('rsvps/{rsvp}', [Admin\RsvpController::class, 'update'])->name('rsvps.update');
+        Route::delete('rsvps/{rsvp}', [Admin\RsvpController::class, 'destroy'])->name('rsvps.destroy');
+
+        Route::get('settings', [Admin\SettingsController::class, 'edit'])->name('settings');
+        Route::put('settings', [Admin\SettingsController::class, 'update'])->name('settings.update');
+        Route::post('upload', Admin\UploadController::class)->name('upload');
+
+        Route::put('invitations/site-url', [Admin\InvitationMailController::class, 'siteUrl'])->name('invitations.site-url');
+        Route::get('invitations/email-preview', [Admin\InvitationMailController::class, 'preview'])->name('invitations.preview');
+        Route::post('invitations/email-test', [Admin\InvitationMailController::class, 'test'])->middleware('throttle:10,1')->name('invitations.test');
+        Route::post('invitations/{invitation}/email', [Admin\InvitationMailController::class, 'send'])->whereNumber('invitation')->name('invitations.send');
+
+        Route::get('content/{collection}', [Admin\CollectionController::class, 'index'])->name('content.index');
+        Route::post('content/{collection}', [Admin\CollectionController::class, 'store'])->name('content.store');
+        Route::put('content/{collection}/{id}', [Admin\CollectionController::class, 'update'])->whereNumber('id')->name('content.update');
+        Route::delete('content/{collection}/{id}', [Admin\CollectionController::class, 'destroy'])->whereNumber('id')->name('content.destroy');
+    });
+});
