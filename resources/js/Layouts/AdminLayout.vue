@@ -11,6 +11,7 @@ const nav = [
     { href: '/admin', label: 'RSVP Monitor', icon: 'users' },
     { href: '/admin/content/invitations', label: 'Invitations', icon: 'ticket' },
     { href: '/admin/settings', label: 'Site Settings', icon: 'sliders' },
+    { href: '/admin/print', label: 'Print Cards', icon: 'printer' },
     { heading: 'Content' },
     { href: '/admin/content/love-story', label: 'Love Story', icon: 'heart' },
     { href: '/admin/content/events', label: 'Ceremony & Reception', icon: 'church' },

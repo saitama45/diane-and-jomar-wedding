@@ -28,6 +28,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::put('settings', [Admin\SettingsController::class, 'update'])->name('settings.update');
         Route::post('upload', Admin\UploadController::class)->name('upload');
 
+        Route::get('print', [Admin\PrintController::class, 'edit'])->name('print');
+        Route::put('print', [Admin\PrintController::class, 'update'])->name('print.update');
+        Route::get('print/save-the-date', [Admin\PrintController::class, 'saveTheDate'])->name('print.save-the-date');
+
         Route::put('invitations/site-url', [Admin\InvitationMailController::class, 'siteUrl'])->name('invitations.site-url');
         Route::get('invitations/email-preview', [Admin\InvitationMailController::class, 'preview'])->name('invitations.preview');
         Route::post('invitations/email-test', [Admin\InvitationMailController::class, 'test'])->middleware('throttle:10,1')->name('invitations.test');

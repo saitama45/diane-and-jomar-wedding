@@ -55,6 +55,7 @@ const ICONS = {
     home: '<path d="M3.5 11 12 4l8.5 7M6 9.5V20h12V9.5M10 20v-5h4v5"/>',
     film: '<rect x="3.5" y="3.5" width="17" height="17" rx="1.5"/><path d="M7.5 3.5v17M16.5 3.5v17M3.5 8h4M3.5 12h4M3.5 16h4M16.5 8h4M16.5 12h4M16.5 16h4"/>',
     upload: '<path d="M12 16V4M7 9l5-5 5 5M5 20h14"/>',
+    printer: '<path d="M7 8.5V3.5h10v5"/><rect x="3.5" y="8.5" width="17" height="8.5" rx="1.5"/><path d="M7 14h10v6.5H7z"/><path d="M17 11.5h.01"/>',
     hanger: '<path d="M10.4 5.9A1.6 1.6 0 1 1 12 7.5v1.3l-8.4 5.7a1 1 0 0 0 .6 1.8h15.6a1 1 0 0 0 .6-1.8L12 8.8"/>',
 };
 

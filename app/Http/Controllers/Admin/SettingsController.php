@@ -47,7 +47,8 @@ class SettingsController extends Controller
 
     public function edit(): Response
     {
-        $groups = Setting::orderBy('sort_order')->get()
+        // Print choices are edited on the Print Cards page.
+        $groups = Setting::where('group', '!=', 'print')->orderBy('sort_order')->get()
             ->groupBy('group')
             ->map(fn ($settings, $group) => [
                 'key' => $group,
