@@ -41,6 +41,7 @@ const props = defineProps({
     invitation: { type: Object, default: null },
     guestName: { type: String, default: null },
     maxGuests: { type: Number, default: 2 },
+    shareUrl: { type: String, default: '' },
 });
 
 // Custom corner flowers uploaded in Site Settings > Decorations replace the drawn ones (BohoCorner.vue).
@@ -115,7 +116,7 @@ async function onReveal() {
         />
         <GallerySection v-if="gallery.length" :settings="settings" :photos="gallery" />
         <GiftSection v-if="gift" :settings="settings" :gift="gift" />
-        <CaptureSection :settings="settings" />
+        <CaptureSection :settings="settings" :share-url="shareUrl" />
         <WishesSection :wishes="wishes" />
         <FaqSection :faqs="faqs" />
         <ClosingSection :settings="settings" :wedding="wedding" :photos="photos.slice().reverse()" />

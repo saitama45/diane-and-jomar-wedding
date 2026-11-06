@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin;
 use App\Http\Controllers\CalendarController;
+use App\Http\Controllers\GuestPhotoController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\RsvpController;
 use Illuminate\Support\Facades\Route;
@@ -9,6 +10,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', HomeController::class)->name('home');
 Route::post('/rsvp', [RsvpController::class, 'store'])->middleware('throttle:10,1')->name('rsvp.store');
 Route::get('/calendar/{event}.ics', CalendarController::class)->name('calendar');
+Route::get('/share', [GuestPhotoController::class, 'create'])->name('share');
+Route::post('/share', [GuestPhotoController::class, 'store'])->middleware('throttle:300,1')->name('share.store'); // generous: guests at the venue share one Wi-Fi (or mobile-network) address
 
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware('guest')->group(function () {
@@ -28,6 +31,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::put('settings', [Admin\SettingsController::class, 'update'])->name('settings.update');
         Route::post('upload', Admin\UploadController::class)->name('upload');
         Route::post('upload/video', Admin\VideoUploadController::class)->name('upload.video');
+
+        Route::get('photos', [Admin\GuestPhotoController::class, 'index'])->name('photos');
+        Route::put('photos/uploads', [Admin\GuestPhotoController::class, 'uploads'])->name('photos.uploads');
+        Route::get('photos/download', [Admin\GuestPhotoController::class, 'download'])->name('photos.download');
+        Route::delete('photos/{photo}', [Admin\GuestPhotoController::class, 'destroy'])->whereNumber('photo')->name('photos.destroy');
 
         Route::get('music', [Admin\MusicController::class, 'edit'])->name('music');
         Route::put('music', [Admin\MusicController::class, 'update'])->name('music.update');

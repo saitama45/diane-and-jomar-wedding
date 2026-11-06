@@ -173,7 +173,7 @@ class WeddingContentSeeder extends Seeder
             ['couple', 'hashtag', 'Wedding hashtag', 'text', '#DianeAndJomarForever', null],
 
             ['wedding', 'wedding_datetime', 'Wedding date & time', 'datetime', '2027-04-24 10:00', 'Drives the countdown and the save-the-date.'],
-            ['wedding', 'city_line', 'City / location line', 'text', 'Intramuros, Manila', null],
+            ['wedding', 'city_line', 'City / location line', 'text', 'Intramuros, Manila', 'Shown under the ceremony venue on the opening screen and in the email. Keep it short, e.g. “Putatan, Muntinlupa City”: the venue name itself comes from Ceremony & Reception.'],
             ['wedding', 'rsvp_deadline', 'RSVP deadline', 'date', '2027-03-24', null],
 
             ['cover', 'cover_image', 'Share preview photo', 'image', self::IMG.'cover.jpg', self::COVER_IMAGE_HELP],
@@ -210,7 +210,8 @@ class WeddingContentSeeder extends Seeder
             ['gifts', 'gift_message', 'Gift message', 'textarea', "With all that we have, we've been truly blessed. Your presence and prayers are all that we request — but if you desire to give nonetheless, a monetary gift towards our new home is one we humbly suggest.", null],
 
             ['capture', 'capture_message', 'Photo sharing message', 'textarea', 'Scan the QR code with your smartphone and upload your favorite moments from our day. We would love to see the wedding through your eyes!', null],
-            ['capture', 'capture_upload_url', 'Shared album link', 'url', 'https://photos.google.com/', 'The QR code points here — e.g. a Google Photos or Drive shared album.'],
+            ['capture', 'capture_upload_url', 'Other shared album (optional)', 'url', '', 'Leave empty: the QR code opens your own upload page and the photos arrive in Admin > Guest Photos. Paste a Google Photos or Drive album link only to send guests there instead.'],
+            ['capture', 'guest_uploads_open', 'Guests can upload photos', 'toggle', '1', 'Switch off after the wedding to close the upload page.'],
 
             ['closing', 'closing_title', 'Closing title', 'text', 'We look forward to seeing you!', null],
             ['closing', 'closing_message', 'Closing message', 'textarea', 'Now the time has come for us to embark on our greatest journey yet — to unite our lives in the eternal bond of marriage. We invite you to witness the merging of our worlds and the beginning of our forever.', null],

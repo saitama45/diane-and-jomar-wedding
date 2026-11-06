@@ -7,6 +7,7 @@ import { drawOnScroll, gsap, reducedMotion, vReveal } from '@/lib/motion';
 
 const props = defineProps({
     settings: { type: Object, required: true },
+    shareUrl: { type: String, default: '' }, // the site's own upload page (/share), or the couple's other album
 });
 
 const root = ref();
@@ -17,8 +18,8 @@ const copied = ref(false);
 let ctx;
 
 onMounted(async () => {
-    if (props.settings.capture_upload_url) {
-        qr.value = await QRCode.toDataURL(props.settings.capture_upload_url, { margin: 0, width: 360, color: { dark: '#3a2a20', light: '#00000000' } });
+    if (props.shareUrl) {
+        qr.value = await QRCode.toDataURL(props.shareUrl, { margin: 0, width: 360, color: { dark: '#3a2a20', light: '#00000000' } });
         await nextTick(); // the QR <img> must exist before it is animated
     }
 
@@ -64,14 +65,14 @@ async function copyHashtag() {
                     <circle cx="252" cy="86" r="8" />
                     <path d="M30 96h60M210 96h60" stroke-opacity=".35" />
                 </svg>
-                <img v-if="qr" :src="qr" alt="QR code to our shared photo album" class="cap-qr absolute left-1/2 top-[61.8%] w-[26%] -translate-x-1/2 -translate-y-1/2" />
+                <img v-if="qr" :src="qr" alt="QR code to upload your photos for us" class="cap-qr absolute left-1/2 top-[61.8%] w-[26%] -translate-x-1/2 -translate-y-1/2" />
             </div>
 
             <p v-reveal="'fade'" class="mt-8 kicker text-ink">Share your photos with us!</p>
             <p v-reveal="'up'" class="mx-auto mt-3 max-w-md font-serif text-xl italic leading-relaxed text-ink-soft">{{ settings.capture_message }}</p>
 
             <div v-reveal="'up'" class="mt-8 flex flex-wrap items-center justify-center gap-3">
-                <a v-if="settings.capture_upload_url" :href="settings.capture_upload_url" target="_blank" rel="noopener" class="btn btn-solid">
+                <a v-if="shareUrl" :href="shareUrl" target="_blank" rel="noopener" class="btn btn-solid">
                     <LineIcon name="upload" :size="16" /> Upload photos
                 </a>
                 <button v-if="settings.hashtag" type="button" class="btn text-ink" @click="copyHashtag">

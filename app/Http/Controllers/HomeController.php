@@ -85,6 +85,8 @@ class HomeController extends Controller
             'invitation' => $invitation,
             'guestName' => $invitation['guest_name'] ?? (Str::limit(trim((string) $request->query('to')), 80, '') ?: null),
             'maxGuests' => max(1, (int) ($settings['rsvp_max_guests'] ?? 2)),
+            // The QR code in "Capture the Love": the site's own upload page, unless the couple set another album.
+            'shareUrl' => trim((string) ($settings['capture_upload_url'] ?? '')) ?: Setting::siteUrl().'/share',
         ])->withViewData(['meta' => [
             'title' => trim(($settings['bride_name'] ?? '').' & '.($settings['groom_name'] ?? ''), ' &').' — '.$date->format('F j, Y'),
             'description' => $settings['meta_description'] ?? '',
