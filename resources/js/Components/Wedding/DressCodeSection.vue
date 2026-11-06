@@ -86,13 +86,41 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <section id="attire" ref="root" class="relative isolate bg-clay/45 py-24 md:py-32">
+    <section id="attire" ref="root" class="relative isolate bg-latte/35 py-24 md:py-32">
         <BohoCorner corner="top-left" />
         <BohoCorner corner="top-right" />
         <div class="mx-auto max-w-5xl px-5 md:px-8">
             <SectionTitle kicker="What to wear" title="The Dress Code" />
 
-            <div class="mt-16 grid gap-8 md:grid-cols-2">
+            <!-- Outfit pictures uploaded in the admin (Attire Samples) are the dress code; the written cards below only show without them. -->
+            <div v-if="sampleGroups.length" class="mt-12 text-center">
+                <p v-reveal="'fade'" class="kicker text-ink-soft">Tap a picture to see it up close</p>
+
+                <div v-for="group in sampleGroups" :key="group.key" class="mt-8">
+                    <p v-if="sampleGroups.length > 1" class="kicker text-gold">{{ group.title }}</p>
+                    <div class="mt-5 grid gap-6" :class="group.items.length > 1 ? 'md:grid-cols-2' : 'mx-auto max-w-2xl'">
+                        <button
+                            v-for="sample in group.items"
+                            :key="sample.id"
+                            v-reveal="{ type: 'up' }"
+                            type="button"
+                            class="group paper-card block p-3 text-left transition duration-500 ease-[var(--ease-film)] hover:-translate-y-1"
+                            :aria-label="`View the ${WEARERS[sample.wearer] ?? ''} outfit picture full size`"
+                            @click="open(sample)"
+                        >
+                            <span class="block overflow-hidden">
+                                <img :src="sample.image" :alt="`${WEARERS[sample.wearer] ?? ''} dress code`" loading="lazy" class="w-full object-cover transition duration-700 group-hover:scale-[1.03]" />
+                            </span>
+                            <span class="mt-3 flex flex-wrap items-baseline justify-between gap-x-4 px-1">
+                                <span class="font-script text-3xl text-cocoa">{{ WEARERS[sample.wearer] }}</span>
+                                <span v-if="sample.caption" class="font-serif text-base italic text-ink-soft">{{ sample.caption }}</span>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div v-else class="mt-16 grid gap-8 md:grid-cols-2">
                 <!-- Principal sponsors -->
                 <article v-reveal="{ type: 'up' }" class="paper-card px-8 py-10 text-center">
                     <svg ref="barong" viewBox="0 0 120 160" class="mx-auto h-40 text-ink" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -108,11 +136,11 @@ onBeforeUnmount(() => {
                     <p class="mt-2 font-serif text-3xl text-ink">{{ settings.dress_sponsors_attire }}</p>
                     <dl class="mt-6 space-y-4 font-serif text-lg text-ink-soft">
                         <div>
-                            <dt class="font-script text-3xl text-sage">Gentlemen</dt>
+                            <dt class="font-script text-3xl text-cocoa">Gentlemen</dt>
                             <dd>{{ settings.dress_gentlemen }}</dd>
                         </div>
                         <div>
-                            <dt class="font-script text-3xl text-sage">Ladies</dt>
+                            <dt class="font-script text-3xl text-cocoa">Ladies</dt>
                             <dd>{{ settings.dress_ladies }}</dd>
                         </div>
                     </dl>
@@ -132,35 +160,6 @@ onBeforeUnmount(() => {
                     <p class="mt-2 font-serif text-3xl text-ink">{{ settings.dress_guests_attire }}</p>
                     <p class="mx-auto mt-6 max-w-sm font-serif text-lg italic leading-relaxed text-ink-soft">{{ settings.dress_guests_note }}</p>
                 </article>
-            </div>
-
-            <!-- Outfit inspiration -->
-            <div v-if="sampleGroups.length" class="mt-20 text-center">
-                <p v-reveal="'fade'" class="font-script text-4xl text-ink md:text-5xl">Outfit Inspiration</p>
-                <p v-reveal="'fade'" class="mt-2 kicker text-ink-soft">Tap a picture to see it up close</p>
-
-                <div v-for="group in sampleGroups" :key="group.key" class="mt-10">
-                    <p v-if="sampleGroups.length > 1" class="kicker text-gold">{{ group.title }}</p>
-                    <div class="mt-5 grid gap-6" :class="group.items.length > 1 ? 'md:grid-cols-2' : 'mx-auto max-w-2xl'">
-                        <button
-                            v-for="sample in group.items"
-                            :key="sample.id"
-                            v-reveal="{ type: 'up' }"
-                            type="button"
-                            class="group paper-card block p-3 text-left transition duration-500 ease-[var(--ease-film)] hover:-translate-y-1"
-                            :aria-label="`View the ${WEARERS[sample.wearer] ?? ''} outfit picture full size`"
-                            @click="open(sample)"
-                        >
-                            <span class="block overflow-hidden">
-                                <img :src="sample.image" :alt="`${WEARERS[sample.wearer] ?? ''} outfit inspiration`" loading="lazy" class="w-full object-cover transition duration-700 group-hover:scale-[1.03]" />
-                            </span>
-                            <span class="mt-3 flex flex-wrap items-baseline justify-between gap-x-4 px-1">
-                                <span class="font-script text-3xl text-sage">{{ WEARERS[sample.wearer] }}</span>
-                                <span v-if="sample.caption" class="font-serif text-base italic text-ink-soft">{{ sample.caption }}</span>
-                            </span>
-                        </button>
-                    </div>
-                </div>
             </div>
 
             <!-- Palette -->
@@ -197,7 +196,7 @@ onBeforeUnmount(() => {
                 >
                     <Transition name="fade" mode="out-in">
                         <figure :key="current.id" class="flex max-h-full flex-col items-center">
-                            <img :src="current.image" :alt="`${WEARERS[current.wearer] ?? ''} outfit inspiration`" class="max-h-[80vh] w-auto max-w-full object-contain shadow-2xl" />
+                            <img :src="current.image" :alt="`${WEARERS[current.wearer] ?? ''} dress code`" class="max-h-[80vh] w-auto max-w-full object-contain shadow-2xl" />
                             <figcaption class="mt-4 text-center text-paper">
                                 <span class="font-script text-3xl">{{ WEARERS[current.wearer] }}</span>
                                 <span v-if="current.caption" class="ml-3 font-serif italic text-paper/80">{{ current.caption }}</span>

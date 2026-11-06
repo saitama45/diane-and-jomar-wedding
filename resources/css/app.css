@@ -17,9 +17,12 @@
     --color-film: #2b1d15;
     --color-terracotta: #c2714f;
     --color-clay: #ebc9b0;
-    --color-sage: #6f7d5c;
-    --color-sage-deep: #56634a;
-    --color-sage-mist: #e3e5d6;
+    /* Brown to beige, darkest first (the couple asked for brown-to-beige backgrounds, no green). */
+    --color-espresso: #4a3226;
+    --color-cocoa: #7b5539;
+    --color-caramel: #a9714b;
+    --color-latte: #c8a783;
+    --color-sand: #e8d9c3;
     --color-gold: #b9873f;
     --color-gold-light: #dfbd8a;
     --color-rust: #8e3b1f;
@@ -178,6 +181,16 @@
     background-image:
         repeating-linear-gradient(0deg, rgb(58 42 32 / 0.03) 0 1px, transparent 1px 4px),
         repeating-linear-gradient(90deg, rgb(58 42 32 / 0.025) 0 1px, transparent 1px 4px);
+}
+
+/* Cream invitation paper with soft watercolour washes in the top-right and bottom-left corners
+   (the corners the painted flowers leave free): the opening screen and the save-the-date card. */
+@utility boho-paper {
+    background:
+        radial-gradient(ellipse 70% 45% at 100% 0%, rgb(200 167 131 / 0.26), transparent 70%),
+        radial-gradient(ellipse 70% 40% at 0% 100%, rgb(200 167 131 / 0.3), transparent 70%),
+        radial-gradient(ellipse 60% 30% at 50% 55%, rgb(232 217 195 / 0.35), transparent 75%),
+        #fcf7ef;
 }
 
 /* Pampas and grasses in the corner arrangements (BohoCorner.vue) sway gently from the corner. */

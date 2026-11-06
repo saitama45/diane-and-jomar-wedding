@@ -68,6 +68,13 @@ function setSectionVisible(visible) {
     });
 }
 
+// The section's name on the website (e.g. "Our Families and Sponsors" instead of "The Entourage").
+const headings = useForm({ headings: Object.fromEntries((props.collection.headings ?? []).map((h) => [h.key, h.value ?? ''])) });
+
+function saveHeadings() {
+    headings.put(`/admin/content/${props.collection.slug}/headings`, { preserveScroll: true, onSuccess: () => headings.defaults() });
+}
+
 function sendInvite(item) {
     if (item.emailed_at && !confirm(`Send the invitation to ${item.guest_name} again?`)) return;
     router.post(`/admin/invitations/${item.id}/email`, {}, {
@@ -125,6 +132,26 @@ function display(item, column) {
         <LineIcon name="eye-off" :size="18" class="mt-0.5 shrink-0 text-rust" />
         This whole section is hidden from the website. Switch it back on above; items you hid one by one stay hidden.
     </p>
+
+    <form v-if="collection.headings?.length" class="mt-6 rounded-2xl bg-white px-5 py-5 ring-1 ring-ink/10" @submit.prevent="saveHeadings">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+                <h2 class="font-serif text-2xl text-ink">Name on the website</h2>
+                <p class="text-sm text-ink-soft">What your guests see as the title and in the menu. Leave a box empty for the original name.</p>
+            </div>
+            <button type="submit" class="admin-btn" :disabled="headings.processing || !headings.isDirty">
+                <LineIcon name="check" :size="16" /> {{ headings.processing ? 'Saving…' : 'Save name' }}
+            </button>
+        </div>
+        <div class="mt-4 grid gap-4 md:grid-cols-2">
+            <div v-for="heading in collection.headings" :key="heading.key">
+                <label :for="`h-${heading.key}`" class="admin-label">{{ heading.label }}</label>
+                <input :id="`h-${heading.key}`" v-model="headings.headings[heading.key]" type="text" maxlength="120" class="admin-input" />
+                <p v-if="heading.help" class="mt-1.5 text-xs text-ink-soft">{{ heading.help }}</p>
+                <p v-if="headings.errors[`headings.${heading.key}`]" class="mt-1.5 text-sm text-red-700">{{ headings.errors[`headings.${heading.key}`] }}</p>
+            </div>
+        </div>
+    </form>
 
     <InvitationTools v-if="sharing" :sharing="sharing" :items="items" />
 

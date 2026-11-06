@@ -54,9 +54,9 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <section ref="root" class="relative overflow-hidden bg-terracotta py-28 md:py-40">
+    <section ref="root" class="relative overflow-hidden bg-cocoa py-28 md:py-40">
         <img :src="settings.countdown_image" alt="" loading="lazy" class="cd-bg absolute inset-0 h-[125%] w-full -translate-y-[10%] object-cover opacity-45 mix-blend-luminosity" />
-        <div class="absolute inset-0 bg-gradient-to-b from-rust/45 via-transparent to-rust/65"></div>
+        <div class="absolute inset-0 bg-gradient-to-b from-espresso/55 via-transparent to-espresso/70"></div>
 
         <div class="cd-strip film-strip absolute inset-x-0 top-0 h-[26px] p-0! opacity-90"></div>
         <div class="cd-strip film-strip absolute inset-x-0 bottom-0 h-[26px] p-0! opacity-90"></div>
@@ -66,7 +66,7 @@ onBeforeUnmount(() => {
                 v-reveal="{ type: 'zoom', duration: 1.4 }"
                 class="border border-white/60 bg-paper/80 px-6 py-12 text-center shadow-[0_40px_80px_-30px_rgb(0_0_0/0.6)] backdrop-blur-md md:px-14 md:py-16"
             >
-                <p class="font-script text-3xl text-sage md:text-4xl">{{ settings.countdown_heading }}</p>
+                <p class="font-script text-3xl text-cocoa md:text-4xl">{{ settings.countdown_heading }}</p>
                 <h2 class="mt-3 font-serif text-4xl font-light uppercase tracking-[0.18em] text-rust md:text-6xl">
                     {{ settings.bride_name }} <span class="font-script normal-case tracking-normal text-gold">&amp;</span> {{ settings.groom_name }}
                 </h2>

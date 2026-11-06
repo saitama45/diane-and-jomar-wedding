@@ -18,7 +18,7 @@ const open = ref(0);
         <div class="mx-auto max-w-3xl px-5 md:px-8">
             <header class="text-center">
                 <h2 v-reveal="{ type: 'blur', duration: 1.5 }" class="leading-none">
-                    <span class="block font-script text-6xl text-sage md:text-7xl">Your Questions,</span>
+                    <span class="block font-script text-6xl text-cocoa md:text-7xl">Your Questions,</span>
                     <span class="mt-2 block font-serif text-5xl font-light uppercase tracking-[0.15em] text-ink md:text-6xl">Answered</span>
                 </h2>
             </header>

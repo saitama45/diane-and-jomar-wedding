@@ -90,7 +90,7 @@ async function onReveal() {
 <template>
     <Head :title="title" />
 
-    <IntroGate v-if="showIntro" :settings="settings" :wedding="wedding" :guest-name="guestName" @open="onOpen" @reveal="onReveal" @done="showIntro = false" />
+    <IntroGate v-if="showIntro" :settings="settings" :wedding="wedding" :venue="events[0]?.venue" :guest-name="guestName" @open="onOpen" @reveal="onReveal" @done="showIntro = false" />
 
     <div class="grain" aria-hidden="true"></div>
     <PetalField v-if="revealed" />
@@ -102,7 +102,7 @@ async function onReveal() {
         <FilmStrip v-if="photos.length" :images="photos" :tilt="-1.5" class="-mt-6 relative z-10" :duration="80" />
         <StorySection :settings="settings" :stories="stories" />
         <CountdownSection :settings="settings" :wedding="wedding" :calendar-url="events[0]?.calendar" />
-        <SaveTheDateSection :settings="settings" :wedding="wedding" :first-event="events[0]" />
+        <SaveTheDateSection :settings="settings" :wedding="wedding" :events="events" />
         <VenueSection v-if="hasDetails" :events="events" :schedule="schedule" />
         <EntourageSection v-if="entourage.length" :settings="settings" :entourage="entourage" :photos="photos.slice(2, 4)" />
         <DressCodeSection :settings="settings" :colors="colors" :samples="attireSamples" />

@@ -56,6 +56,11 @@ class CollectionController extends Controller
                     'key' => $definition['section'],
                     'visible' => Setting::where('key', $definition['section'])->value('value') !== '0',
                 ] : null,
+                // The section's name on the website (title, menu label), edited right here.
+                'headings' => collect($definition['headings'] ?? [])
+                    ->map(fn (string $key) => Setting::where('key', $key)->first(['key', 'label', 'value', 'help']))
+                    ->filter()
+                    ->values(),
             ],
             'items' => $items,
             'suggestions' => $suggestions,
@@ -108,6 +113,21 @@ class CollectionController extends Controller
             ->save();
 
         return back()->with('success', $definition['title'].($visible ? ' is shown on' : ' is hidden from').' the website.');
+    }
+
+    /** Rename the list's section on the website: its headings are settings listed in config/wedding.php. */
+    public function headings(Request $request, string $collection): RedirectResponse
+    {
+        $keys = $this->definition($collection)['headings'] ?? abort(404);
+        $values = $request->validate(collect($keys)->mapWithKeys(fn (string $key) => [
+            "headings.{$key}" => ['nullable', 'string', 'max:120'],
+        ])->all())['headings'] ?? [];
+
+        foreach ($keys as $key) {
+            Setting::where('key', $key)->first()?->update(['value' => trim((string) ($values[$key] ?? ''))]);
+        }
+
+        return back()->with('success', 'Section name saved.');
     }
 
     public function destroy(string $collection, int $id): RedirectResponse

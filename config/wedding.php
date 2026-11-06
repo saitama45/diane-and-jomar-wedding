@@ -110,6 +110,7 @@ return [
             'singular' => 'person',
             'description' => 'People are grouped by “Group”. Groups appear in “Group order”; people within a group in “Display order”.',
             'section' => 'show_entourage', // website-section switch (a setting)
+            'headings' => ['entourage_title', 'entourage_menu_label'], // the section's name on the website (settings)
             'order' => [['group_order', 'asc'], ['sort_order', 'asc'], ['id', 'asc']],
             'columns' => ['group_name' => 'Group', 'name' => 'Name', 'group_order' => 'Group order'],
             'fields' => [
@@ -139,7 +140,7 @@ return [
             'model' => AttireSample::class,
             'title' => 'Attire Samples',
             'singular' => 'sample',
-            'description' => 'Outfit inspiration under the dress code, e.g. a picture of suggested gowns or suits. Guests can tap a picture to see it full size.',
+            'description' => 'Your dress code as pictures, e.g. a board of suggested gowns or suits. While there is at least one visible picture, the website shows these pictures instead of the written dress code. Guests can tap a picture to see it full size.',
             'section' => 'show_attire_samples', // website-section switch (a setting)
             'order' => [['sort_order', 'asc'], ['id', 'asc']],
             'columns' => ['image' => '', 'audience' => 'For', 'wearer' => 'Who', 'caption' => 'Caption'],

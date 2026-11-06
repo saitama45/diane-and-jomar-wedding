@@ -46,7 +46,7 @@ async function copyHashtag() {
 </script>
 
 <template>
-    <section ref="root" class="relative bg-sage-mist linen py-24 md:py-32">
+    <section ref="root" class="relative bg-sand linen py-24 md:py-32">
         <div class="mx-auto max-w-3xl px-5 text-center">
             <h2 v-reveal="{ type: 'blur', duration: 1.5 }" class="relative inline-block font-script leading-none text-ink">
                 <span class="block text-6xl md:text-7xl">Capture</span>

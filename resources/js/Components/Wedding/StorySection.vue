@@ -96,7 +96,7 @@ onBeforeUnmount(() => ctx?.revert());
                     <span class="tape -top-3 left-8 -rotate-6"></span>
                     <span class="tape -top-3 right-8 rotate-6"></span>
 
-                    <p class="font-script text-3xl text-sage md:text-4xl">Dearest family &amp; friends,</p>
+                    <p class="font-script text-3xl text-cocoa md:text-4xl">Dearest family &amp; friends,</p>
                     <div v-reveal="{ type: 'blur', stagger: 0.25, start: 'top 75%' }" class="mt-6 space-y-5">
                         <p v-for="(paragraph, i) in paragraphs" :key="i" class="font-serif text-lg italic leading-relaxed text-ink-soft md:text-xl">
                             {{ paragraph }}

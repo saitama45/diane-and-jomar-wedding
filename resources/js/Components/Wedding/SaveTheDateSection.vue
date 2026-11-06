@@ -1,14 +1,35 @@
 <script setup>
 import { computed, ref } from 'vue';
 import LineIcon from '@/Components/LineIcon.vue';
+import BohoCorner from './BohoCorner.vue';
+import PampasWreath from './PampasWreath.vue';
 import SectionTitle from './SectionTitle.vue';
 import { vReveal } from '@/lib/motion';
 
 const props = defineProps({
     settings: { type: Object, required: true },
     wedding: { type: Object, required: true },
-    firstEvent: { type: Object, default: null },
+    events: { type: Array, default: () => [] }, // ceremony first, then the reception
 });
+
+// A wax seal's uneven rim: points around a circle, joined smoothly.
+const SEAL = (() => {
+    const rim = [31, 29.6, 32.1, 30.2, 31.4, 29.1, 32.4, 30.5, 31.1, 29.8, 32.2, 30.1, 31.7, 29.3, 32, 30.7, 31.2, 29.5];
+    const points = rim.map((r, i) => {
+        const angle = (i / rim.length) * Math.PI * 2;
+        return [40 + r * Math.cos(angle), 40 + r * Math.sin(angle)];
+    });
+    const mid = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+    const f = ([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`;
+    let d = `M${f(mid(points.at(-1), points[0]))}`;
+    points.forEach((point, i) => (d += ` Q${f(point)} ${f(mid(point, points[(i + 1) % points.length]))}`));
+    return `${d} Z`;
+})();
+
+const text = (key, fallback) => (props.settings[key] ?? '').trim() || fallback;
+const initials = computed(() => [props.settings.bride_name, props.settings.groom_name].map((name) => (name ?? '').trim().charAt(0).toUpperCase()));
+const ceremony = computed(() => props.events[0] ?? null);
+const reception = computed(() => props.events[1] ?? null);
 
 const playing = ref(false);
 const comingSoon = ref(false);
@@ -34,30 +55,80 @@ function play() {
 </script>
 
 <template>
-    <section class="relative bg-linen linen py-24 md:py-32">
+    <section class="relative overflow-hidden bg-linen linen py-24 md:py-32">
         <div class="mx-auto grid max-w-6xl items-center gap-14 px-5 md:px-8 lg:grid-cols-2 lg:gap-16">
-            <!-- Save-the-date card -->
+            <!-- Save-the-date card: cream paper with painted corner florals, like a printed boho invitation -->
             <div v-reveal="{ type: 'left', duration: 1.4 }" class="relative mx-auto w-full max-w-md">
-                <div class="relative overflow-hidden bg-film px-8 py-14 text-center text-paper shadow-[0_40px_80px_-30px_rgb(43_29_21/0.7)] md:px-12 md:py-16">
-                    <img :src="settings.cover_image" alt="" loading="lazy" class="absolute inset-0 h-full w-full object-cover opacity-35" />
-                    <div class="absolute inset-0 bg-gradient-to-b from-film/40 to-film/80"></div>
-                    <div class="absolute inset-3 border border-gold-light/40"></div>
-                    <div class="absolute inset-[18px] border border-gold-light/20"></div>
+                <!-- a second sheet peeking out behind, as in a stationery suite -->
+                <div class="absolute inset-0 translate-x-2 rotate-2 bg-sand shadow-[0_30px_60px_-30px_rgb(74_50_38/0.5)]" aria-hidden="true"></div>
 
-                    <div class="relative">
-                        <p class="gold-foil font-script text-5xl md:text-6xl">Save the Date</p>
-                        <p class="mt-5 font-serif text-3xl font-light tracking-[0.12em]">The Wedding</p>
-                        <p class="mt-1 kicker text-paper/60">When &amp; Where</p>
-                        <div class="mx-auto my-7 h-px w-20 bg-gold-light/50"></div>
-                        <p class="font-serif text-xl uppercase tracking-[0.3em] text-paper/80">{{ wedding.weekday }}</p>
-                        <p class="gold-foil mt-1 font-serif text-6xl font-light leading-none md:text-7xl">{{ wedding.day }}</p>
-                        <p class="mt-1 font-serif text-xl uppercase tracking-[0.3em]">{{ wedding.month }} {{ wedding.year }}</p>
-                        <p class="mt-4 font-serif text-lg italic text-paper/75">at {{ wedding.time }}</p>
-                        <p v-if="firstEvent" class="mt-6 kicker text-gold-light">{{ firstEvent.venue }}</p>
-                        <p class="mt-1 text-sm text-paper/60">{{ settings.city_line }}</p>
+                <article class="boho-paper relative isolate overflow-hidden px-7 pb-20 pt-12 text-center shadow-[0_40px_80px_-30px_rgb(74_50_38/0.6)] sm:px-11">
+                    <div class="linen absolute inset-0 -z-10 opacity-60" aria-hidden="true"></div>
+                    <BohoCorner corner="top-left" class="size-36! opacity-100! sm:size-48!" />
+                    <BohoCorner corner="bottom-right" class="size-36! opacity-100! sm:size-48!" />
+
+                    <PampasWreath class="mx-auto size-40 sm:size-44">
+                        <span class="flex items-baseline font-serif text-[2.5rem] font-medium leading-none text-rust sm:text-[2.8rem]" aria-hidden="true">
+                            {{ initials[0] }}<span class="mx-1 font-script text-3xl text-caramel">&amp;</span>{{ initials[1] }}
+                        </span>
+                    </PampasWreath>
+
+                    <p class="mt-3 font-serif text-[0.95rem] font-semibold uppercase tracking-[0.34em] text-rust">{{ text('std_heading', 'Save the Date') }}</p>
+                    <p class="mt-6 whitespace-pre-line font-sans text-[0.68rem] uppercase leading-[2] tracking-[0.3em] text-ink-soft">{{ text('std_intro', 'Together with our families') }}</p>
+
+                    <h3 class="mt-2 font-script font-normal leading-[1.05] text-caramel">
+                        <span class="block text-[3.6rem] sm:text-7xl">{{ settings.bride_name }}</span>
+                        <span class="my-1 flex items-center justify-center gap-3 text-[1.7rem] text-cocoa sm:text-3xl">
+                            <span class="h-px w-10 bg-current opacity-50 sm:w-14"></span>and<span class="h-px w-10 bg-current opacity-50 sm:w-14"></span>
+                        </span>
+                        <span class="block text-[3.6rem] sm:text-7xl">{{ settings.groom_name }}</span>
+                    </h3>
+
+                    <p class="mx-auto mt-5 max-w-xs font-sans text-[0.68rem] uppercase leading-[2] tracking-[0.3em] text-ink-soft">{{ text('std_invite', 'Invite you to celebrate our wedding') }}</p>
+
+                    <!-- Month and time | day | weekday and year -->
+                    <div class="mt-7 grid grid-cols-[1fr_auto_1fr] items-center font-serif uppercase text-cocoa">
+                        <div class="pr-3 text-right text-[0.8rem] leading-relaxed tracking-[0.16em] sm:pr-4 sm:text-[0.95rem] sm:tracking-[0.22em]">
+                            <p class="font-semibold">{{ wedding.month }}</p>
+                            <p>{{ wedding.time }}</p>
+                        </div>
+                        <p class="border-x border-cocoa/50 px-3 text-[3.4rem] font-light leading-none tabular-nums sm:px-5 sm:text-7xl">{{ wedding.day }}</p>
+                        <div class="pl-3 text-left text-[0.8rem] leading-relaxed tracking-[0.16em] sm:pl-4 sm:text-[0.95rem] sm:tracking-[0.22em]">
+                            <p class="font-semibold">{{ wedding.weekday }}</p>
+                            <p>{{ wedding.year }}</p>
+                        </div>
                     </div>
-                </div>
-                <div class="absolute -bottom-4 -right-4 -z-10 h-full w-full border border-gold/50"></div>
+
+                    <template v-if="ceremony">
+                        <p class="mt-8 font-sans text-[0.68rem] uppercase tracking-[0.3em] text-ink-soft">{{ text('std_ceremony_line', 'Ceremony will be held at') }}</p>
+                        <p class="mt-1.5 font-serif text-xl font-semibold uppercase tracking-[0.12em] text-cocoa sm:text-[1.4rem]">{{ ceremony.venue }}</p>
+                        <p v-if="ceremony.address" class="mt-0.5 font-serif text-base italic text-ink-soft">{{ ceremony.address }}</p>
+                    </template>
+                    <p v-else class="mt-8 font-serif text-xl font-semibold uppercase tracking-[0.12em] text-cocoa">{{ settings.city_line }}</p>
+
+                    <template v-if="reception">
+                        <p class="mt-6 font-script text-[2rem] leading-tight text-caramel">{{ text('std_reception_line', 'Reception follows at') }}</p>
+                        <p class="font-serif text-xl font-semibold uppercase tracking-[0.12em] text-cocoa sm:text-[1.4rem]">{{ reception.venue }}</p>
+                        <p v-if="reception.address" class="mt-0.5 font-serif text-base italic text-ink-soft">{{ reception.address }}</p>
+                        <p class="mt-2 font-serif text-sm font-semibold tracking-[0.25em] text-cocoa">{{ reception.time }}</p>
+                    </template>
+                </article>
+
+                <!-- Wax seal on the edge of the card -->
+                <svg viewBox="0 0 80 80" class="absolute -left-3 top-[61%] size-[4.5rem] -rotate-12 drop-shadow-[0_6px_6px_rgb(58_34_18/0.4)] sm:-left-7 sm:size-20" aria-hidden="true">
+                    <defs>
+                        <radialGradient id="std-wax" cx="38%" cy="32%" r="75%">
+                            <stop offset="0" stop-color="#b98652" />
+                            <stop offset="0.45" stop-color="#8a5a32" />
+                            <stop offset="1" stop-color="#5a3519" />
+                        </radialGradient>
+                    </defs>
+                    <path :d="SEAL" fill="url(#std-wax)" />
+                    <circle cx="40" cy="40" r="22.5" fill="none" stroke="#4a2a12" stroke-opacity="0.55" stroke-width="2" />
+                    <circle cx="40" cy="40" r="22.5" fill="none" stroke="#d9ad78" stroke-opacity="0.35" stroke-width="0.8" transform="translate(-0.6 -0.8)" />
+                    <text x="40" y="47.5" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="20" font-weight="600" fill="#4a2a12" fill-opacity="0.75">{{ initials.join('') }}</text>
+                    <text x="39.4" y="46.8" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="20" font-weight="600" fill="#e2b886" fill-opacity="0.35">{{ initials.join('') }}</text>
+                </svg>
             </div>
 
             <!-- Save-the-date film -->

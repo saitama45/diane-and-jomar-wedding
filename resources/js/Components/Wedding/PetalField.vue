@@ -4,7 +4,7 @@ import { reducedMotion } from '@/lib/motion';
 
 const canvas = ref();
 
-const COLORS = ['#e6d3b3', '#ebc9b0', '#b9c4a0', '#d99b77', '#f3e6d3'];
+const COLORS = ['#e6d3b3', '#ebc9b0', '#c8a783', '#d99b77', '#f3e6d3']; // beige, blush, latte, caramel, cream (no green)
 
 let frame;
 let petals = [];

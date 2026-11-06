@@ -85,7 +85,7 @@ onBeforeUnmount(() => {
                     </div>
 
                     <div v-reveal="{ type: 'up', stagger: 0.1 }" class="mt-8">
-                        <p class="font-script text-5xl text-sage">{{ event.title }}</p>
+                        <p class="font-script text-5xl text-cocoa">{{ event.title }}</p>
                         <p class="mt-1 font-serif text-xl italic text-ink-soft">at {{ event.time }}</p>
                         <h3 class="mt-4 font-serif text-2xl uppercase tracking-[0.15em] text-ink md:text-[1.7rem]">{{ event.venue }}</h3>
                         <p class="mt-2 text-ink-soft">{{ event.address }}</p>

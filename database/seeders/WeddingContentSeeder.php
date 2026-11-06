@@ -23,6 +23,9 @@ class WeddingContentSeeder extends Seeder
 {
     private const IMG = '/images/dummy/';
 
+    // The opening screen is a drawn paper invitation now; this photo is only for link previews and the email.
+    private const COVER_IMAGE_HELP = 'Shown when your website link is shared (Facebook, Messenger, Viber), and in the invitation email when no email photo is set.';
+
     public function run(): void
     {
         $this->seedSettings();
@@ -171,7 +174,7 @@ class WeddingContentSeeder extends Seeder
             ['wedding', 'city_line', 'City / location line', 'text', 'Intramuros, Manila', null],
             ['wedding', 'rsvp_deadline', 'RSVP deadline', 'date', '2027-03-24', null],
 
-            ['cover', 'cover_image', 'Cover (opening screen) photo', 'image', self::IMG.'cover.jpg', null],
+            ['cover', 'cover_image', 'Share preview photo', 'image', self::IMG.'cover.jpg', self::COVER_IMAGE_HELP],
             ['cover', 'cover_kicker', 'Cover heading', 'text', 'The Wedding Celebration of', null],
             ['cover', 'invite_line', 'Invitation line', 'text', 'Together with our families, we joyfully invite you to celebrate our wedding', null],
             ['cover', 'hero_image', 'Hero photo', 'image', self::IMG.'hero.jpg', null],
@@ -238,6 +241,15 @@ class WeddingContentSeeder extends Seeder
             ['sections', 'show_attire_samples', 'Attire samples', 'toggle', '1', 'The outfit pictures under the dress code.'],
 
             ['decor', 'decor_corner_image', 'Corner flowers (optional)', 'image', '', 'Leave empty for the painted boho flowers. Or upload your own: a PNG with a transparent background, arranged for the top-left corner (it is turned to fit the other corners).'],
+
+            ['entourage', 'entourage_title', 'Section title', 'text', 'Our Families and Sponsors', 'The big title of the section with your families, sponsors and entourage.'],
+            ['entourage', 'entourage_menu_label', 'Menu label', 'text', 'Families & Sponsors', 'The short name of that section in the website menu.'],
+
+            ['save_the_date', 'std_heading', 'Card heading', 'text', 'Save the Date', 'The save-the-date card. Your names, the date and the venues fill in by themselves.'],
+            ['save_the_date', 'std_intro', 'Card opening line', 'textarea', "Together with our families\nwe,", 'Shown above your names. Press Enter for a new line.'],
+            ['save_the_date', 'std_invite', 'Card invitation line', 'text', 'Invite you to celebrate our wedding', 'Shown below your names.'],
+            ['save_the_date', 'std_ceremony_line', 'Line before the ceremony venue', 'text', 'Ceremony will be held at', 'The venue is the first event in Ceremony & Reception.'],
+            ['save_the_date', 'std_reception_line', 'Line before the reception venue', 'text', 'Reception follows at', 'The venue is the second event in Ceremony & Reception.'],
         ];
 
         foreach ($settings as $i => [$group, $key, $label, $type, $value, $help]) {

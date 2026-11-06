@@ -29,7 +29,7 @@ const rows = computed(() => {
                     <figure v-for="(wish, i) in row" :key="`${wish.id}-${i}`" class="paper-card relative w-[300px] shrink-0 px-7 pb-6 pt-10 md:w-[360px]">
                         <span class="absolute left-5 top-0 font-serif text-7xl leading-none text-clay">“</span>
                         <blockquote class="font-serif text-lg italic leading-relaxed text-ink-soft">{{ wish.message }}</blockquote>
-                        <figcaption class="mt-4 font-script text-3xl text-sage">— {{ wish.name }}</figcaption>
+                        <figcaption class="mt-4 font-script text-3xl text-cocoa">— {{ wish.name }}</figcaption>
                     </figure>
                 </div>
             </div>

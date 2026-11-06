@@ -1,12 +1,13 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 import LineIcon from '@/Components/LineIcon.vue';
 import BohoCorner from '@/Components/Wedding/BohoCorner.vue';
 import { gsap, reducedMotion } from '@/lib/motion';
 
-const props = defineProps({
+defineProps({
     settings: { type: Object, required: true },
     wedding: { type: Object, required: true },
+    venue: { type: String, default: null }, // the ceremony venue
     guestName: { type: String, default: null },
 });
 
@@ -21,10 +22,6 @@ const flash = ref();
 const count = ref(3);
 const opening = ref(false);
 
-const initials = computed(() =>
-    [props.settings.bride_name, props.settings.groom_name].map((name) => (name ?? '').trim().charAt(0)),
-);
-
 let ctx;
 
 onMounted(() => {
@@ -32,10 +29,8 @@ onMounted(() => {
 
     ctx = gsap.context(() => {
         gsap.timeline({ defaults: { ease: 'power3.out' } })
-            .from('.ig-bg', { scale: 1.3, duration: 3.4, ease: 'power2.out' }, 0)
-            .from('.ig-ring', { strokeDashoffset: 365, duration: 2.4, ease: 'power2.inOut' }, 0.2)
-            .from('.ig-reveal', { y: 28, opacity: 0, filter: 'blur(10px)', duration: 1.3, stagger: 0.13, clearProps: 'filter' }, 0.45)
-            .from('.ig-corner', { opacity: 0, scale: 1.4, duration: 1.2, stagger: 0.08 }, 0.3);
+            .from('.ig-flora', { opacity: 0, scale: 0.88, duration: 2.2, stagger: 0.25, ease: 'power2.out' }, 0)
+            .from('.ig-reveal', { y: 24, opacity: 0, filter: 'blur(8px)', duration: 1.3, stagger: 0.12, clearProps: 'filter' }, 0.35);
     }, root.value);
 });
 
@@ -77,59 +72,64 @@ function open() {
 </script>
 
 <template>
-    <div ref="root" class="fixed inset-0 z-[100] overflow-hidden text-paper" role="dialog" aria-label="Invitation">
-        <div ref="scene" class="absolute inset-0 bg-film">
-            <img :src="settings.cover_image" alt="" class="ig-bg absolute inset-0 h-full w-full object-cover opacity-55" />
-            <div class="absolute inset-0 bg-gradient-to-b from-film/80 via-film/25 to-film/90"></div>
-            <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_35%,rgb(43_29_21/0.85)_100%)]"></div>
-            <BohoCorner corner="top-right" :behind="false" class="size-[34vh]! opacity-90! md:size-[54vh]!" />
-            <BohoCorner corner="bottom-left" :behind="false" class="size-[34vh]! opacity-90! md:size-[54vh]!" />
-            <div class="light-leak -left-1/4 top-0 h-[60vh] w-[70vw] bg-[#ff9a5a]/60"></div>
-            <div class="light-leak -right-1/4 bottom-0 h-[50vh] w-[60vw] bg-[#e0704a]/40 [animation-delay:-7s]"></div>
+    <div ref="root" class="fixed inset-0 z-[100] overflow-hidden text-ink" role="dialog" aria-label="Invitation">
+        <!-- A cream boho invitation: painted florals in two corners, watercolour washes in the other two -->
+        <div ref="scene" class="boho-paper absolute inset-0">
+            <div class="linen absolute inset-0 opacity-60" aria-hidden="true"></div>
+            <BohoCorner corner="top-left" :behind="false" class="ig-flora size-[25vh]! opacity-100! sm:size-[36vh]! lg:size-[50vh]!" />
+            <BohoCorner corner="bottom-right" :behind="false" class="ig-flora size-[25vh]! opacity-100! sm:size-[36vh]! lg:size-[50vh]!" />
 
-            <!-- Frame corners -->
-            <span class="ig-corner absolute left-5 top-5 h-10 w-10 border-l border-t border-paper/40 md:left-10 md:top-10"></span>
-            <span class="ig-corner absolute right-5 top-5 h-10 w-10 border-r border-t border-paper/40 md:right-10 md:top-10"></span>
-            <span class="ig-corner absolute bottom-5 left-5 h-10 w-10 border-b border-l border-paper/40 md:bottom-10 md:left-10"></span>
-            <span class="ig-corner absolute bottom-5 right-5 h-10 w-10 border-b border-r border-paper/40 md:bottom-10 md:right-10"></span>
+            <div ref="content" class="relative z-10 h-full overflow-y-auto">
+                <div class="flex min-h-full flex-col items-center justify-center px-6 py-10 text-center">
+                    <div v-if="guestName" class="ig-reveal mb-6">
+                        <p class="kicker text-ink-soft">Specially prepared for</p>
+                        <p class="mt-1 font-serif text-2xl italic text-ink md:text-3xl">{{ guestName }}</p>
+                    </div>
 
-            <div ref="content" class="relative z-10 flex h-full flex-col items-center justify-center px-6 text-center">
-                <div class="ig-reveal relative mb-8 grid size-28 place-items-center md:size-32">
-                    <svg class="absolute inset-0 -rotate-90 text-gold-light" viewBox="0 0 120 120" aria-hidden="true">
-                        <circle class="ig-ring" cx="60" cy="60" r="58" fill="none" stroke="currentColor" stroke-width="0.7" stroke-dasharray="365" />
-                        <circle cx="60" cy="60" r="52" fill="none" stroke="currentColor" stroke-width="0.4" opacity="0.5" />
-                    </svg>
-                    <span class="font-serif text-3xl font-light tracking-[0.12em] text-gold-light md:text-4xl">
-                        {{ initials[0] }}<span class="mx-1 font-script text-2xl">&amp;</span>{{ initials[1] }}
-                    </span>
+                    <p class="ig-reveal max-w-xs font-sans text-[0.7rem] uppercase leading-[2] tracking-[0.32em] text-ink-soft sm:max-w-md md:text-xs">{{ settings.cover_kicker }}</p>
+
+                    <h1 class="mt-2 font-script font-normal leading-[1.05] text-caramel">
+                        <span class="ig-reveal block text-[clamp(3.6rem,14vw,7rem)] [@media(max-height:700px)]:text-[3.4rem]">{{ settings.bride_name }}</span>
+                        <span class="ig-reveal my-1 flex items-center justify-center gap-4 text-[clamp(1.7rem,5vw,2.5rem)] text-cocoa">
+                            <span class="h-px w-12 bg-current opacity-50 md:w-20"></span>and<span class="h-px w-12 bg-current opacity-50 md:w-20"></span>
+                        </span>
+                        <span class="ig-reveal block text-[clamp(3.6rem,14vw,7rem)] [@media(max-height:700px)]:text-[3.4rem]">{{ settings.groom_name }}</span>
+                    </h1>
+
+                    <p class="ig-reveal mt-5 max-w-sm font-sans text-[0.7rem] uppercase leading-[2] tracking-[0.3em] text-ink-soft md:max-w-lg md:text-xs">{{ settings.invite_line }}</p>
+
+                    <!-- Month and time | day | weekday and year -->
+                    <div class="ig-reveal mt-6 grid grid-cols-[1fr_auto_1fr] items-center font-serif uppercase text-cocoa md:mt-8">
+                        <div class="pr-3 text-right text-[0.8rem] leading-relaxed tracking-[0.16em] sm:pr-5 sm:text-base sm:tracking-[0.22em]">
+                            <p class="font-semibold">{{ wedding.month }}</p>
+                            <p>{{ wedding.time }}</p>
+                        </div>
+                        <p class="border-x border-cocoa/50 px-3 text-[3.4rem] font-light leading-none tabular-nums sm:px-6 sm:text-7xl">{{ wedding.day }}</p>
+                        <div class="pl-3 text-left text-[0.8rem] leading-relaxed tracking-[0.16em] sm:pl-5 sm:text-base sm:tracking-[0.22em]">
+                            <p class="font-semibold">{{ wedding.weekday }}</p>
+                            <p>{{ wedding.year }}</p>
+                        </div>
+                    </div>
+
+                    <div class="ig-reveal mt-6 md:mt-8 [@media(max-height:640px)]:hidden">
+                        <p v-if="venue" class="font-serif text-lg font-semibold uppercase tracking-[0.14em] text-cocoa md:text-xl">{{ venue }}</p>
+                        <p class="font-serif text-base italic text-ink-soft md:text-lg">{{ settings.city_line }}</p>
+                    </div>
+
+                    <!-- The entrance animation moves this wrapper: the button's own transform transition would leave it stuck mid-way. -->
+                    <div class="ig-reveal mt-8 md:mt-10">
+                        <button
+                            type="button"
+                            class="btn group border-cocoa/60 text-cocoa hover:border-rust hover:text-rust"
+                            :disabled="opening"
+                            @click="open"
+                        >
+                            <LineIcon name="envelope" :size="18" class="transition-transform duration-500 group-hover:-rotate-6" />
+                            Open Invitation
+                        </button>
+                    </div>
+                    <p class="ig-reveal mt-4 text-[10px] uppercase tracking-[0.3em] text-ink-soft/70">Best experienced with sound on</p>
                 </div>
-
-                <p class="ig-reveal kicker text-gold-light">{{ settings.cover_kicker }}</p>
-                <h1 class="ig-reveal mt-3 font-script text-[clamp(3.4rem,13vw,7.5rem)] leading-[1.1]">
-                    {{ settings.bride_name }} <span class="text-gold-light">&amp;</span> {{ settings.groom_name }}
-                </h1>
-                <p class="ig-reveal mt-4 font-serif text-lg tracking-[0.4em] text-paper/85">
-                    {{ wedding.month_num }} · {{ wedding.day }} · {{ wedding.year }}
-                </p>
-
-                <div v-if="guestName" class="ig-reveal mt-10">
-                    <p class="kicker text-paper/55">Specially prepared for</p>
-                    <p class="mt-2 font-serif text-2xl italic md:text-3xl">{{ guestName }}</p>
-                </div>
-                <p v-else class="ig-reveal mt-8 max-w-md font-serif text-lg italic leading-relaxed text-paper/75">
-                    {{ settings.invite_line }}
-                </p>
-
-                <button
-                    type="button"
-                    class="ig-reveal btn group mt-10 border-paper/50 text-paper hover:border-gold-light hover:text-gold-light"
-                    :disabled="opening"
-                    @click="open"
-                >
-                    <LineIcon name="envelope" :size="18" class="transition-transform duration-500 group-hover:-rotate-6" />
-                    Open Invitation
-                </button>
-                <p class="ig-reveal mt-6 text-[10px] uppercase tracking-[0.3em] text-paper/40">Best experienced with sound on</p>
             </div>
         </div>
 

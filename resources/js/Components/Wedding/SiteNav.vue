@@ -13,7 +13,7 @@ const links = computed(() =>
     [
         { href: '#story', label: 'Our Story' },
         { href: '#details', label: 'Details' },
-        { href: '#entourage', label: 'Entourage' },
+        { href: '#entourage', label: props.settings.entourage_menu_label?.trim() || 'Entourage' },
         { href: '#attire', label: 'Attire' },
         { href: '#gallery', label: 'Gallery' },
         { href: '#gifts', label: 'Gifts' },

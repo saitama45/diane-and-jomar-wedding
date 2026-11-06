@@ -29,6 +29,7 @@ class SettingsController extends Controller
         'email' => 'Invitation Email',
         'sections' => 'Website Sections',
         'decor' => 'Decorations',
+        'entourage' => 'Families & Sponsors',
     ];
 
     private const RULES = [
