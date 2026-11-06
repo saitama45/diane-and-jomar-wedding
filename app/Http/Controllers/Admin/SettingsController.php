@@ -48,8 +48,8 @@ class SettingsController extends Controller
 
     public function edit(): Response
     {
-        // Print choices are edited on the Print Cards page.
-        $groups = Setting::where('group', '!=', 'print')->orderBy('sort_order')->orderBy('id')->get()
+        // Print choices and the music have their own pages (Print Cards, Music).
+        $groups = Setting::whereNotIn('group', ['print', 'music'])->orderBy('sort_order')->orderBy('id')->get()
             ->groupBy('group')
             ->map(fn ($settings, $group) => [
                 'key' => $group,

@@ -201,4 +201,29 @@ return [
             ],
         ],
     ],
+
+    /*
+     * Suggested background music (Admin > Music). Public-domain recordings from Wikimedia Commons, so the
+     * website needs no credit line; converted to 128 kbps MP3 with matched loudness in public/music.
+     */
+    'music' => [
+        ['file' => '/music/canon-in-d.mp3', 'title' => 'Canon in D', 'composer' => 'Johann Pachelbel', 'performer' => 'U.S. Air Force Strolling Strings',
+            'mood' => 'The classic wedding strings', 'length' => '3:43',
+            'source' => 'https://commons.wikimedia.org/wiki/File:Canon_(2004)_-_Strolling_Strings_-_United_States_Air_Force_Band.mp3'],
+        ['file' => '/music/clair-de-lune.mp3', 'title' => 'Clair de Lune', 'composer' => 'Claude Debussy', 'performer' => 'Laurens Goedhart, piano',
+            'mood' => 'Dreamy, moonlit piano', 'length' => '5:01',
+            'source' => 'https://commons.wikimedia.org/wiki/File:Clair_de_lune_(Claude_Debussy)_Suite_bergamasque.ogg'],
+        ['file' => '/music/air-on-g.mp3', 'title' => 'Air on the G String', 'composer' => 'Johann Sebastian Bach', 'performer' => 'U.S. Air Force Strings',
+            'mood' => 'Calm, elegant strings', 'length' => '2:54',
+            'source' => 'https://commons.wikimedia.org/wiki/File:Air_-_Air_Force_Strings_-_United_States_Air_Force_Band.mp3'],
+        ['file' => '/music/ave-maria.mp3', 'title' => 'Ave Maria', 'composer' => 'Bach / Gounod', 'performer' => 'John Michel, cello',
+            'mood' => 'Warm, prayerful cello', 'length' => '4:46',
+            'source' => 'https://commons.wikimedia.org/wiki/File:JOHN_MICHEL_CELLO-BACH_AVE_MARIA.ogg'],
+        ['file' => '/music/nocturne-op9-2.mp3', 'title' => 'Nocturne in E-flat, Op. 9 No. 2', 'composer' => 'Frédéric Chopin', 'performer' => 'Frank Levy, piano',
+            'mood' => 'Romantic, flowing piano', 'length' => '4:27',
+            'source' => 'https://commons.wikimedia.org/wiki/File:Chopin_-_Nocturne_No._2_in_E-flat_major,_Op._9_No._2_(Frank_Levy).flac'],
+        ['file' => '/music/gymnopedie-1.mp3', 'title' => 'Gymnopédie No. 1', 'composer' => 'Erik Satie', 'performer' => 'Robin Alciatore, piano',
+            'mood' => 'Gentle, slow piano', 'length' => '2:58',
+            'source' => 'https://commons.wikimedia.org/wiki/File:Erik_Satie_-_gymnopedies_-_la_1_ere._lent_et_douloureux.ogg'],
+    ],
 ];

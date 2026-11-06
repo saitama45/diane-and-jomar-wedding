@@ -219,6 +219,7 @@ class WeddingContentSeeder extends Seeder
             ['gallery', 'gallery_credit', 'Photographer credit', 'text', 'Photographs by Your Studio Name', null],
 
             ['music', 'music_url', 'Background music', 'audio', '', 'Upload an .mp3 or paste a link. Leave empty to use the built-in music-box melody (Pachelbel’s Canon).'],
+            ['music', 'music_enabled', 'Play background music', 'toggle', '1', 'Off: the website has no music and no record button.'],
 
             ['site', 'meta_description', 'Search / share description', 'textarea', 'You are invited to the wedding of Diane & Jomar — April 24, 2027, Intramuros, Manila.', null],
             ['site', 'footer_note', 'Footer note', 'text', 'Made with love for our family and friends.', null],

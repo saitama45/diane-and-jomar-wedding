@@ -29,6 +29,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('upload', Admin\UploadController::class)->name('upload');
         Route::post('upload/video', Admin\VideoUploadController::class)->name('upload.video');
 
+        Route::get('music', [Admin\MusicController::class, 'edit'])->name('music');
+        Route::put('music', [Admin\MusicController::class, 'update'])->name('music.update');
+
         Route::get('print', [Admin\PrintController::class, 'edit'])->name('print');
         Route::put('print', [Admin\PrintController::class, 'update'])->name('print.update');
         Route::get('print/save-the-date', [Admin\PrintController::class, 'saveTheDate'])->name('print.save-the-date');

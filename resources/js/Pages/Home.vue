@@ -121,5 +121,5 @@ async function onReveal() {
         <ClosingSection :settings="settings" :wedding="wedding" :photos="photos.slice().reverse()" />
     </main>
 
-    <MusicPlayer v-show="revealed" ref="music" :src="settings.music_url ?? ''" />
+    <MusicPlayer v-if="settings.music_enabled !== '0'" v-show="revealed" ref="music" :src="settings.music_url ?? ''" />
 </template>
