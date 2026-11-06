@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, provide, ref } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import CaptureSection from '@/Components/Wedding/CaptureSection.vue';
 import ClosingSection from '@/Components/Wedding/ClosingSection.vue';
@@ -33,6 +33,7 @@ const props = defineProps({
     schedule: { type: Array, default: () => [] },
     entourage: { type: Array, default: () => [] },
     colors: { type: Array, default: () => [] },
+    attireSamples: { type: Array, default: () => [] },
     gallery: { type: Array, default: () => [] },
     faqs: { type: Array, default: () => [] },
     gift: { type: Object, default: null },
@@ -41,6 +42,9 @@ const props = defineProps({
     guestName: { type: String, default: null },
     maxGuests: { type: Number, default: 2 },
 });
+
+// Custom corner flowers uploaded in Site Settings > Decorations replace the drawn ones (BohoCorner.vue).
+provide('decorImage', computed(() => props.settings.decor_corner_image || null));
 
 const showIntro = ref(true);
 const revealed = ref(false);
@@ -101,7 +105,7 @@ async function onReveal() {
         <SaveTheDateSection :settings="settings" :wedding="wedding" :first-event="events[0]" />
         <VenueSection v-if="hasDetails" :events="events" :schedule="schedule" />
         <EntourageSection v-if="entourage.length" :settings="settings" :entourage="entourage" :photos="photos.slice(2, 4)" />
-        <DressCodeSection :settings="settings" :colors="colors" />
+        <DressCodeSection :settings="settings" :colors="colors" :samples="attireSamples" />
         <RsvpSection
             :settings="settings"
             :invitation="invitation"

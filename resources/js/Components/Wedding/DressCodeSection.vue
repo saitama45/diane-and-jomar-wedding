@@ -1,21 +1,66 @@
 <script setup>
-import BohoBouquet from '@/Components/Wedding/BohoBouquet.vue';
-import { onBeforeUnmount, onMounted, ref } from 'vue';
+import BohoCorner from '@/Components/Wedding/BohoCorner.vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import LineIcon from '@/Components/LineIcon.vue';
 import SectionTitle from './SectionTitle.vue';
-import { drawOnScroll, gsap, reducedMotion, vReveal } from '@/lib/motion';
+import { drawOnScroll, gsap, lockScroll, reducedMotion, vReveal } from '@/lib/motion';
 
-defineProps({
+const props = defineProps({
     settings: { type: Object, required: true },
     colors: { type: Array, default: () => [] },
+    samples: { type: Array, default: () => [] }, // outfit inspiration pictures
 });
 
 const root = ref();
 const barong = ref();
 const gown = ref();
 
+const AUDIENCES = { guests: 'Our Guests', sponsors: 'Principal Sponsors' };
+const WEARERS = { ladies: 'Ladies', gentlemen: 'Gentlemen' };
+
+// Guests first (most visitors), then sponsors; the viewer pages through them in this same order.
+const sampleGroups = computed(() =>
+    Object.entries(AUDIENCES)
+        .map(([key, title]) => ({ key, title, items: props.samples.filter((sample) => sample.audience === key) }))
+        .filter((group) => group.items.length),
+);
+const ordered = computed(() => sampleGroups.value.flatMap((group) => group.items));
+
+const active = ref(null);
+const current = computed(() => (active.value === null ? null : ordered.value[active.value]));
+
+function open(sample) {
+    active.value = ordered.value.indexOf(sample);
+    lockScroll(true);
+}
+
+function close() {
+    active.value = null;
+    lockScroll(false);
+}
+
+function go(delta) {
+    active.value = (active.value + delta + ordered.value.length) % ordered.value.length;
+}
+
+function onKey(event) {
+    if (active.value === null) return;
+    if (event.key === 'Escape') close();
+    if (event.key === 'ArrowRight') go(1);
+    if (event.key === 'ArrowLeft') go(-1);
+}
+
+let touchX = null;
+const onTouchStart = (event) => (touchX = event.changedTouches[0].clientX);
+function onTouchEnd(event) {
+    const dx = event.changedTouches[0].clientX - touchX;
+    if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1);
+}
+
 let ctx;
 
 onMounted(() => {
+    window.addEventListener('keydown', onKey);
     if (reducedMotion()) return;
     ctx = gsap.context(() => {
         drawOnScroll(barong.value, { duration: 2.4, stagger: 0.15 });
@@ -33,13 +78,17 @@ onMounted(() => {
     }, root.value);
 });
 
-onBeforeUnmount(() => ctx?.revert());
+onBeforeUnmount(() => {
+    window.removeEventListener('keydown', onKey);
+    ctx?.revert();
+    if (active.value !== null) lockScroll(false);
+});
 </script>
 
 <template>
     <section id="attire" ref="root" class="relative isolate bg-clay/45 py-24 md:py-32">
-        <BohoBouquet class="pointer-events-none absolute -z-10 h-36 w-28 opacity-40 md:h-72 md:w-52 md:opacity-60 top-8 left-0" />
-        <BohoBouquet flip class="pointer-events-none absolute -z-10 h-36 w-28 opacity-40 md:h-72 md:w-52 md:opacity-60 top-8 right-0" />
+        <BohoCorner corner="top-left" />
+        <BohoCorner corner="top-right" />
         <div class="mx-auto max-w-5xl px-5 md:px-8">
             <SectionTitle kicker="What to wear" title="The Dress Code" />
 
@@ -85,6 +134,35 @@ onBeforeUnmount(() => ctx?.revert());
                 </article>
             </div>
 
+            <!-- Outfit inspiration -->
+            <div v-if="sampleGroups.length" class="mt-20 text-center">
+                <p v-reveal="'fade'" class="font-script text-4xl text-ink md:text-5xl">Outfit Inspiration</p>
+                <p v-reveal="'fade'" class="mt-2 kicker text-ink-soft">Tap a picture to see it up close</p>
+
+                <div v-for="group in sampleGroups" :key="group.key" class="mt-10">
+                    <p v-if="sampleGroups.length > 1" class="kicker text-gold">{{ group.title }}</p>
+                    <div class="mt-5 grid gap-6" :class="group.items.length > 1 ? 'md:grid-cols-2' : 'mx-auto max-w-2xl'">
+                        <button
+                            v-for="sample in group.items"
+                            :key="sample.id"
+                            v-reveal="{ type: 'up' }"
+                            type="button"
+                            class="group paper-card block p-3 text-left transition duration-500 ease-[var(--ease-film)] hover:-translate-y-1"
+                            :aria-label="`View the ${WEARERS[sample.wearer] ?? ''} outfit picture full size`"
+                            @click="open(sample)"
+                        >
+                            <span class="block overflow-hidden">
+                                <img :src="sample.image" :alt="`${WEARERS[sample.wearer] ?? ''} outfit inspiration`" loading="lazy" class="w-full object-cover transition duration-700 group-hover:scale-[1.03]" />
+                            </span>
+                            <span class="mt-3 flex flex-wrap items-baseline justify-between gap-x-4 px-1">
+                                <span class="font-script text-3xl text-sage">{{ WEARERS[sample.wearer] }}</span>
+                                <span v-if="sample.caption" class="font-serif text-base italic text-ink-soft">{{ sample.caption }}</span>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Palette -->
             <div v-if="colors.length" class="mt-20 text-center">
                 <p v-reveal="'fade'" class="font-script text-4xl text-ink md:text-5xl">Our Palette</p>
@@ -104,5 +182,43 @@ onBeforeUnmount(() => ctx?.revert());
                 </ul>
             </div>
         </div>
+
+        <!-- Full-size viewer -->
+        <Teleport to="body">
+            <Transition name="fade">
+                <div
+                    v-if="current"
+                    class="fixed inset-0 z-[90] flex items-center justify-center bg-film/95 p-4 backdrop-blur-sm md:p-12"
+                    role="dialog"
+                    aria-modal="true"
+                    @click.self="close"
+                    @touchstart.passive="onTouchStart"
+                    @touchend="onTouchEnd"
+                >
+                    <Transition name="fade" mode="out-in">
+                        <figure :key="current.id" class="flex max-h-full flex-col items-center">
+                            <img :src="current.image" :alt="`${WEARERS[current.wearer] ?? ''} outfit inspiration`" class="max-h-[80vh] w-auto max-w-full object-contain shadow-2xl" />
+                            <figcaption class="mt-4 text-center text-paper">
+                                <span class="font-script text-3xl">{{ WEARERS[current.wearer] }}</span>
+                                <span v-if="current.caption" class="ml-3 font-serif italic text-paper/80">{{ current.caption }}</span>
+                                <span class="mt-1 block kicker text-paper/50">{{ AUDIENCES[current.audience] }} · {{ active + 1 }} / {{ ordered.length }}</span>
+                            </figcaption>
+                        </figure>
+                    </Transition>
+
+                    <button type="button" class="absolute right-4 top-4 grid size-12 place-items-center text-paper/80 hover:text-paper" aria-label="Close" @click="close">
+                        <LineIcon name="close" :size="26" />
+                    </button>
+                    <template v-if="ordered.length > 1">
+                        <button type="button" class="absolute left-2 top-1/2 grid size-12 -translate-y-1/2 place-items-center text-paper/70 hover:text-paper md:left-6" aria-label="Previous picture" @click="go(-1)">
+                            <LineIcon name="arrow-left" :size="28" />
+                        </button>
+                        <button type="button" class="absolute right-2 top-1/2 grid size-12 -translate-y-1/2 place-items-center text-paper/70 hover:text-paper md:right-6" aria-label="Next picture" @click="go(1)">
+                            <LineIcon name="arrow-right" :size="28" />
+                        </button>
+                    </template>
+                </div>
+            </Transition>
+        </Teleport>
     </section>
 </template>

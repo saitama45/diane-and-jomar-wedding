@@ -180,19 +180,19 @@
         repeating-linear-gradient(90deg, rgb(58 42 32 / 0.025) 0 1px, transparent 1px 4px);
 }
 
-/* Bouquet stems (BohoBouquet.vue) sway gently from their base. */
-.boho-sway {
+/* Pampas and grasses in the corner arrangements (BohoCorner.vue) sway gently from the corner. */
+.boho-breeze {
     transform-box: view-box;
-    transform-origin: 72px 300px;
-    animation: boho-sway 7s ease-in-out infinite alternate;
+    transform-origin: 0 0;
+    animation: boho-breeze 8s ease-in-out infinite alternate;
 }
 
-@keyframes boho-sway {
+@keyframes boho-breeze {
     from {
-        transform: rotate(-2.2deg);
+        transform: rotate(-1.6deg);
     }
     to {
-        transform: rotate(2.2deg);
+        transform: rotate(1.6deg);
     }
 }
 

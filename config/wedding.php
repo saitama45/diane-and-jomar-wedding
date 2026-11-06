@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\AttireSample;
 use App\Models\EntourageMember;
 use App\Models\Faq;
 use App\Models\GalleryPhoto;
@@ -130,6 +131,23 @@ return [
             'fields' => [
                 ['name' => 'name', 'label' => 'Name', 'type' => 'text', 'rules' => 'required|string|max:60'],
                 ['name' => 'hex', 'label' => 'Color', 'type' => 'color', 'rules' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/']],
+                $sort,
+            ],
+        ],
+
+        'attire' => [
+            'model' => AttireSample::class,
+            'title' => 'Attire Samples',
+            'singular' => 'sample',
+            'description' => 'Outfit inspiration under the dress code, e.g. a picture of suggested gowns or suits. Guests can tap a picture to see it full size.',
+            'section' => 'show_attire_samples', // website-section switch (a setting)
+            'order' => [['sort_order', 'asc'], ['id', 'asc']],
+            'columns' => ['image' => '', 'audience' => 'For', 'wearer' => 'Who', 'caption' => 'Caption'],
+            'fields' => [
+                ['name' => 'image', 'label' => 'Picture', 'type' => 'image', 'rules' => 'required|string|max:500', 'help' => 'JPG or PNG, up to 10 MB. A wide picture with several outfits works well.'],
+                ['name' => 'audience', 'label' => 'For', 'type' => 'select', 'rules' => 'required|in:guests,sponsors', 'options' => ['guests' => 'Our guests', 'sponsors' => 'Principal sponsors']],
+                ['name' => 'wearer', 'label' => 'Who', 'type' => 'select', 'rules' => 'required|in:ladies,gentlemen', 'options' => ['ladies' => 'Ladies', 'gentlemen' => 'Gentlemen']],
+                ['name' => 'caption', 'label' => 'Caption', 'type' => 'text', 'rules' => 'nullable|string|max:150', 'placeholder' => 'Chocolate, mocha, taupe and champagne'],
                 $sort,
             ],
         ],

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AttireSample;
 use App\Models\EntourageMember;
 use App\Models\Faq;
 use App\Models\GalleryPhoto;
@@ -76,6 +77,7 @@ class HomeController extends Controller
                 ->map(fn ($members, $group) => ['group' => $group, 'names' => $members->pluck('name')])
                 ->values(),
             'colors' => ! $shown('show_motif') ? [] : MotifColor::visible()->orderBy('sort_order')->orderBy('id')->get(['id', 'name', 'hex']),
+            'attireSamples' => ! $shown('show_attire_samples') ? [] : AttireSample::visible()->orderBy('sort_order')->orderBy('id')->get(['id', 'image', 'audience', 'wearer', 'caption']),
             'gallery' => ! $shown('show_gallery') ? [] : GalleryPhoto::visible()->orderBy('sort_order')->orderBy('id')->get(['id', 'image', 'caption']),
             'faqs' => ! $shown('show_faqs') ? [] : Faq::visible()->orderBy('sort_order')->orderBy('id')->get(['id', 'question', 'answer']),
             'gift' => ! $shown('show_gifts') ? null : GiftOption::visible()->orderBy('sort_order')->orderBy('id')->first(['id', 'label', 'account_name', 'account_number', 'qr_image', 'note']),

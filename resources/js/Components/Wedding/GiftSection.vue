@@ -1,5 +1,5 @@
 <script setup>
-import BohoBouquet from '@/Components/Wedding/BohoBouquet.vue';
+import BohoCorner from '@/Components/Wedding/BohoCorner.vue';
 import { onMounted, ref } from 'vue';
 import QRCode from 'qrcode';
 import LineIcon from '@/Components/LineIcon.vue';
@@ -36,7 +36,7 @@ async function copy() {
 
 <template>
     <section id="gifts" class="relative isolate overflow-hidden bg-cream linen py-24 md:py-32">
-        <BohoBouquet flip class="pointer-events-none absolute -z-10 h-36 w-28 opacity-40 md:h-72 md:w-52 md:opacity-60 bottom-0 right-0" />
+        <BohoCorner corner="bottom-right" />
         <div class="mx-auto grid max-w-6xl items-center gap-14 px-5 md:px-8 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20">
             <div v-reveal="{ type: 'clip', duration: 1.6 }" class="arch relative mx-auto aspect-[3/4] w-full max-w-sm shadow-[0_30px_60px_-30px_rgb(58_42_32/0.5)]">
                 <img :src="settings.gift_image" alt="" loading="lazy" class="h-full w-full object-cover" />

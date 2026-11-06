@@ -1,5 +1,5 @@
 <script setup>
-import BohoBouquet from '@/Components/Wedding/BohoBouquet.vue';
+import BohoCorner from '@/Components/Wedding/BohoCorner.vue';
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 import { gsap, reducedMotion, vReveal } from '@/lib/motion';
 
@@ -34,8 +34,8 @@ onBeforeUnmount(() => ctx?.revert());
 
 <template>
     <section id="entourage" ref="root" class="relative isolate overflow-hidden bg-sage-deep py-24 md:py-32">
-        <BohoBouquet dark class="pointer-events-none absolute -z-10 h-36 w-28 opacity-40 md:h-72 md:w-52 md:opacity-60 bottom-0 left-0" />
-        <BohoBouquet dark flip class="pointer-events-none absolute -z-10 h-36 w-28 opacity-40 md:h-72 md:w-52 md:opacity-60 bottom-0 right-0" />
+        <BohoCorner corner="bottom-left" />
+        <BohoCorner corner="bottom-right" />
         <!-- Title inside a strip of film -->
         <div class="ent-banner film-strip mx-auto max-w-5xl -rotate-1 px-3 shadow-[0_30px_50px_-30px_rgb(43_29_21/0.6)]">
             <div class="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_3fr_1fr]">

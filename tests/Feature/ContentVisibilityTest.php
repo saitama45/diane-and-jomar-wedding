@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Mail\InvitationMail;
+use App\Models\AttireSample;
 use App\Models\Faq;
 use App\Models\GalleryPhoto;
 use App\Models\Invitation;
@@ -29,6 +30,21 @@ class ContentVisibilityTest extends TestCase
             ->has('gallery', 0)
             ->where('gift', null)
             ->has('events', 2));
+    }
+
+    public function test_attire_samples_show_under_the_dress_code_unless_hidden(): void
+    {
+        AttireSample::create(['image' => '/storage/uploads/ladies.png', 'audience' => 'guests', 'wearer' => 'ladies']);
+        AttireSample::create(['image' => '/storage/uploads/men.png', 'audience' => 'guests', 'wearer' => 'gentlemen', 'is_active' => false]);
+
+        $this->get('/')->assertInertia(fn (Assert $page) => $page
+            ->has('attireSamples', 1)
+            ->where('attireSamples.0.wearer', 'ladies'));
+
+        $this->actingAs(User::first())->get('/admin/content/attire')->assertOk()->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/Collection')
+            ->has('items', 2)
+            ->where('collection.section.key', 'show_attire_samples'));
     }
 
     public function test_admin_hides_one_item_or_a_whole_section(): void

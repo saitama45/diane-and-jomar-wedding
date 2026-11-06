@@ -1,5 +1,5 @@
 <script setup>
-import BohoBouquet from '@/Components/Wedding/BohoBouquet.vue';
+import BohoCorner from '@/Components/Wedding/BohoCorner.vue';
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import SectionTitle from './SectionTitle.vue';
 import { gsap, reducedMotion, vReveal } from '@/lib/motion';
@@ -85,8 +85,8 @@ onBeforeUnmount(() => ctx?.revert());
 
 <template>
     <section id="story" ref="root" class="relative isolate overflow-hidden bg-paper linen">
-        <BohoBouquet class="pointer-events-none absolute -z-10 h-36 w-28 opacity-40 md:h-72 md:w-52 md:opacity-60 top-8 left-0" />
-        <BohoBouquet flip class="pointer-events-none absolute -z-10 h-36 w-28 opacity-40 md:h-72 md:w-52 md:opacity-60 top-8 right-0" />
+        <BohoCorner corner="top-left" />
+        <BohoCorner corner="top-right" />
         <div class="mx-auto max-w-6xl px-5 pb-16 pt-24 md:px-8 md:pt-32">
             <SectionTitle kicker="Chapter One" title="Our Love Story" />
 

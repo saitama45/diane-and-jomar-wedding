@@ -17,6 +17,7 @@ const nav = [
     { href: '/admin/content/program', label: 'Order of the Day', icon: 'clock' },
     { href: '/admin/content/entourage', label: 'Entourage', icon: 'users' },
     { href: '/admin/content/motif', label: 'Motif Colors', icon: 'palette' },
+    { href: '/admin/content/attire', label: 'Attire Samples', icon: 'hanger' },
     { href: '/admin/content/gallery', label: 'Gallery', icon: 'image' },
     { href: '/admin/content/gifts', label: 'Gift Registry', icon: 'gift' },
     { href: '/admin/content/faqs', label: 'FAQs', icon: 'question' },

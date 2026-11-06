@@ -235,6 +235,9 @@ class WeddingContentSeeder extends Seeder
             ['sections', 'show_gallery', 'Gallery', 'toggle', '1', 'Also the photo film strips across the page.'],
             ['sections', 'show_gifts', 'Gift registry', 'toggle', '1', null],
             ['sections', 'show_faqs', 'FAQs', 'toggle', '1', null],
+            ['sections', 'show_attire_samples', 'Attire samples', 'toggle', '1', 'The outfit pictures under the dress code.'],
+
+            ['decor', 'decor_corner_image', 'Corner flowers (optional)', 'image', '', 'Leave empty for the painted boho flowers. Or upload your own: a PNG with a transparent background, arranged for the top-left corner (it is turned to fit the other corners).'],
         ];
 
         foreach ($settings as $i => [$group, $key, $label, $type, $value, $help]) {

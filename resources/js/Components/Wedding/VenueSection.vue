@@ -1,5 +1,5 @@
 <script setup>
-import BohoBouquet from '@/Components/Wedding/BohoBouquet.vue';
+import BohoCorner from '@/Components/Wedding/BohoCorner.vue';
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import LineIcon from '@/Components/LineIcon.vue';
 import SectionTitle from './SectionTitle.vue';
@@ -72,8 +72,8 @@ onBeforeUnmount(() => {
 
 <template>
     <section id="details" ref="root" class="relative isolate bg-paper linen py-24 md:py-32">
-        <BohoBouquet class="pointer-events-none absolute -z-10 h-36 w-28 opacity-40 md:h-72 md:w-52 md:opacity-60 top-8 left-0" />
-        <BohoBouquet flip class="pointer-events-none absolute -z-10 h-36 w-28 opacity-40 md:h-72 md:w-52 md:opacity-60 top-8 right-0" />
+        <BohoCorner corner="top-left" />
+        <BohoCorner corner="top-right" />
         <div class="mx-auto max-w-6xl px-5 md:px-8">
             <SectionTitle kicker="When &amp; Where" title="The Venue" />
 

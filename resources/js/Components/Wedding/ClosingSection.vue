@@ -1,5 +1,5 @@
 <script setup>
-import BohoBouquet from '@/Components/Wedding/BohoBouquet.vue';
+import BohoCorner from '@/Components/Wedding/BohoCorner.vue';
 import { computed } from 'vue';
 import FilmStrip from './FilmStrip.vue';
 import { scrollToTarget, vReveal } from '@/lib/motion';
@@ -15,7 +15,7 @@ const initials = computed(() => [props.settings.bride_name, props.settings.groom
 
 <template>
     <section class="relative isolate overflow-hidden bg-cream linen pt-24 md:pt-32">
-        <BohoBouquet flip class="pointer-events-none absolute -z-10 h-36 w-28 opacity-40 md:h-72 md:w-52 md:opacity-60 top-8 right-0" />
+        <BohoCorner corner="top-right" />
         <div class="mx-auto grid max-w-6xl items-center gap-12 px-5 md:px-8 lg:grid-cols-2 lg:gap-20">
             <div v-reveal="{ type: 'left', duration: 1.4 }" class="film-strip px-3 shadow-[0_30px_60px_-30px_rgb(43_29_21/0.6)]">
                 <img :src="settings.closing_image" alt="" loading="lazy" class="aspect-[4/5] w-full object-cover grayscale transition duration-[1.5s] hover:grayscale-0" />

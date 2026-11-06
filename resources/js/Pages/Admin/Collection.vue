@@ -86,6 +86,8 @@ async function copy(item) {
 
 function display(item, column) {
     const value = item[column];
+    const field = props.collection.fields.find((f) => f.name === column);
+    if (field?.type === 'select') return field.options[value] ?? value;
     if (value && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)) {
         return new Date(value).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
     }

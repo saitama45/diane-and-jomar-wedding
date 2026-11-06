@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import LineIcon from '@/Components/LineIcon.vue';
-import BohoBouquet from '@/Components/Wedding/BohoBouquet.vue';
+import BohoCorner from '@/Components/Wedding/BohoCorner.vue';
 import { gsap, reducedMotion } from '@/lib/motion';
 
 const props = defineProps({
@@ -82,8 +82,8 @@ function open() {
             <img :src="settings.cover_image" alt="" class="ig-bg absolute inset-0 h-full w-full object-cover opacity-55" />
             <div class="absolute inset-0 bg-gradient-to-b from-film/80 via-film/25 to-film/90"></div>
             <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_35%,rgb(43_29_21/0.85)_100%)]"></div>
-            <BohoBouquet dark class="pointer-events-none absolute bottom-0 left-0 h-[30vh] w-[22vh] opacity-55 md:h-[46vh] md:w-[34vh]" />
-            <BohoBouquet dark flip class="pointer-events-none absolute bottom-0 right-0 h-[30vh] w-[22vh] opacity-55 md:h-[46vh] md:w-[34vh]" />
+            <BohoCorner corner="top-right" :behind="false" class="size-[34vh]! opacity-90! md:size-[54vh]!" />
+            <BohoCorner corner="bottom-left" :behind="false" class="size-[34vh]! opacity-90! md:size-[54vh]!" />
             <div class="light-leak -left-1/4 top-0 h-[60vh] w-[70vw] bg-[#ff9a5a]/60"></div>
             <div class="light-leak -right-1/4 bottom-0 h-[50vh] w-[60vw] bg-[#e0704a]/40 [animation-delay:-7s]"></div>
 
