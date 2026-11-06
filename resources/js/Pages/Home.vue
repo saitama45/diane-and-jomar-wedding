@@ -102,7 +102,7 @@ async function onReveal() {
         <FilmStrip v-if="photos.length" :images="photos" :tilt="-1.5" class="-mt-6 relative z-10" :duration="80" />
         <StorySection :settings="settings" :stories="stories" />
         <CountdownSection :settings="settings" :wedding="wedding" :calendar-url="events[0]?.calendar" />
-        <SaveTheDateSection :settings="settings" :wedding="wedding" :events="events" />
+        <SaveTheDateSection :settings="settings" :wedding="wedding" :events="events" @film-play="music?.pause()" />
         <VenueSection v-if="hasDetails" :events="events" :schedule="schedule" />
         <EntourageSection v-if="entourage.length" :settings="settings" :entourage="entourage" :photos="photos.slice(2, 4)" />
         <DressCodeSection :settings="settings" :colors="colors" :samples="attireSamples" />

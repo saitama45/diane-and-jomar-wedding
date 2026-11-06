@@ -92,7 +92,7 @@ onBeforeUnmount(() => {
         <div class="mx-auto max-w-5xl px-5 md:px-8">
             <SectionTitle kicker="What to wear" title="The Dress Code" />
 
-            <!-- Outfit pictures uploaded in the admin (Attire Samples) are the dress code; the written cards below only show without them. -->
+            <!-- Outfit pictures uploaded in the admin (Attire Samples) -->
             <div v-if="sampleGroups.length" class="mt-12 text-center">
                 <p v-reveal="'fade'" class="kicker text-ink-soft">Tap a picture to see it up close</p>
 
@@ -120,7 +120,27 @@ onBeforeUnmount(() => {
                 </div>
             </div>
 
-            <div v-else class="mt-16 grid gap-8 md:grid-cols-2">
+            <!-- Palette -->
+            <div v-if="colors.length" class="mt-20 text-center">
+                <p v-reveal="'fade'" class="font-script text-4xl text-ink md:text-5xl">Our Palette</p>
+                <p v-reveal="'fade'" class="mt-2 kicker text-ink-soft">We'd love to see you in these tones</p>
+
+                <ul class="swatches mt-10 flex flex-wrap justify-center gap-6 md:gap-10">
+                    <li v-for="color in colors" :key="color.id" class="swatch group w-20 md:w-24">
+                        <span
+                            class="relative mx-auto block size-16 rounded-full shadow-[inset_0_-6px_12px_rgb(0_0_0/0.12),0_12px_24px_-10px_rgb(58_42_32/0.45)] ring-1 ring-ink/10 transition duration-500 ease-[var(--ease-film)] group-hover:-translate-y-2 md:size-20"
+                            :style="{ backgroundColor: color.hex }"
+                        >
+                            <span class="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_30%_25%,rgb(255_255_255/0.55),transparent_45%)]"></span>
+                        </span>
+                        <span class="mt-3 block font-serif text-lg leading-tight text-ink">{{ color.name }}</span>
+                        <span class="block font-mono text-[10px] uppercase tracking-widest text-ink-soft opacity-0 transition group-hover:opacity-100">{{ color.hex }}</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- The written dress code, under the pictures and the palette -->
+            <div class="mt-20 grid gap-8 md:grid-cols-2">
                 <!-- Principal sponsors -->
                 <article v-reveal="{ type: 'up' }" class="paper-card px-8 py-10 text-center">
                     <svg ref="barong" viewBox="0 0 120 160" class="mx-auto h-40 text-ink" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -160,25 +180,6 @@ onBeforeUnmount(() => {
                     <p class="mt-2 font-serif text-3xl text-ink">{{ settings.dress_guests_attire }}</p>
                     <p class="mx-auto mt-6 max-w-sm font-serif text-lg italic leading-relaxed text-ink-soft">{{ settings.dress_guests_note }}</p>
                 </article>
-            </div>
-
-            <!-- Palette -->
-            <div v-if="colors.length" class="mt-20 text-center">
-                <p v-reveal="'fade'" class="font-script text-4xl text-ink md:text-5xl">Our Palette</p>
-                <p v-reveal="'fade'" class="mt-2 kicker text-ink-soft">We'd love to see you in these tones</p>
-
-                <ul class="swatches mt-10 flex flex-wrap justify-center gap-6 md:gap-10">
-                    <li v-for="color in colors" :key="color.id" class="swatch group w-20 md:w-24">
-                        <span
-                            class="relative mx-auto block size-16 rounded-full shadow-[inset_0_-6px_12px_rgb(0_0_0/0.12),0_12px_24px_-10px_rgb(58_42_32/0.45)] ring-1 ring-ink/10 transition duration-500 ease-[var(--ease-film)] group-hover:-translate-y-2 md:size-20"
-                            :style="{ backgroundColor: color.hex }"
-                        >
-                            <span class="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_30%_25%,rgb(255_255_255/0.55),transparent_45%)]"></span>
-                        </span>
-                        <span class="mt-3 block font-serif text-lg leading-tight text-ink">{{ color.name }}</span>
-                        <span class="block font-mono text-[10px] uppercase tracking-widest text-ink-soft opacity-0 transition group-hover:opacity-100">{{ color.hex }}</span>
-                    </li>
-                </ul>
             </div>
         </div>
 

@@ -45,11 +45,11 @@ const inputType = { number: 'number', date: 'date', datetime: 'datetime-local', 
             <section v-for="group in groups" :id="`group-${group.key}`" :key="group.key" class="admin-card scroll-mt-6 p-6 md:p-8">
                 <h2 class="font-serif text-2xl text-ink">{{ group.title }}</h2>
                 <div class="mt-6 grid gap-6 md:grid-cols-2">
-                    <div v-for="setting in group.settings" :key="setting.key" :class="['textarea', 'image', 'audio'].includes(setting.type) ? 'md:col-span-2' : ''">
+                    <div v-for="setting in group.settings" :key="setting.key" :class="['textarea', 'image', 'audio', 'video'].includes(setting.type) ? 'md:col-span-2' : ''">
                         <label :for="setting.key" class="admin-label">{{ setting.label }}</label>
 
                         <textarea v-if="setting.type === 'textarea'" :id="setting.key" v-model="form.values[setting.key]" rows="4" class="admin-input"></textarea>
-                        <MediaField v-else-if="setting.type === 'image' || setting.type === 'audio'" :id="setting.key" v-model="form.values[setting.key]" :kind="setting.type" />
+                        <MediaField v-else-if="['image', 'audio', 'video'].includes(setting.type)" :id="setting.key" v-model="form.values[setting.key]" :kind="setting.type" />
                         <div v-else-if="setting.type === 'toggle'" class="flex items-center gap-3">
                             <ToggleSwitch
                                 :id="setting.key"

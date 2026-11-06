@@ -40,6 +40,7 @@ class SettingsController extends Controller
         'datetime' => ['nullable', 'date'],
         'image' => ['nullable', 'string', 'max:500'],
         'audio' => ['nullable', 'string', 'max:500'],
+        'video' => ['nullable', 'string', 'max:500'],
         'url' => ['nullable', 'string', 'max:500'],
         'toggle' => ['nullable', 'in:0,1'],
         'email' => ['nullable', 'email', 'max:255'],
@@ -48,7 +49,7 @@ class SettingsController extends Controller
     public function edit(): Response
     {
         // Print choices are edited on the Print Cards page.
-        $groups = Setting::where('group', '!=', 'print')->orderBy('sort_order')->get()
+        $groups = Setting::where('group', '!=', 'print')->orderBy('sort_order')->orderBy('id')->get()
             ->groupBy('group')
             ->map(fn ($settings, $group) => [
                 'key' => $group,

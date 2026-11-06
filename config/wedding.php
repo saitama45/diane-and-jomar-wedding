@@ -140,7 +140,7 @@ return [
             'model' => AttireSample::class,
             'title' => 'Attire Samples',
             'singular' => 'sample',
-            'description' => 'Your dress code as pictures, e.g. a board of suggested gowns or suits. While there is at least one visible picture, the website shows these pictures instead of the written dress code. Guests can tap a picture to see it full size.',
+            'description' => 'Your dress code as pictures, e.g. a board of suggested gowns or suits. They show at the top of the dress code, above the palette and the written dress code. Guests can tap a picture to see it full size.',
             'section' => 'show_attire_samples', // website-section switch (a setting)
             'order' => [['sort_order', 'asc'], ['id', 'asc']],
             'columns' => ['image' => '', 'audience' => 'For', 'wearer' => 'Who', 'caption' => 'Caption'],

@@ -23,6 +23,8 @@ class WeddingContentSeeder extends Seeder
 {
     private const IMG = '/images/dummy/';
 
+    private const FILM_HELP = 'Upload an MP4 video (up to 250 MB) or paste a YouTube link. Leave empty to show “coming soon”.';
+
     // The opening screen is a drawn paper invitation now; this photo is only for link previews and the email.
     private const COVER_IMAGE_HELP = 'Shown when your website link is shared (Facebook, Messenger, Viber), and in the invitation email when no email photo is set.';
 
@@ -191,7 +193,7 @@ class WeddingContentSeeder extends Seeder
             ['countdown', 'countdown_heading', 'Countdown heading', 'text', 'Join us for the upcoming wedding of', null],
 
             ['save_the_date', 'std_image', 'Save-the-date film poster', 'image', self::IMG.'save-the-date.jpg', null],
-            ['save_the_date', 'std_video_url', 'Save-the-date video link', 'url', '', 'A YouTube link or a direct .mp4 link. Leave empty to show “coming soon”.'],
+            ['save_the_date', 'std_video_url', 'Save-the-date film', 'video', '', self::FILM_HELP],
 
             ['rsvp', 'rsvp_image', 'RSVP background', 'image', self::IMG.'rsvp.jpg', null],
             ['rsvp', 'rsvp_kicker', 'RSVP kicker', 'text', 'Ready to commit?', null],
@@ -249,6 +251,7 @@ class WeddingContentSeeder extends Seeder
             ['save_the_date', 'std_intro', 'Card opening line', 'textarea', "Together with our families\nwe,", 'Shown above your names. Press Enter for a new line.'],
             ['save_the_date', 'std_invite', 'Card invitation line', 'text', 'Invite you to celebrate our wedding', 'Shown below your names.'],
             ['save_the_date', 'std_ceremony_line', 'Line before the ceremony venue', 'text', 'Ceremony will be held at', 'The venue is the first event in Ceremony & Reception.'],
+            ['save_the_date', 'show_std_film', 'Show “Our Little Film”', 'toggle', '1', 'The film beside the save-the-date card. Switch it off to show the card on its own.'],
             ['save_the_date', 'std_reception_line', 'Line before the reception venue', 'text', 'Reception follows at', 'The venue is the second event in Ceremony & Reception.'],
         ];
 

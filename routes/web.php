@@ -27,6 +27,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('settings', [Admin\SettingsController::class, 'edit'])->name('settings');
         Route::put('settings', [Admin\SettingsController::class, 'update'])->name('settings.update');
         Route::post('upload', Admin\UploadController::class)->name('upload');
+        Route::post('upload/video', Admin\VideoUploadController::class)->name('upload.video');
 
         Route::get('print', [Admin\PrintController::class, 'edit'])->name('print');
         Route::put('print', [Admin\PrintController::class, 'update'])->name('print.update');

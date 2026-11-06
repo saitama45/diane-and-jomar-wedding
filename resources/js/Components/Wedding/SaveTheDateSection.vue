@@ -31,6 +31,10 @@ const initials = computed(() => [props.settings.bride_name, props.settings.groom
 const ceremony = computed(() => props.events[0] ?? null);
 const reception = computed(() => props.events[1] ?? null);
 
+const emit = defineEmits(['film-play']);
+
+// "Our Little Film" can be switched off in Site Settings > Save the Date; the card then stands alone.
+const showFilm = computed(() => props.settings.show_std_film !== '0');
 const playing = ref(false);
 const comingSoon = ref(false);
 
@@ -47,6 +51,7 @@ const video = computed(() => {
 function play() {
     if (video.value) {
         playing.value = true;
+        emit('film-play'); // the background music pauses so the film can be heard
     } else {
         comingSoon.value = true;
         setTimeout(() => (comingSoon.value = false), 3200);
@@ -56,7 +61,7 @@ function play() {
 
 <template>
     <section class="relative overflow-hidden bg-linen linen py-24 md:py-32">
-        <div class="mx-auto grid max-w-6xl items-center gap-14 px-5 md:px-8 lg:grid-cols-2 lg:gap-16">
+        <div class="mx-auto grid max-w-6xl items-center gap-14 px-5 md:px-8 lg:gap-16" :class="{ 'lg:grid-cols-2': showFilm }">
             <!-- Save-the-date card: cream paper with painted corner florals, like a printed boho invitation -->
             <div v-reveal="{ type: 'left', duration: 1.4 }" class="relative mx-auto w-full max-w-md">
                 <!-- a second sheet peeking out behind, as in a stationery suite -->
@@ -132,7 +137,7 @@ function play() {
             </div>
 
             <!-- Save-the-date film -->
-            <div v-reveal="{ type: 'right', duration: 1.4 }">
+            <div v-if="showFilm" v-reveal="{ type: 'right', duration: 1.4 }">
                 <SectionTitle kicker="Save-the-date · Now showing" title="Our Little Film" class="lg:text-left lg:[&_div]:justify-start" />
 
                 <div class="film-strip mt-10 px-3 shadow-[0_30px_60px_-30px_rgb(43_29_21/0.6)]">
