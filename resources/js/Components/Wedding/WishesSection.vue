@@ -18,7 +18,7 @@ const rows = computed(() => {
 </script>
 
 <template>
-    <section v-if="wishes.length" class="relative overflow-hidden bg-linen py-24 md:py-28">
+    <section v-if="wishes.length" class="relative overflow-hidden bg-linen linen py-24 md:py-28">
         <div class="px-5">
             <SectionTitle kicker="From our guests" title="Love Notes" />
         </div>

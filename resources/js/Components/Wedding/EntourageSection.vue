@@ -1,4 +1,5 @@
 <script setup>
+import BohoBouquet from '@/Components/Wedding/BohoBouquet.vue';
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 import { gsap, reducedMotion, vReveal } from '@/lib/motion';
 
@@ -32,7 +33,9 @@ onBeforeUnmount(() => ctx?.revert());
 </script>
 
 <template>
-    <section id="entourage" ref="root" class="relative overflow-hidden bg-cream py-24 md:py-32">
+    <section id="entourage" ref="root" class="relative isolate overflow-hidden bg-sage-deep py-24 md:py-32">
+        <BohoBouquet dark class="pointer-events-none absolute -z-10 h-36 w-28 opacity-40 md:h-72 md:w-52 md:opacity-60 bottom-0 left-0" />
+        <BohoBouquet dark flip class="pointer-events-none absolute -z-10 h-36 w-28 opacity-40 md:h-72 md:w-52 md:opacity-60 bottom-0 right-0" />
         <!-- Title inside a strip of film -->
         <div class="ent-banner film-strip mx-auto max-w-5xl -rotate-1 px-3 shadow-[0_30px_50px_-30px_rgb(43_29_21/0.6)]">
             <div class="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_3fr_1fr]">
@@ -45,7 +48,7 @@ onBeforeUnmount(() => ctx?.revert());
         </div>
 
         <div class="mx-auto max-w-5xl px-5 md:px-8">
-            <p v-reveal="'blur'" class="mt-14 text-center font-script text-4xl text-sage md:text-5xl">{{ settings.families_line }}</p>
+            <p v-reveal="'blur'" class="mt-14 text-center font-script text-4xl text-clay md:text-5xl">{{ settings.families_line }}</p>
 
             <div class="mt-14 flex flex-wrap justify-center gap-y-14">
                 <div
@@ -55,9 +58,9 @@ onBeforeUnmount(() => ctx?.revert());
                     class="px-2 text-center sm:px-4"
                     :class="groupWidth(group.names.length)"
                 >
-                    <h3 class="font-script text-[1.7rem] leading-tight text-gold sm:text-[2.1rem] md:text-4xl">{{ group.group }}</h3>
+                    <h3 class="font-script text-[1.7rem] leading-tight text-gold-light sm:text-[2.1rem] md:text-4xl">{{ group.group }}</h3>
                     <ul class="mt-3 space-y-1.5" :class="{ 'gap-x-10 md:columns-2': group.names.length > 4 }">
-                        <li v-for="name in group.names" :key="name" class="break-inside-avoid font-serif text-lg text-ink-soft sm:text-xl md:text-[1.35rem]">
+                        <li v-for="name in group.names" :key="name" class="break-inside-avoid font-serif text-lg text-paper/85 sm:text-xl md:text-[1.35rem]">
                             {{ name }}
                         </li>
                     </ul>

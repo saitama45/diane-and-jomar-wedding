@@ -66,7 +66,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <section id="gallery" ref="root" class="relative bg-linen py-24 md:py-32">
+    <section id="gallery" ref="root" class="relative bg-linen linen py-24 md:py-32">
         <div class="mx-auto max-w-6xl px-5 md:px-8">
             <SectionTitle kicker="Moments" title="Gallery">
                 <p v-if="settings.gallery_credit" class="mt-4 font-serif italic text-ink-soft">{{ settings.gallery_credit }}</p>

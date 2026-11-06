@@ -1,4 +1,5 @@
 <script setup>
+import BohoBouquet from '@/Components/Wedding/BohoBouquet.vue';
 import { ref } from 'vue';
 import LineIcon from '@/Components/LineIcon.vue';
 import { vReveal } from '@/lib/motion';
@@ -11,7 +12,9 @@ const open = ref(0);
 </script>
 
 <template>
-    <section v-if="faqs.length" id="faq" class="relative bg-paper py-24 md:py-32">
+    <section v-if="faqs.length" id="faq" class="relative isolate bg-paper linen py-24 md:py-32">
+        <BohoBouquet class="pointer-events-none absolute -z-10 h-36 w-28 opacity-40 md:h-72 md:w-52 md:opacity-60 bottom-0 left-0" />
+        <BohoBouquet flip class="pointer-events-none absolute -z-10 h-36 w-28 opacity-40 md:h-72 md:w-52 md:opacity-60 bottom-0 right-0" />
         <div class="mx-auto max-w-3xl px-5 md:px-8">
             <header class="text-center">
                 <h2 v-reveal="{ type: 'blur', duration: 1.5 }" class="leading-none">

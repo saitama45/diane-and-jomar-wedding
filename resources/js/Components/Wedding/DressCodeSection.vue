@@ -1,4 +1,5 @@
 <script setup>
+import BohoBouquet from '@/Components/Wedding/BohoBouquet.vue';
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 import SectionTitle from './SectionTitle.vue';
 import { drawOnScroll, gsap, reducedMotion, vReveal } from '@/lib/motion';
@@ -36,7 +37,9 @@ onBeforeUnmount(() => ctx?.revert());
 </script>
 
 <template>
-    <section id="attire" ref="root" class="relative bg-paper py-24 md:py-32">
+    <section id="attire" ref="root" class="relative isolate bg-clay/45 py-24 md:py-32">
+        <BohoBouquet class="pointer-events-none absolute -z-10 h-36 w-28 opacity-40 md:h-72 md:w-52 md:opacity-60 top-8 left-0" />
+        <BohoBouquet flip class="pointer-events-none absolute -z-10 h-36 w-28 opacity-40 md:h-72 md:w-52 md:opacity-60 top-8 right-0" />
         <div class="mx-auto max-w-5xl px-5 md:px-8">
             <SectionTitle kicker="What to wear" title="The Dress Code" />
 

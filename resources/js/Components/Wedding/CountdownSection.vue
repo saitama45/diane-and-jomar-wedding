@@ -54,9 +54,9 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <section ref="root" class="relative overflow-hidden bg-film py-28 md:py-40">
-        <img :src="settings.countdown_image" alt="" loading="lazy" class="cd-bg absolute inset-0 h-[125%] w-full -translate-y-[10%] object-cover opacity-80" />
-        <div class="absolute inset-0 bg-gradient-to-b from-film/50 via-film/10 to-film/60"></div>
+    <section ref="root" class="relative overflow-hidden bg-terracotta py-28 md:py-40">
+        <img :src="settings.countdown_image" alt="" loading="lazy" class="cd-bg absolute inset-0 h-[125%] w-full -translate-y-[10%] object-cover opacity-45 mix-blend-luminosity" />
+        <div class="absolute inset-0 bg-gradient-to-b from-rust/45 via-transparent to-rust/65"></div>
 
         <div class="cd-strip film-strip absolute inset-x-0 top-0 h-[26px] p-0! opacity-90"></div>
         <div class="cd-strip film-strip absolute inset-x-0 bottom-0 h-[26px] p-0! opacity-90"></div>

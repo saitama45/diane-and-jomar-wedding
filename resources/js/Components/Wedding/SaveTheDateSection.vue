@@ -34,7 +34,7 @@ function play() {
 </script>
 
 <template>
-    <section class="relative bg-linen py-24 md:py-32">
+    <section class="relative bg-linen linen py-24 md:py-32">
         <div class="mx-auto grid max-w-6xl items-center gap-14 px-5 md:px-8 lg:grid-cols-2 lg:gap-16">
             <!-- Save-the-date card -->
             <div v-reveal="{ type: 'left', duration: 1.4 }" class="relative mx-auto w-full max-w-md">
