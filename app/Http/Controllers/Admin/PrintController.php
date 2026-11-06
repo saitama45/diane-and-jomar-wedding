@@ -37,22 +37,49 @@ class PrintController extends Controller
 
     private const MAX_MM = 1000;
 
-    /** Remembered choices: form field => setting key (group "print", edited only on this page). */
+    /** Text size, as a percentage of the designed size. */
+    private const MIN_SIZE = 70;
+
+    private const MAX_SIZE = 150;
+
+    /** Remembered choices: form field => [setting key (group "print", edited only on this page), default]. */
     private const SETTINGS = [
-        'paper' => 'print_paper',
-        'orientation' => 'print_orientation',
-        'width' => 'print_custom_width',
-        'height' => 'print_custom_height',
-        'unit' => 'print_custom_unit',
-        'background' => 'print_background',
-        'qr' => 'print_qr',
+        'paper' => ['print_paper', 'A5'],
+        'orientation' => ['print_orientation', 'portrait'],
+        'width' => ['print_custom_width', '5'],
+        'height' => ['print_custom_height', '7'],
+        'unit' => ['print_custom_unit', 'in'],
+        'background' => ['print_background', 'cream'],
+        'qr' => ['print_qr', true],
+        'hashtag' => ['print_hashtag', true],
+        'text_size' => ['print_text_size', 100],
+        'names_size' => ['print_names_size', 100],
+        'accent_color' => ['print_accent_color', '#8e3b1f'], // rust: heading, monogram, day, RSVP, hashtag
+        'names_color' => ['print_names_color', '#a9714b'], // caramel: the names and the script lines
+        'details_color' => ['print_details_color', '#7b5539'], // cocoa: date words, venues, addresses
+        // Off = the designed weights and styles; on = that text group all bold / all italic.
+        'names_bold' => ['print_names_bold', false],
+        'names_italic' => ['print_names_italic', false],
+        'accent_bold' => ['print_accent_bold', false],
+        'accent_italic' => ['print_accent_italic', false],
+        'details_bold' => ['print_details_bold', false],
+        'details_italic' => ['print_details_italic', false],
     ];
+
+    private const SWITCHES = ['qr', 'hashtag', ...self::TEXT_STYLES];
+
+    private const TEXT_STYLES = ['names_bold', 'names_italic', 'accent_bold', 'accent_italic', 'details_bold', 'details_italic'];
+
+    private const SIZES = ['text_size', 'names_size'];
+
+    private const COLORS = ['accent_color', 'names_color', 'details_color'];
 
     public function edit(): Response
     {
         return Inertia::render('Admin/Print', [
             'papers' => collect(self::PAPERS)->map(fn (array $paper, string $key) => ['key' => $key] + $paper)->values(),
-            'limits' => ['min' => self::MIN_MM, 'max' => self::MAX_MM],
+            'limits' => ['min' => self::MIN_MM, 'max' => self::MAX_MM, 'minSize' => self::MIN_SIZE, 'maxSize' => self::MAX_SIZE],
+            'defaults' => collect(self::SETTINGS)->map(fn (array $setting) => $setting[1]),
             'options' => $this->saved(),
             'card' => $this->card(),
         ]);
@@ -61,10 +88,10 @@ class PrintController extends Controller
     /** Remember the paper and options for next time. */
     public function update(Request $request): RedirectResponse
     {
-        $options = $this->resolve($request->all());
+        $options = $this->resolve(array_merge($this->saved(), $request->all())); // anything not sent keeps its saved value
 
-        foreach (self::SETTINGS as $field => $key) {
-            $value = $field === 'qr' ? ($options['qr'] ? '1' : '0') : (string) ($options[$field] ?? '');
+        foreach (self::SETTINGS as $field => [$key]) {
+            $value = in_array($field, self::SWITCHES, true) ? ($options[$field] ? '1' : '0') : (string) ($options[$field] ?? '');
             Setting::updateOrCreate(['key' => $key], [
                 'group' => 'print', 'label' => 'Print: '.$field, 'type' => 'text', 'value' => $value, 'sort_order' => 900,
             ]);
@@ -87,7 +114,9 @@ class PrintController extends Controller
                 'height_mm' => $options['height_mm'],
                 'background' => $options['background'],
                 'qr' => $options['qr'],
+                'hashtag' => $options['hashtag'],
             ],
+            'look' => collect($options)->only([...self::SIZES, ...self::COLORS, ...self::TEXT_STYLES]),
             'filename' => sprintf('Save the Date - %s & %s - %s.pdf', $card['bride'], $card['groom'], $options['label']),
         ]);
     }
@@ -106,7 +135,13 @@ class PrintController extends Controller
             'height' => ['nullable', 'required_if:paper,custom', 'numeric', 'gt:0'],
             'unit' => ['required', Rule::in(['mm', 'in'])],
             'background' => ['required', Rule::in(['cream', 'white'])],
-            'qr' => ['required', 'boolean'],
+            ...collect(self::SWITCHES)->mapWithKeys(fn (string $field) => [$field => ['required', 'boolean']]),
+            ...collect(self::SIZES)->mapWithKeys(fn (string $field) => [
+                $field => ['required', 'integer', 'between:'.self::MIN_SIZE.','.self::MAX_SIZE],
+            ]),
+            ...collect(self::COLORS)->mapWithKeys(fn (string $field) => [
+                $field => ['required', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            ]),
         ])->validate();
 
         if ($data['paper'] === 'custom') {
@@ -130,23 +165,33 @@ class PrintController extends Controller
             $label = $paper['label'].($data['orientation'] === 'landscape' ? ' landscape' : '');
         }
 
-        return array_merge($data, ['qr' => (bool) $data['qr'], 'width_mm' => $width, 'height_mm' => $height, 'label' => $label]);
+        return array_merge($data, [
+            ...collect(self::SWITCHES)->mapWithKeys(fn (string $field) => [$field => (bool) $data[$field]]),
+            'text_size' => (int) $data['text_size'],
+            'names_size' => (int) $data['names_size'],
+            ...collect(self::COLORS)->mapWithKeys(fn (string $field) => [$field => strtolower($data[$field])]),
+            'width_mm' => $width,
+            'height_mm' => $height,
+            'label' => $label,
+        ]);
     }
 
-    /** @return array<string, mixed> The saved choices, or the defaults (A5 portrait, cream, with QR). */
+    /** @return array<string, mixed> The saved choices, or the defaults (A5 portrait, cream, QR and hashtag, designed sizes and colours). */
     private function saved(): array
     {
         $values = Setting::where('group', 'print')->pluck('value', 'key');
 
-        return [
-            'paper' => $values['print_paper'] ?? 'A5',
-            'orientation' => $values['print_orientation'] ?? 'portrait',
-            'width' => $values['print_custom_width'] ?? '5',
-            'height' => $values['print_custom_height'] ?? '7',
-            'unit' => $values['print_custom_unit'] ?? 'in',
-            'background' => $values['print_background'] ?? 'cream',
-            'qr' => ($values['print_qr'] ?? '1') === '1',
-        ];
+        return collect(self::SETTINGS)->map(function (array $setting, string $field) use ($values) {
+            [$key, $default] = $setting;
+            $value = $values[$key] ?? null;
+
+            return match (true) {
+                $value === null => $default,
+                in_array($field, self::SWITCHES, true) => $value === '1',
+                in_array($field, self::SIZES, true) => (int) $value,
+                default => $value,
+            };
+        })->all();
     }
 
     /** @return array<string, mixed> Everything printed on the card, from Site Settings and Ceremony & Reception. */
@@ -181,6 +226,7 @@ class PrintController extends Controller
             'reception' => $reception && $reception['venue'] !== $ceremony['venue'] ? $reception : null,
             'city' => $text('city_line'),
             'deadline' => filled($settings['rsvp_deadline'] ?? null) ? Carbon::parse($settings['rsvp_deadline'])->format('F j, Y') : null,
+            'hashtag' => $text('hashtag'),
             'siteUrl' => Setting::siteUrl(),
             'decorImage' => $text('decor_corner_image') ?: null,
         ];

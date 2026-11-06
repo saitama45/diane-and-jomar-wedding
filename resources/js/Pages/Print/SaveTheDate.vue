@@ -11,7 +11,8 @@ import { cardToPdf, designSize, printDpi } from '@/lib/pdf';
 
 const props = defineProps({
     card: { type: Object, required: true },
-    paper: { type: Object, required: true }, // label, width_mm, height_mm, background, qr
+    paper: { type: Object, required: true }, // label, width_mm, height_mm, background, qr, hashtag
+    look: { type: Object, default: () => ({}) }, // text sizes and colours
     filename: { type: String, required: true },
 });
 
@@ -78,6 +79,6 @@ onBeforeUnmount(() => pdfUrl.value && URL.revokeObjectURL(pdfUrl.value));
 
     <!-- The card the PDF is drawn from, kept off screen at its full design size. -->
     <div class="pointer-events-none fixed left-[-30000px] top-0" aria-hidden="true">
-        <SaveTheDateCard ref="cardRef" :card="card" :width="size.width" :height="size.height" :background="paper.background" :qr="paper.qr" />
+        <SaveTheDateCard ref="cardRef" :card="card" :width="size.width" :height="size.height" :background="paper.background" :qr="paper.qr" :hashtag="paper.hashtag" :look="look" />
     </div>
 </template>

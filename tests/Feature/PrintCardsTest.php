@@ -70,6 +70,35 @@ class PrintCardsTest extends TestCase
             ->assertSessionHasErrors('paper');
     }
 
+    public function test_the_card_shows_the_hashtag_and_takes_text_sizes_and_colours(): void
+    {
+        $this->actingAs(User::first());
+
+        $this->get('/admin/print')->assertInertia(fn (Assert $page) => $page
+            ->where('card.hashtag', '#DianeAndJomarForever')
+            ->where('options.hashtag', true)
+            ->where('options.text_size', 100)
+            ->where('options.names_color', '#a9714b')
+            ->where('defaults.accent_color', '#8e3b1f')
+            ->where('options.accent_bold', false));
+
+        $query = http_build_query(['paper' => 'A6', 'hashtag' => 0, 'text_size' => 120, 'names_size' => 140, 'accent_color' => '#1F3A5B', 'names_color' => '#222222', 'details_color' => '#333333', 'names_bold' => 1, 'details_italic' => 1]);
+        $this->get("/admin/print/save-the-date?{$query}")->assertInertia(fn (Assert $page) => $page
+            ->where('paper.hashtag', false)
+            ->where('look.text_size', 120)
+            ->where('look.names_size', 140)
+            ->where('look.accent_color', '#1f3a5b')
+            ->where('look.names_bold', true)
+            ->where('look.names_italic', false)
+            ->where('look.details_italic', true));
+
+        $this->put('/admin/print', ['text_size' => 125, 'names_color' => '#4a3226'])->assertSessionHasNoErrors();
+        $this->assertSame('125', Setting::where('key', 'print_text_size')->value('value'));
+        $this->assertSame('A5', Setting::where('key', 'print_paper')->value('value')); // untouched choices keep their value
+
+        $this->put('/admin/print', ['text_size' => 300, 'accent_color' => 'red'])->assertSessionHasErrors(['text_size', 'accent_color']);
+    }
+
     public function test_guests_cannot_print(): void
     {
         $this->get('/admin/print')->assertRedirect('/admin/login');

@@ -11,10 +11,36 @@ defineOptions({ layout: AdminLayout });
 
 const props = defineProps({
     papers: { type: Array, required: true }, // presets: key, label, note, width, height (mm, portrait)
-    limits: { type: Object, required: true }, // custom size limits in mm
+    limits: { type: Object, required: true }, // custom size limits in mm, text size limits in %
+    defaults: { type: Object, required: true }, // the designed sizes and colours, for "Reset"
     options: { type: Object, required: true }, // the saved choices
     card: { type: Object, required: true },
 });
+
+// Text colours: the theme's browns and golds, plus any colour from the picker.
+const SWATCHES = [
+    { name: 'Rust', hex: '#8e3b1f' },
+    { name: 'Terracotta', hex: '#c2714f' },
+    { name: 'Caramel', hex: '#a9714b' },
+    { name: 'Gold', hex: '#b9873f' },
+    { name: 'Cocoa', hex: '#7b5539' },
+    { name: 'Espresso', hex: '#4a3226' },
+    { name: 'Charcoal', hex: '#2f2a28' },
+];
+
+const COLOR_FIELDS = [
+    { key: 'names_color', group: 'names', label: 'Names', note: 'Your names and the script lines' },
+    { key: 'accent_color', group: 'accent', label: 'Accents', note: 'Heading, monogram, day, RSVP and hashtag' },
+    { key: 'details_color', group: 'details', label: 'Details', note: 'Date, venues, addresses and small lines' },
+];
+
+// Bold / italic switches per text group (off = the designed mix of weights and styles).
+const STYLE_FIELDS = COLOR_FIELDS.flatMap(({ group }) => [`${group}_bold`, `${group}_italic`]);
+
+const SIZE_FIELDS = [
+    { key: 'names_size', label: 'Names size' },
+    { key: 'text_size', label: 'Text size', note: 'Everything else on the card' },
+];
 
 provide('decorImage', computed(() => props.card.decorImage));
 
@@ -48,6 +74,22 @@ const describe = computed(() => {
     return `${Math.round(width * 10) / 10} × ${Math.round(height * 10) / 10} mm  ·  ${inches(width)} × ${inches(height)} in`;
 });
 
+const look = computed(() => ({
+    text_size: Number(form.text_size),
+    names_size: Number(form.names_size),
+    accent_color: form.accent_color,
+    names_color: form.names_color,
+    details_color: form.details_color,
+    ...Object.fromEntries(STYLE_FIELDS.map((key) => [key, !!form[key]])),
+}));
+
+const LOOK_KEYS = [...SIZE_FIELDS.map((f) => f.key), ...COLOR_FIELDS.map((f) => f.key), ...STYLE_FIELDS];
+const lookChanged = computed(() => LOOK_KEYS.some((key) => String(form[key]).toLowerCase() !== String(props.defaults[key]).toLowerCase()));
+
+function resetLook() {
+    LOOK_KEYS.forEach((key) => (form[key] = props.defaults[key]));
+}
+
 // Opens the PDF in a new tab straight away (inside the click, so it is not blocked) and remembers the choices.
 function openPdf() {
     if (sizeError.value) return;
@@ -59,6 +101,8 @@ function openPdf() {
         unit: form.unit,
         background: form.background,
         qr: form.qr ? '1' : '0',
+        hashtag: form.hashtag ? '1' : '0',
+        ...Object.fromEntries(Object.entries(look.value).map(([key, value]) => [key, typeof value === 'boolean' ? (value ? '1' : '0') : value])),
     });
     window.open(`/admin/print/save-the-date?${query}`, '_blank');
     form.put('/admin/print', { preserveScroll: true });
@@ -161,6 +205,91 @@ function openPdf() {
                         <p class="text-xs text-ink-soft">Guests scan it to open your website and reply. It points to {{ card.siteUrl }}.</p>
                     </div>
                 </div>
+
+                <div class="mt-4 flex items-start gap-3">
+                    <ToggleSwitch v-model="form.hashtag" label="Wedding hashtag" :disabled="!card.hashtag" />
+                    <div>
+                        <p class="text-sm font-medium text-ink">Wedding hashtag <span v-if="card.hashtag" class="font-normal text-ink-soft">· {{ card.hashtag }}</span></p>
+                        <p class="text-xs text-ink-soft">
+                            {{ card.hashtag ? 'Printed at the bottom of the card.' : 'No hashtag yet: add one in Site Settings → The Couple → Wedding hashtag.' }}
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Text size and colour -->
+            <section class="rounded-2xl bg-white p-5 ring-1 ring-ink/10">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <h2 class="font-serif text-2xl text-ink">Text</h2>
+                    <button v-if="lookChanged" type="button" class="text-sm text-ink-soft underline-offset-4 hover:text-rust hover:underline" @click="resetLook">
+                        Reset text style
+                    </button>
+                </div>
+
+                <div class="mt-4 grid gap-5 sm:grid-cols-2">
+                    <div v-for="field in SIZE_FIELDS" :key="field.key">
+                        <div class="flex items-baseline justify-between gap-3">
+                            <label :for="`size-${field.key}`" class="admin-label mb-0">{{ field.label }}</label>
+                            <span class="text-sm tabular-nums text-ink">{{ form[field.key] }}%</span>
+                        </div>
+                        <input
+                            :id="`size-${field.key}`"
+                            v-model.number="form[field.key]"
+                            type="range"
+                            :min="limits.minSize"
+                            :max="limits.maxSize"
+                            step="5"
+                            class="mt-2 w-full accent-[#7b5539]"
+                        />
+                        <p v-if="field.note" class="text-xs text-ink-soft">{{ field.note }}</p>
+                    </div>
+                </div>
+                <p class="mt-2 text-xs text-ink-soft">If the text no longer fits the paper, the whole card shrinks a little to keep it inside.</p>
+
+                <div class="mt-6 space-y-4">
+                    <div v-for="field in COLOR_FIELDS" :key="field.key" class="flex flex-wrap items-center gap-x-4 gap-y-2">
+                        <div class="w-44">
+                            <p class="text-sm font-medium text-ink">{{ field.label }}</p>
+                            <p class="text-xs text-ink-soft">{{ field.note }}</p>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <button
+                                v-for="style in [
+                                    { key: `${field.group}_bold`, label: 'Bold', letter: 'B', class: 'font-bold' },
+                                    { key: `${field.group}_italic`, label: 'Italic', letter: 'I', class: 'italic' },
+                                ]"
+                                :key="style.key"
+                                type="button"
+                                class="grid size-8 place-items-center rounded-md font-serif text-base ring-1 transition"
+                                :class="[style.class, form[style.key] ? 'bg-ink text-paper ring-ink' : 'text-ink ring-ink/15 hover:ring-ink/40']"
+                                :aria-pressed="form[style.key] ? 'true' : 'false'"
+                                :aria-label="`${field.label}: ${style.label.toLowerCase()}`"
+                                :title="style.label"
+                                @click="form[style.key] = !form[style.key]"
+                            >
+                                {{ style.letter }}
+                            </button>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <button
+                                v-for="swatch in SWATCHES"
+                                :key="swatch.hex"
+                                type="button"
+                                class="size-7 rounded-full ring-1 ring-ink/15 transition hover:scale-110"
+                                :class="form[field.key].toLowerCase() === swatch.hex ? 'ring-2 ring-offset-2 ring-ink' : ''"
+                                :style="{ backgroundColor: swatch.hex }"
+                                :title="swatch.name"
+                                :aria-label="`${field.label}: ${swatch.name}`"
+                                @click="form[field.key] = swatch.hex"
+                            ></button>
+                            <label class="flex items-center gap-2 rounded-lg px-2 py-1 ring-1 ring-ink/10" :title="`${field.label}: any colour`">
+                                <input v-model="form[field.key]" type="color" class="size-6 cursor-pointer rounded border-0 bg-transparent p-0" :aria-label="`${field.label}: any colour`" />
+                                <span class="font-mono text-xs uppercase text-ink-soft">{{ form[field.key] }}</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <p v-for="field in [...SIZE_FIELDS, ...COLOR_FIELDS]" v-show="form.errors[field.key]" :key="`e-${field.key}`" class="mt-1 text-sm text-red-700">{{ form.errors[field.key] }}</p>
             </section>
 
             <section class="rounded-2xl bg-[#f3eadd] p-5 text-sm text-ink-soft">
@@ -181,7 +310,7 @@ function openPdf() {
                 :style="{ width: `${design.width * previewScale}px`, height: `${design.height * previewScale}px` }"
             >
                 <div class="absolute left-0 top-0 origin-top-left" :style="{ transform: `scale(${previewScale})` }">
-                    <SaveTheDateCard :card="card" :width="design.width" :height="design.height" :background="form.background" :qr="form.qr" />
+                    <SaveTheDateCard :card="card" :width="design.width" :height="design.height" :background="form.background" :qr="form.qr" :hashtag="form.hashtag" :look="look" />
                 </div>
             </div>
         </div>

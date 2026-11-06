@@ -12,8 +12,8 @@ export default defineConfig({
             refresh: true,
             fonts: [
                 bunny('Pinyon Script', { weights: [400] }),
-                bunny('Cormorant Garamond', { weights: [300, 400, 500, 600], styles: ['normal', 'italic'] }),
-                bunny('Jost', { weights: [300, 400, 500] }),
+                bunny('Cormorant Garamond', { weights: [300, 400, 500, 600, 700], styles: ['normal', 'italic'] }), // 700: bold on print cards
+                bunny('Jost', { weights: [300, 400, 500, 600], styles: ['normal', 'italic'] }),
             ],
         }),
         vue({
