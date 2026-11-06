@@ -47,6 +47,18 @@ class ContentVisibilityTest extends TestCase
             ->where('collection.section.key', 'show_attire_samples'));
     }
 
+    public function test_an_attire_picture_can_have_no_who_label(): void
+    {
+        $this->actingAs(User::first());
+
+        $this->post('/admin/content/attire', ['image' => '/storage/uploads/board.png', 'audience' => 'guests', 'wearer' => 'none', 'sort_order' => 1])
+            ->assertSessionHasNoErrors();
+        $this->assertSame('none', AttireSample::where('image', '/storage/uploads/board.png')->value('wearer'));
+
+        $this->post('/admin/content/attire', ['image' => '/storage/uploads/x.png', 'audience' => 'guests', 'wearer' => 'kids', 'sort_order' => 1])
+            ->assertSessionHasErrors('wearer');
+    }
+
     public function test_admin_hides_one_item_or_a_whole_section(): void
     {
         $this->actingAs(User::first());

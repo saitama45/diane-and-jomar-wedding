@@ -16,7 +16,8 @@ const barong = ref();
 const gown = ref();
 
 const AUDIENCES = { guests: 'Our Guests', sponsors: 'Principal Sponsors' };
-const WEARERS = { ladies: 'Ladies', gentlemen: 'Gentlemen' };
+const WEARERS = { ladies: 'Ladies', gentlemen: 'Gentlemen' }; // "none" (or anything else) shows no label
+const wearer = (sample) => WEARERS[sample?.wearer] ?? '';
 
 // Guests first (most visitors), then sponsors; the viewer pages through them in this same order.
 const sampleGroups = computed(() =>
@@ -105,14 +106,14 @@ onBeforeUnmount(() => {
                             v-reveal="{ type: 'up' }"
                             type="button"
                             class="group paper-card block p-3 text-left transition duration-500 ease-[var(--ease-film)] hover:-translate-y-1"
-                            :aria-label="`View the ${WEARERS[sample.wearer] ?? ''} outfit picture full size`"
+                            :aria-label="`View the ${wearer(sample) ? `${wearer(sample)} ` : ''}outfit picture full size`"
                             @click="open(sample)"
                         >
                             <span class="block overflow-hidden">
-                                <img :src="sample.image" :alt="`${WEARERS[sample.wearer] ?? ''} dress code`" loading="lazy" class="w-full object-cover transition duration-700 group-hover:scale-[1.03]" />
+                                <img :src="sample.image" :alt="wearer(sample) ? `${wearer(sample)} dress code` : 'Dress code'" loading="lazy" class="w-full object-cover transition duration-700 group-hover:scale-[1.03]" />
                             </span>
-                            <span class="mt-3 flex flex-wrap items-baseline justify-between gap-x-4 px-1">
-                                <span class="font-script text-3xl text-cocoa">{{ WEARERS[sample.wearer] }}</span>
+                            <span v-if="wearer(sample) || sample.caption" class="mt-3 flex flex-wrap items-baseline justify-between gap-x-4 px-1">
+                                <span v-if="wearer(sample)" class="font-script text-3xl text-cocoa">{{ wearer(sample) }}</span>
                                 <span v-if="sample.caption" class="font-serif text-base italic text-ink-soft">{{ sample.caption }}</span>
                             </span>
                         </button>
@@ -197,9 +198,9 @@ onBeforeUnmount(() => {
                 >
                     <Transition name="fade" mode="out-in">
                         <figure :key="current.id" class="flex max-h-full flex-col items-center">
-                            <img :src="current.image" :alt="`${WEARERS[current.wearer] ?? ''} dress code`" class="max-h-[80vh] w-auto max-w-full object-contain shadow-2xl" />
+                            <img :src="current.image" :alt="wearer(current) ? `${wearer(current)} dress code` : 'Dress code'" class="max-h-[80vh] w-auto max-w-full object-contain shadow-2xl" />
                             <figcaption class="mt-4 text-center text-paper">
-                                <span class="font-script text-3xl">{{ WEARERS[current.wearer] }}</span>
+                                <span v-if="wearer(current)" class="font-script text-3xl">{{ wearer(current) }}</span>
                                 <span v-if="current.caption" class="ml-3 font-serif italic text-paper/80">{{ current.caption }}</span>
                                 <span class="mt-1 block kicker text-paper/50">{{ AUDIENCES[current.audience] }} · {{ active + 1 }} / {{ ordered.length }}</span>
                             </figcaption>

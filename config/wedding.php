@@ -147,7 +147,9 @@ return [
             'fields' => [
                 ['name' => 'image', 'label' => 'Picture', 'type' => 'image', 'rules' => 'required|string|max:500', 'help' => 'JPG or PNG, up to 10 MB. A wide picture with several outfits works well.'],
                 ['name' => 'audience', 'label' => 'For', 'type' => 'select', 'rules' => 'required|in:guests,sponsors', 'options' => ['guests' => 'Our guests', 'sponsors' => 'Principal sponsors']],
-                ['name' => 'wearer', 'label' => 'Who', 'type' => 'select', 'rules' => 'required|in:ladies,gentlemen', 'options' => ['ladies' => 'Ladies', 'gentlemen' => 'Gentlemen']],
+                // "none" shows no label under the picture (for boards that already say who they are for).
+                ['name' => 'wearer', 'label' => 'Who', 'type' => 'select', 'rules' => 'required|in:ladies,gentlemen,none', 'options' => ['ladies' => 'Ladies', 'gentlemen' => 'Gentlemen', 'none' => 'None (no label on the website)'],
+                    'help' => 'Choose “None” to show the picture without a Ladies / Gentlemen label.'],
                 ['name' => 'caption', 'label' => 'Caption', 'type' => 'text', 'rules' => 'nullable|string|max:150', 'placeholder' => 'Chocolate, mocha, taupe and champagne'],
                 $sort,
             ],
