@@ -74,15 +74,15 @@ onBeforeUnmount(() => {
         <div class="mx-auto max-w-6xl px-5 md:px-8">
             <SectionTitle kicker="When &amp; Where" title="The Venue" />
 
-            <div class="mt-16 grid gap-16 md:grid-cols-2 md:gap-10 lg:gap-20">
+            <div v-if="events.length" class="mt-16 grid gap-16 md:grid-cols-2 md:gap-10 lg:gap-20">
                 <article v-for="event in events" :key="event.id" class="text-center">
-                    <div class="venue-arch arch relative mx-auto aspect-[3/4] w-full max-w-[340px] bg-linen shadow-[0_30px_60px_-30px_rgb(42_36_33/0.5)]">
+                    <div class="venue-arch arch relative mx-auto aspect-[3/4] w-full max-w-[340px] bg-linen shadow-[0_30px_60px_-30px_rgb(58_42_32/0.5)]">
                         <img v-if="event.image" :src="event.image" :alt="event.venue" loading="lazy" class="h-full w-full object-cover" />
                         <div class="absolute inset-3 rounded-t-full border border-paper/60"></div>
                     </div>
 
                     <div v-reveal="{ type: 'up', stagger: 0.1 }" class="mt-8">
-                        <p class="font-script text-5xl text-mauve">{{ event.title }}</p>
+                        <p class="font-script text-5xl text-sage">{{ event.title }}</p>
                         <p class="mt-1 font-serif text-xl italic text-ink-soft">at {{ event.time }}</p>
                         <h3 class="mt-4 font-serif text-2xl uppercase tracking-[0.15em] text-ink md:text-[1.7rem]">{{ event.venue }}</h3>
                         <p class="mt-2 text-ink-soft">{{ event.address }}</p>

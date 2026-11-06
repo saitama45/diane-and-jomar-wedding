@@ -38,6 +38,10 @@ class HomeController extends Controller
             ] : null;
         }
 
+        // Hidden content never reaches the page: a switched-off section sends an empty list,
+        // otherwise only the items still marked visible are sent.
+        $shown = fn (string $section) => ($settings[$section] ?? '1') !== '0';
+
         return Inertia::render('Home', [
             'settings' => $settings,
             'wedding' => [
@@ -52,8 +56,8 @@ class HomeController extends Controller
             ],
             'rsvpDeadline' => $deadline?->format('F j, Y'),
             'rsvpClosed' => $deadline !== null && now()->startOfDay()->gt($deadline),
-            'stories' => LoveStory::orderBy('sort_order')->orderBy('id')->get(['id', 'date_label', 'title', 'body', 'image']),
-            'events' => WeddingEvent::orderBy('sort_order')->orderBy('starts_at')->get()->map(fn (WeddingEvent $event) => [
+            'stories' => ! $shown('show_love_story') ? [] : LoveStory::visible()->orderBy('sort_order')->orderBy('id')->get(['id', 'date_label', 'title', 'body', 'image']),
+            'events' => ! $shown('show_events') ? [] : WeddingEvent::visible()->orderBy('sort_order')->orderBy('starts_at')->get()->map(fn (WeddingEvent $event) => [
                 'id' => $event->id,
                 'title' => $event->title,
                 'venue' => $event->venue,
@@ -66,15 +70,15 @@ class HomeController extends Controller
                 'embed' => 'https://maps.google.com/maps?q='.urlencode($event->mapSearch()).'&z=16&output=embed',
                 'calendar' => route('calendar', $event),
             ]),
-            'schedule' => ScheduleItem::orderBy('sort_order')->orderBy('id')->get(['id', 'time_label', 'title', 'description', 'icon']),
-            'entourage' => EntourageMember::orderBy('group_order')->orderBy('sort_order')->orderBy('id')->get()
+            'schedule' => ! $shown('show_program') ? [] : ScheduleItem::visible()->orderBy('sort_order')->orderBy('id')->get(['id', 'time_label', 'title', 'description', 'icon']),
+            'entourage' => ! $shown('show_entourage') ? [] : EntourageMember::visible()->orderBy('group_order')->orderBy('sort_order')->orderBy('id')->get()
                 ->groupBy('group_name')
                 ->map(fn ($members, $group) => ['group' => $group, 'names' => $members->pluck('name')])
                 ->values(),
-            'colors' => MotifColor::orderBy('sort_order')->orderBy('id')->get(['id', 'name', 'hex']),
-            'gallery' => GalleryPhoto::orderBy('sort_order')->orderBy('id')->get(['id', 'image', 'caption']),
-            'faqs' => Faq::orderBy('sort_order')->orderBy('id')->get(['id', 'question', 'answer']),
-            'gift' => GiftOption::orderBy('sort_order')->orderBy('id')->first(['id', 'label', 'account_name', 'account_number', 'qr_image', 'note']),
+            'colors' => ! $shown('show_motif') ? [] : MotifColor::visible()->orderBy('sort_order')->orderBy('id')->get(['id', 'name', 'hex']),
+            'gallery' => ! $shown('show_gallery') ? [] : GalleryPhoto::visible()->orderBy('sort_order')->orderBy('id')->get(['id', 'image', 'caption']),
+            'faqs' => ! $shown('show_faqs') ? [] : Faq::visible()->orderBy('sort_order')->orderBy('id')->get(['id', 'question', 'answer']),
+            'gift' => ! $shown('show_gifts') ? null : GiftOption::visible()->orderBy('sort_order')->orderBy('id')->first(['id', 'label', 'account_name', 'account_number', 'qr_image', 'note']),
             'wishes' => Rsvp::where('show_message', true)->whereNotNull('message')->latest()->take(30)->get(['id', 'name', 'message']),
             'invitation' => $invitation,
             'guestName' => $invitation['guest_name'] ?? (Str::limit(trim((string) $request->query('to')), 80, '') ?: null),

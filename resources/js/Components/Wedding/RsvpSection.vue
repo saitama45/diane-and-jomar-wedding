@@ -55,7 +55,7 @@ function celebrate() {
     const heart = confetti.shapeFromPath({
         path: 'M167 72c19-38 37-56 75-56 42 0 76 33 76 75 0 76-76 151-151 227-76-76-151-151-151-227 0-42 33-75 75-75 38 0 57 18 76 56z',
     });
-    const colors = ['#B4935E', '#DCC59B', '#EBCFC8', '#B27A7F', '#F7F2EA'];
+    const colors = ['#B9873F', '#DFBD8A', '#EBC9B0', '#C2714F', '#F5EDE1'];
     const fire = (options) =>
         confetti({ particleCount: 60, spread: 70, startVelocity: 48, ticks: 280, scalar: 1.15, colors, shapes: [heart, 'circle'], zIndex: 200, ...options });
 
@@ -88,29 +88,29 @@ onBeforeUnmount(() => ctx?.revert());
 <template>
     <section id="rsvp" ref="root" class="relative overflow-hidden bg-film py-24 text-paper md:py-32">
         <img :src="settings.rsvp_image" alt="" loading="lazy" class="rsvp-bg absolute inset-0 h-[120%] w-full -translate-y-[8%] object-cover opacity-30 grayscale" />
-        <div class="absolute inset-0 bg-gradient-to-br from-film via-film/80 to-[#2b1c1e]/90"></div>
-        <div class="light-leak -right-[10%] top-[10%] h-[50vh] w-[40vw] bg-[#ff7a5a]/25"></div>
-        <div class="light-leak -left-[10%] bottom-0 h-[40vh] w-[40vw] bg-[#c85b7a]/25 [animation-delay:-6s]"></div>
+        <div class="absolute inset-0 bg-gradient-to-br from-film via-film/80 to-[#3a2116]/90"></div>
+        <div class="light-leak -right-[10%] top-[10%] h-[50vh] w-[40vw] bg-[#e2894f]/25"></div>
+        <div class="light-leak -left-[10%] bottom-0 h-[40vh] w-[40vw] bg-[#b8562f]/25 [animation-delay:-6s]"></div>
 
         <div class="relative mx-auto grid max-w-6xl items-center gap-14 px-5 md:px-8 lg:grid-cols-[1fr_1.1fr] lg:gap-20">
             <!-- Invitation copy -->
             <div class="text-center lg:text-left">
                 <svg ref="envelope" viewBox="0 -30 120 115" class="mx-auto h-36 text-gold-light lg:mx-0" aria-hidden="true">
-                    <rect x="10" y="30" width="100" height="52" fill="#1f1a18" />
-                    <path class="env-flap-open" d="M10 30 60 2l50 28z" fill="#1f1a18" stroke="currentColor" stroke-width="1" stroke-linejoin="round" />
+                    <rect x="10" y="30" width="100" height="52" fill="#22170f" />
+                    <path class="env-flap-open" d="M10 30 60 2l50 28z" fill="#22170f" stroke="currentColor" stroke-width="1" stroke-linejoin="round" />
                     <g class="env-letter">
-                        <rect x="20" y="34" width="80" height="46" fill="#fbf8f2" />
-                        <path d="M32 46h56M32 53h40M32 60h48" stroke="#b4935e" stroke-width="1" stroke-linecap="round" />
-                        <path d="M60 74s-5-3-5-6.4a2.6 2.6 0 0 1 5-1 2.6 2.6 0 0 1 5 1C65 71 60 74 60 74z" fill="#b27a7f" />
+                        <rect x="20" y="34" width="80" height="46" fill="#fbf5ec" />
+                        <path d="M32 46h56M32 53h40M32 60h48" stroke="#b9873f" stroke-width="1" stroke-linecap="round" />
+                        <path d="M60 74s-5-3-5-6.4a2.6 2.6 0 0 1 5-1 2.6 2.6 0 0 1 5 1C65 71 60 74 60 74z" fill="#c2714f" />
                     </g>
-                    <path d="M10 30 60 62l50-32v52H10z" fill="#161312" stroke="currentColor" stroke-width="1" stroke-linejoin="round" />
+                    <path d="M10 30 60 62l50-32v52H10z" fill="#2b1d15" stroke="currentColor" stroke-width="1" stroke-linejoin="round" />
                     <path d="M10 82 48 54M110 82 72 54" stroke="currentColor" stroke-width=".6" opacity=".6" />
-                    <path class="env-flap-closed" d="M10 30 60 62l50-32z" fill="#1f1a18" stroke="currentColor" stroke-width="1" stroke-linejoin="round" />
+                    <path class="env-flap-closed" d="M10 30 60 62l50-32z" fill="#22170f" stroke="currentColor" stroke-width="1" stroke-linejoin="round" />
                 </svg>
 
                 <p v-reveal="'fade'" class="mt-8 kicker text-gold-light">{{ settings.rsvp_kicker }}</p>
                 <h2 v-reveal="{ type: 'blur', duration: 1.5 }" class="mt-2 leading-none">
-                    <span class="block font-script text-5xl text-blush md:text-6xl">Kindly</span>
+                    <span class="block font-script text-5xl text-clay md:text-6xl">Kindly</span>
                     <span class="block font-serif text-7xl font-light tracking-[0.12em] md:text-8xl">RSVP</span>
                 </h2>
 
@@ -134,7 +134,7 @@ onBeforeUnmount(() => ctx?.revert());
                         <span class="mx-auto grid size-20 place-items-center rounded-full border border-gold-light text-gold-light">
                             <LineIcon :name="thanks.attending ? 'heart' : 'envelope'" :size="34" :stroke="1" />
                         </span>
-                        <p class="mt-6 font-script text-6xl text-blush">{{ thanks.attending ? 'Thank you!' : "We'll miss you" }}</p>
+                        <p class="mt-6 font-script text-6xl text-clay">{{ thanks.attending ? 'Thank you!' : "We'll miss you" }}</p>
                         <p class="mx-auto mt-4 max-w-sm font-serif text-xl italic leading-relaxed text-paper/80">
                             <template v-if="thanks.attending">
                                 {{ thanks.name }}, we can't wait to celebrate with you — we've saved
@@ -148,7 +148,7 @@ onBeforeUnmount(() => ctx?.revert());
                     </div>
 
                     <div v-else-if="!showForm" key="closed" class="py-10 text-center">
-                        <p class="font-script text-5xl text-blush">RSVP is closed</p>
+                        <p class="font-script text-5xl text-clay">RSVP is closed</p>
                         <p class="mt-4 font-serif text-xl italic text-paper/75">For any changes, please reach out to the couple directly.</p>
                     </div>
 
@@ -164,7 +164,7 @@ onBeforeUnmount(() => ctx?.revert());
                                 class="mt-2 w-full border-0 border-b border-paper/30 bg-transparent px-0 py-2 font-serif text-2xl text-paper placeholder:text-paper/30 focus:border-gold-light focus:outline-none"
                                 placeholder="Juan Dela Cruz"
                             />
-                            <p v-if="form.errors.name" class="mt-1 text-sm text-[#ffb4a8]">{{ form.errors.name }}</p>
+                            <p v-if="form.errors.name" class="mt-1 text-sm text-[#f2c39d]">{{ form.errors.name }}</p>
                         </div>
 
                         <div>
@@ -199,11 +199,11 @@ onBeforeUnmount(() => ctx?.revert());
                                     "
                                     @click="form.attending = option.value"
                                 >
-                                    <LineIcon :name="option.icon" :size="24" :class="form.attending === option.value ? 'text-wine' : ''" />
+                                    <LineIcon :name="option.icon" :size="24" :class="form.attending === option.value ? 'text-rust' : ''" />
                                     <span class="font-serif text-lg leading-tight md:text-xl">{{ option.title }}</span>
                                 </button>
                             </div>
-                            <p v-if="form.errors.attending" class="mt-1 text-sm text-[#ffb4a8]">{{ form.errors.attending }}</p>
+                            <p v-if="form.errors.attending" class="mt-1 text-sm text-[#f2c39d]">{{ form.errors.attending }}</p>
                         </fieldset>
 
                         <Transition name="fade">

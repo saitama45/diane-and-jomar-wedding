@@ -4,6 +4,7 @@ import { Head, router, useForm } from '@inertiajs/vue3';
 import LineIcon from '@/Components/LineIcon.vue';
 import InvitationTools from '@/Components/Admin/InvitationTools.vue';
 import MediaField from '@/Components/Admin/MediaField.vue';
+import ToggleSwitch from '@/Components/Admin/ToggleSwitch.vue';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { copyText } from '@/lib/copy';
 
@@ -19,8 +20,10 @@ const props = defineProps({
 const editing = ref(null); // null = closed, 'new' or an item
 const copied = ref(null);
 const sendingId = ref(null);
+const togglingId = ref(null);
+const sectionBusy = ref(false);
 const inputType = { datetime: 'datetime-local', number: 'number', email: 'email' };
-const blank = () => Object.fromEntries(props.collection.fields.map((f) => [f.name, f.type === 'color' ? '#b4935e' : f.type === 'select' ? Object.keys(f.options)[0] : '']));
+const blank = () => Object.fromEntries(props.collection.fields.map((f) => [f.name, f.type === 'color' ? '#b9873f' : f.type === 'select' ? Object.keys(f.options)[0] : '']));
 
 const form = useForm(blank());
 const isNew = computed(() => editing.value === 'new');
@@ -46,6 +49,23 @@ function remove(item) {
     if (confirm(`Remove this ${props.collection.singular}? This cannot be undone.`)) {
         router.delete(`/admin/content/${props.collection.slug}/${item.id}`, { preserveScroll: true });
     }
+}
+
+// Hide or show content on the website without deleting it: one item, or the whole section.
+function setVisible(item, visible) {
+    router.patch(`/admin/content/${props.collection.slug}/${item.id}/visibility`, { is_active: visible }, {
+        preserveScroll: true,
+        onStart: () => (togglingId.value = item.id),
+        onFinish: () => (togglingId.value = null),
+    });
+}
+
+function setSectionVisible(visible) {
+    router.put(`/admin/content/${props.collection.slug}/section`, { visible }, {
+        preserveScroll: true,
+        onStart: () => (sectionBusy.value = true),
+        onFinish: () => (sectionBusy.value = false),
+    });
 }
 
 function sendInvite(item) {
@@ -81,10 +101,28 @@ function display(item, column) {
             <h1 class="font-serif text-4xl text-ink">{{ collection.title }}</h1>
             <p v-if="collection.description" class="mt-1 max-w-2xl text-sm text-ink-soft">{{ collection.description }}</p>
         </div>
-        <button type="button" class="admin-btn" @click="openForm()">
-            <LineIcon name="plus" :size="16" /> Add {{ collection.singular }}
-        </button>
+        <div class="flex flex-wrap items-center gap-3">
+            <div v-if="collection.section" class="flex items-center gap-3 rounded-xl bg-white px-4 py-2 ring-1 ring-ink/10">
+                <ToggleSwitch
+                    :model-value="collection.section.visible"
+                    :label="`Show ${collection.title} on the website`"
+                    :disabled="sectionBusy"
+                    @update:model-value="setSectionVisible"
+                />
+                <span class="text-sm" :class="collection.section.visible ? 'text-ink' : 'text-ink-soft'">
+                    {{ collection.section.visible ? 'Shown on the website' : 'Hidden from the website' }}
+                </span>
+            </div>
+            <button type="button" class="admin-btn" @click="openForm()">
+                <LineIcon name="plus" :size="16" /> Add {{ collection.singular }}
+            </button>
+        </div>
     </div>
+
+    <p v-if="collection.section && !collection.section.visible" class="mt-6 flex items-start gap-3 rounded-xl bg-clay/45 px-4 py-3 text-sm text-ink">
+        <LineIcon name="eye-off" :size="18" class="mt-0.5 shrink-0 text-rust" />
+        This whole section is hidden from the website. Switch it back on above; items you hid one by one stay hidden.
+    </p>
 
     <InvitationTools v-if="sharing" :sharing="sharing" :items="items" />
 
@@ -93,13 +131,27 @@ function display(item, column) {
             <table class="w-full text-left text-sm" :class="sharing ? 'min-w-[1000px]' : 'min-w-[640px]'">
                 <thead class="bg-linen/60 text-xs uppercase tracking-wider text-ink-soft">
                     <tr>
+                        <th v-if="collection.section" class="w-20 px-4 py-3 font-medium">Visible</th>
                         <th v-for="(label, column) in collection.columns" :key="column" class="px-4 py-3 font-medium">{{ label }}</th>
                         <th class="px-4 py-3"></th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="item in items" :key="item.id" class="border-t border-ink/5 hover:bg-linen/40">
-                        <td v-for="(label, column) in collection.columns" :key="column" class="px-4 py-3" :class="column === 'image' || column === 'hex' ? 'w-16' : ''">
+                        <td v-if="collection.section" class="px-4 py-3">
+                            <ToggleSwitch
+                                :model-value="item.is_active"
+                                :label="item.is_active ? 'Shown on the website. Click to hide.' : 'Hidden from the website. Click to show.'"
+                                :disabled="togglingId === item.id"
+                                @update:model-value="setVisible(item, $event)"
+                            />
+                        </td>
+                        <td
+                            v-for="(label, column) in collection.columns"
+                            :key="column"
+                            class="px-4 py-3 transition-opacity"
+                            :class="[column === 'image' || column === 'hex' ? 'w-16' : '', collection.section && !item.is_active ? 'opacity-45' : '']"
+                        >
                             <img v-if="column === 'image'" :src="item.image" alt="" class="size-12 rounded-md object-cover ring-1 ring-ink/10" />
                             <span v-else-if="column === 'hex'" class="block size-9 rounded-full ring-1 ring-ink/10" :style="{ backgroundColor: item.hex }"></span>
                             <span v-else class="line-clamp-2 text-ink">{{ display(item, column) }}</span>
@@ -135,7 +187,7 @@ function display(item, column) {
     <Teleport to="body">
         <Transition name="fade">
             <div v-if="editing" class="fixed inset-0 z-50 bg-film/50 backdrop-blur-sm" @click.self="close">
-                <form class="absolute inset-y-0 right-0 flex w-full max-w-xl flex-col bg-[#f4efe7] shadow-2xl" @submit.prevent="submit">
+                <form class="absolute inset-y-0 right-0 flex w-full max-w-xl flex-col bg-[#f3eadd] shadow-2xl" @submit.prevent="submit">
                     <header class="flex items-center justify-between border-b border-ink/10 px-6 py-5">
                         <h2 class="font-serif text-2xl text-ink">{{ isNew ? 'Add' : 'Edit' }} {{ collection.singular }}</h2>
                         <button type="button" class="grid size-10 place-items-center rounded-lg hover:bg-linen" aria-label="Close" @click="close">

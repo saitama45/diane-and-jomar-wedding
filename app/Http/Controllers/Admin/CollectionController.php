@@ -51,6 +51,11 @@ class CollectionController extends Controller
                 'columns' => $definition['columns'],
                 'copy' => $definition['copy'] ?? null,
                 'fields' => collect($definition['fields'])->map(fn ($field) => collect($field)->except('rules')->all()),
+                // Content lists can be hidden from the website as a whole section or item by item.
+                'section' => isset($definition['section']) ? [
+                    'key' => $definition['section'],
+                    'visible' => Setting::where('key', $definition['section'])->value('value') !== '0',
+                ] : null,
             ],
             'items' => $items,
             'suggestions' => $suggestions,
@@ -81,6 +86,30 @@ class CollectionController extends Controller
         return back()->with('success', ucfirst($definition['singular']).' updated.');
     }
 
+    /** Show or hide one item on the website without deleting it. */
+    public function visibility(Request $request, string $collection, int $id): RedirectResponse
+    {
+        $definition = $this->sectionDefinition($collection);
+        $visible = $request->validate(['is_active' => ['required', 'boolean']])['is_active'];
+
+        $definition['model']::findOrFail($id)->update(['is_active' => $visible]);
+
+        return back()->with('success', ucfirst($definition['singular']).($visible ? ' shown on' : ' hidden from').' the website.');
+    }
+
+    /** Show or hide the list's whole part of the website (the same switch as in Site Settings). */
+    public function section(Request $request, string $collection): RedirectResponse
+    {
+        $definition = $this->sectionDefinition($collection);
+        $visible = $request->validate(['visible' => ['required', 'boolean']])['visible'];
+
+        Setting::firstOrNew(['key' => $definition['section']], ['group' => 'sections', 'label' => $definition['title'], 'type' => 'toggle'])
+            ->fill(['value' => $visible ? '1' : '0'])
+            ->save();
+
+        return back()->with('success', $definition['title'].($visible ? ' is shown on' : ' is hidden from').' the website.');
+    }
+
     public function destroy(string $collection, int $id): RedirectResponse
     {
         $definition = $this->definition($collection);
@@ -93,6 +122,15 @@ class CollectionController extends Controller
     private function definition(string $collection): array
     {
         return config("wedding.collections.{$collection}") ?? abort(404);
+    }
+
+    /** @return array<string, mixed> A content list that can be hidden from the website. */
+    private function sectionDefinition(string $collection): array
+    {
+        $definition = $this->definition($collection);
+        abort_unless(isset($definition['section']), 404);
+
+        return $definition;
     }
 
     /** @return array<string, mixed> */

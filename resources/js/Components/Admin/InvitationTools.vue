@@ -12,6 +12,7 @@ const page = usePage();
 const address = useForm({ site_url: props.sharing.siteUrl });
 const test = useForm({ test_email: '' });
 const progress = ref(null); // { done, total, failed: [] } while emailing everyone
+const SEND_PAUSE_MS = 8000; // between emails when sending to everyone
 
 // The server may normalise the address (adds https://, drops a trailing slash).
 watch(
@@ -49,9 +50,11 @@ async function sendAll() {
     if (!queue.length || !confirm(`Email ${queue.length} ${queue.length === 1 ? 'invitation' : 'invitations'} now?`)) return;
 
     progress.value = { done: 0, total: queue.length, failed: [] };
-    for (const item of queue) {
+    for (const [i, item] of queue.entries()) {
         if (!(await post(`/admin/invitations/${item.id}/email`))) progress.value.failed.push(item.guest_name);
         progress.value.done++;
+        // A burst of near-identical emails looks like bulk mail to Gmail and to the guests' inboxes.
+        if (i < queue.length - 1) await new Promise((resolve) => setTimeout(resolve, SEND_PAUSE_MS));
     }
 }
 </script>
@@ -61,7 +64,7 @@ async function sendAll() {
         <!-- Website address -->
         <form class="admin-card p-6" @submit.prevent="saveAddress">
             <div class="flex items-center gap-3">
-                <span class="grid size-10 shrink-0 place-items-center rounded-full bg-linen text-wine"><LineIcon name="link" :size="18" /></span>
+                <span class="grid size-10 shrink-0 place-items-center rounded-full bg-linen text-rust"><LineIcon name="link" :size="18" /></span>
                 <div>
                     <h2 class="font-serif text-2xl leading-tight text-ink">Website address</h2>
                     <p class="text-xs text-ink-soft">Every invitation link and email uses this address.</p>
@@ -78,7 +81,7 @@ async function sendAll() {
             <p v-if="address.errors.site_url" class="mt-1.5 text-sm text-red-700">{{ address.errors.site_url }}</p>
             <p class="mt-3 text-xs leading-relaxed text-ink-soft">
                 Links look like
-                <a :href="`${liveUrl}/?invite=${sampleCode}`" target="_blank" class="break-all font-mono text-wine underline-offset-2 hover:underline">{{ liveUrl }}/?invite={{ sampleCode }}</a>.
+                <a :href="`${liveUrl}/?invite=${sampleCode}`" target="_blank" class="break-all font-mono text-rust underline-offset-2 hover:underline">{{ liveUrl }}/?invite={{ sampleCode }}</a>.
                 Change it any time, for example when the site moves to its own domain. Leave it empty to use this server.
             </p>
         </form>
@@ -86,7 +89,7 @@ async function sendAll() {
         <!-- Invitation email -->
         <div class="admin-card p-6">
             <div class="flex items-center gap-3">
-                <span class="grid size-10 shrink-0 place-items-center rounded-full bg-linen text-wine"><LineIcon name="envelope" :size="18" /></span>
+                <span class="grid size-10 shrink-0 place-items-center rounded-full bg-linen text-rust"><LineIcon name="envelope" :size="18" /></span>
                 <div class="min-w-0">
                     <h2 class="font-serif text-2xl leading-tight text-ink">Invitation email</h2>
                     <p class="truncate text-xs text-ink-soft">From {{ sharing.fromName }} &lt;{{ sharing.from }}&gt;</p>
@@ -115,7 +118,7 @@ async function sendAll() {
                     <div class="h-full rounded-full bg-gold transition-all duration-500" :style="{ width: `${(progress.done / progress.total) * 100}%` }"></div>
                 </div>
                 <p class="mt-1.5 text-xs text-ink-soft">
-                    {{ sending ? `Sending ${progress.done + 1} of ${progress.total}…` : `Done: ${progress.total - progress.failed.length} of ${progress.total} sent.` }}
+                    {{ sending ? `Sending ${progress.done + 1} of ${progress.total}… (a short pause between emails keeps them out of spam)` : `Done: ${progress.total - progress.failed.length} of ${progress.total} sent.` }}
                     <span v-if="progress.failed.length" class="text-red-700">Not sent: {{ progress.failed.join(', ') }}.</span>
                 </p>
             </div>

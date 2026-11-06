@@ -9,18 +9,18 @@
     --font-serif: 'Cormorant Garamond', 'Cormorant', Georgia, serif;
     --font-sans: 'Jost', ui-sans-serif, system-ui, sans-serif;
 
-    --color-paper: #f7f2ea;
-    --color-linen: #efe6d8;
-    --color-cream: #fbf8f2;
-    --color-ink: #2a2421;
-    --color-ink-soft: #6b5f57;
-    --color-film: #161312;
-    --color-rose: #b27a7f;
-    --color-blush: #ebcfc8;
-    --color-mauve: #8e6f78;
-    --color-gold: #b4935e;
-    --color-gold-light: #dcc59b;
-    --color-wine: #7b2f3b;
+    --color-paper: #f5ede1;
+    --color-linen: #ecdcc6;
+    --color-cream: #fbf5ec;
+    --color-ink: #3a2a20;
+    --color-ink-soft: #7b6453;
+    --color-film: #2b1d15;
+    --color-terracotta: #c2714f;
+    --color-clay: #ebc9b0;
+    --color-sage: #6f7d5c;
+    --color-gold: #b9873f;
+    --color-gold-light: #dfbd8a;
+    --color-rust: #8e3b1f;
 
     --ease-film: cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -46,7 +46,7 @@
     }
 
     ::selection {
-        background: var(--color-blush);
+        background: var(--color-clay);
         color: var(--color-ink);
     }
 
@@ -76,11 +76,11 @@
     }
 
     .admin-btn-ghost {
-        @apply inline-flex items-center justify-center gap-2 rounded-lg border border-ink/15 bg-white px-3.5 py-2 text-sm text-ink transition hover:border-gold hover:text-wine disabled:opacity-50;
+        @apply inline-flex items-center justify-center gap-2 rounded-lg border border-ink/15 bg-white px-3.5 py-2 text-sm text-ink transition hover:border-gold hover:text-rust disabled:opacity-50;
     }
 
     .admin-card {
-        @apply rounded-2xl bg-white shadow-[0_1px_2px_rgb(0_0_0/0.04),0_8px_24px_-12px_rgb(42_36_33/0.18)] ring-1 ring-ink/5;
+        @apply rounded-2xl bg-white shadow-[0_1px_2px_rgb(0_0_0/0.04),0_8px_24px_-12px_rgb(58_42_32/0.18)] ring-1 ring-ink/5;
     }
 }
 
@@ -95,7 +95,7 @@
 }
 
 @utility gold-foil {
-    background: linear-gradient(100deg, #9c7a45 0%, #e9d6a8 22%, #b4935e 40%, #f4e6c2 55%, #a8864f 75%, #e2cb96 100%);
+    background: linear-gradient(100deg, #9a6a2e 0%, #e8c993 22%, #b9873f 40%, #f3ddb4 55%, #a3722f 75%, #dfbd8a 100%);
     background-size: 220% 100%;
     -webkit-background-clip: text;
     background-clip: text;
@@ -184,7 +184,7 @@
         left: 0;
         right: 0;
         height: 12px;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='12'%3E%3Crect x='7' y='1' width='12' height='10' rx='2.5' fill='%23f7f2ea' fill-opacity='.92'/%3E%3C/svg%3E");
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='12'%3E%3Crect x='7' y='1' width='12' height='10' rx='2.5' fill='%23f5ede1' fill-opacity='.92'/%3E%3C/svg%3E");
         background-repeat: repeat-x;
         animation: sprockets 2.6s linear infinite;
     }
@@ -271,19 +271,19 @@
     background-color: var(--color-cream);
     background-image:
         radial-gradient(circle at 20% 10%, rgb(255 255 255 / 0.9), transparent 55%),
-        radial-gradient(circle at 90% 90%, rgb(235 207 200 / 0.18), transparent 50%);
+        radial-gradient(circle at 90% 90%, rgb(235 201 176 / 0.18), transparent 50%);
     box-shadow:
         0 1px 0 rgb(255 255 255 / 0.8) inset,
-        0 30px 60px -30px rgb(42 36 33 / 0.35),
-        0 12px 24px -16px rgb(42 36 33 / 0.25);
+        0 30px 60px -30px rgb(58 42 32 / 0.35),
+        0 12px 24px -16px rgb(58 42 32 / 0.25);
 }
 
 @utility polaroid {
     background: #fffdf9;
     padding: 0.75rem 0.75rem 3.25rem;
     box-shadow:
-        0 25px 50px -20px rgb(42 36 33 / 0.45),
-        0 8px 16px -8px rgb(42 36 33 / 0.2);
+        0 25px 50px -20px rgb(58 42 32 / 0.45),
+        0 8px 16px -8px rgb(58 42 32 / 0.2);
 }
 
 /* Washi tape strip for pinned photos and letters. */
@@ -291,7 +291,7 @@
     position: absolute;
     width: 96px;
     height: 28px;
-    background: rgb(220 197 155 / 0.55);
+    background: rgb(223 189 138 / 0.55);
     backdrop-filter: blur(1px);
     box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
     mask-image: linear-gradient(90deg, transparent 0 3px, #000 3px calc(100% - 3px), transparent 0);

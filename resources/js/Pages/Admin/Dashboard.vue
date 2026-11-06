@@ -99,7 +99,7 @@ function remove(rsvp) {
             <p class="font-medium text-ink">{{ fill }}%</p>
         </div>
         <div class="mt-3 h-2 overflow-hidden rounded-full bg-linen">
-            <div class="h-full rounded-full bg-gradient-to-r from-gold to-wine transition-all duration-1000" :style="{ width: `${fill}%` }"></div>
+            <div class="h-full rounded-full bg-gradient-to-r from-gold to-rust transition-all duration-1000" :style="{ width: `${fill}%` }"></div>
         </div>
     </div>
 

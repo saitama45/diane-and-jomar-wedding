@@ -66,8 +66,8 @@ onBeforeUnmount(() => {
                 v-reveal="{ type: 'zoom', duration: 1.4 }"
                 class="border border-white/60 bg-paper/80 px-6 py-12 text-center shadow-[0_40px_80px_-30px_rgb(0_0_0/0.6)] backdrop-blur-md md:px-14 md:py-16"
             >
-                <p class="font-script text-3xl text-mauve md:text-4xl">{{ settings.countdown_heading }}</p>
-                <h2 class="mt-3 font-serif text-4xl font-light uppercase tracking-[0.18em] text-wine md:text-6xl">
+                <p class="font-script text-3xl text-sage md:text-4xl">{{ settings.countdown_heading }}</p>
+                <h2 class="mt-3 font-serif text-4xl font-light uppercase tracking-[0.18em] text-rust md:text-6xl">
                     {{ settings.bride_name }} <span class="font-script normal-case tracking-normal text-gold">&amp;</span> {{ settings.groom_name }}
                 </h2>
 
@@ -86,7 +86,7 @@ onBeforeUnmount(() => {
                         <span v-if="u < units.length - 1" class="pt-2 font-serif text-4xl font-light text-gold md:pt-3 md:text-6xl">:</span>
                     </template>
                 </div>
-                <p v-else class="mt-10 font-script text-5xl text-wine">We're married!</p>
+                <p v-else class="mt-10 font-script text-5xl text-rust">We're married!</p>
 
                 <p class="mt-10 font-serif text-xl italic text-ink-soft">{{ wedding.weekday }}, {{ wedding.long }} · {{ wedding.time }}</p>
                 <a v-if="calendarUrl" :href="calendarUrl" class="btn mt-8 text-ink">

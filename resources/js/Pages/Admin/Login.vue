@@ -33,7 +33,7 @@ const submit = () => form.post('/admin/login', { onFinish: () => form.reset('pas
                     <input id="password" v-model="form.password" type="password" autocomplete="current-password" required class="admin-input" />
                 </div>
                 <label class="mt-5 flex items-center gap-2 text-sm text-ink-soft">
-                    <input v-model="form.remember" type="checkbox" class="size-4 accent-[#b4935e]" /> Keep me signed in
+                    <input v-model="form.remember" type="checkbox" class="size-4 accent-[#b9873f]" /> Keep me signed in
                 </label>
                 <button type="submit" class="admin-btn mt-7 w-full py-3" :disabled="form.processing">
                     <LineIcon name="logout" :size="16" class="rotate-180" /> Sign in

@@ -12,7 +12,7 @@ A one-page invitation site (`/`) plus an admin panel (`/admin`) that edits every
 
 ## Deployment: pushing to `main` deploys
 
-`.github/workflows/deploy.yml`: an Ubuntu job tests and builds the release; a Windows job writes the production `.env` from GitHub secrets/variables, runs `migrate --force` + `db:seed --force` against the production database, then syncs to the MonsterASP.NET site `site103294` with Web Deploy (`/wwwroot` holds the whole app; the root `web.config` serves `public/`). Pull requests only test and build.
+Live at https://diane-and-jomar-wedding.runasp.net (`site103294.siteasp.net` is only the Web Deploy server name and shows MonsterASP's placeholder). `.github/workflows/deploy.yml`: an Ubuntu job tests and builds the release; a Windows job writes the production `.env` from GitHub secrets/variables, runs `migrate --force` + `db:seed --force` against the production database, then syncs to the MonsterASP.NET site `site103294` with Web Deploy (`/wwwroot` holds the whole app; the root `web.config` serves `public/`). Pull requests only test and build.
 
 - Production database `db76831`: the site uses `db76831.databaseasp.net` (private network only); anything outside MonsterASP, GitHub included, must use `db76831.public.databaseasp.net`.
 - The server `.env` is rewritten on every deploy, so production configuration changes go in the workflow or GitHub secrets/variables, never on the server.
@@ -27,6 +27,8 @@ A one-page invitation site (`/`) plus an admin panel (`/admin`) that edits every
 - Background music fallback: `resources/js/lib/musicBox.js` (Web Audio, Pachelbel's Canon) — used when the `music_url` setting is empty.
 - Content model: `settings` (key/value, grouped; drives most text and photos) + list tables (love_stories, wedding_events, schedule_items, entourage_members, motif_colors, gallery_photos, faqs, gift_options) + invitations/rsvps.
 - Admin list editors are generic: add a list by adding an entry to `config/wedding.php` (fields drive both the form and validation) and a link in `resources/js/Layouts/AdminLayout.vue`.
+- Hiding content: every content list has `is_active` (`App\Models\Concerns\HasVisibility`, `visible()` scope) and a website-section switch, a `toggle` setting in the `sections` group named by `section` in `config/wedding.php`. `HomeController` sends hidden content as empty lists; `Home.vue` then drops the empty section and its menu link.
+- Theme: boho colour tokens in the `@theme` block of `resources/css/app.css` (sand, espresso, cocoa, terracotta, clay, sage, ochre `gold`, rust). The invitation email repeats them inline.
 - Dummy photos: `public/images/dummy/` (Unsplash, free licence).
 - Invitation email: `App\Mail\InvitationMail` + `resources/views/mail/invitation*.blade.php`; sent from the Invitations page by `Admin\InvitationMailController` (one request per guest, no queue worker). Preview: `/admin/invitations/email-preview`.
 

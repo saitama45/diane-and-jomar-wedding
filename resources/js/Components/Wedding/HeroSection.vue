@@ -81,9 +81,9 @@ onBeforeUnmount(() => {
             <img :src="settings.hero_image" alt="" class="hero-img h-full w-full object-cover" fetchpriority="high" />
         </div>
         <div class="absolute inset-0 bg-gradient-to-b from-film/55 via-film/20 to-film/85"></div>
-        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,rgb(22_19_18/0.7)_100%)]"></div>
+        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,rgb(43_29_21/0.7)_100%)]"></div>
         <div class="light-leak -left-[20%] -top-[10%] h-[70vh] w-[60vw] bg-[#ffb071]/45"></div>
-        <div class="light-leak -right-[15%] top-[30%] h-[55vh] w-[45vw] bg-[#ff7a8a]/30 [animation-delay:-5s]"></div>
+        <div class="light-leak -right-[15%] top-[30%] h-[55vh] w-[45vw] bg-[#e8875a]/30 [animation-delay:-5s]"></div>
 
         <!-- Camera viewfinder -->
         <div class="pointer-events-none absolute inset-x-5 bottom-5 top-20 font-mono text-[10px] tracking-[0.2em] text-paper/80 md:inset-x-10 md:bottom-10 md:top-24 md:text-[11px]" aria-hidden="true">

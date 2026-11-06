@@ -56,11 +56,11 @@ onBeforeUnmount(() => ctx?.revert());
                     <p class="mt-2 font-serif text-3xl text-ink">{{ settings.dress_sponsors_attire }}</p>
                     <dl class="mt-6 space-y-4 font-serif text-lg text-ink-soft">
                         <div>
-                            <dt class="font-script text-3xl text-mauve">Gentlemen</dt>
+                            <dt class="font-script text-3xl text-sage">Gentlemen</dt>
                             <dd>{{ settings.dress_gentlemen }}</dd>
                         </div>
                         <div>
-                            <dt class="font-script text-3xl text-mauve">Ladies</dt>
+                            <dt class="font-script text-3xl text-sage">Ladies</dt>
                             <dd>{{ settings.dress_ladies }}</dd>
                         </div>
                     </dl>
@@ -90,7 +90,7 @@ onBeforeUnmount(() => ctx?.revert());
                 <ul class="swatches mt-10 flex flex-wrap justify-center gap-6 md:gap-10">
                     <li v-for="color in colors" :key="color.id" class="swatch group w-20 md:w-24">
                         <span
-                            class="relative mx-auto block size-16 rounded-full shadow-[inset_0_-6px_12px_rgb(0_0_0/0.12),0_12px_24px_-10px_rgb(42_36_33/0.45)] ring-1 ring-ink/10 transition duration-500 ease-[var(--ease-film)] group-hover:-translate-y-2 md:size-20"
+                            class="relative mx-auto block size-16 rounded-full shadow-[inset_0_-6px_12px_rgb(0_0_0/0.12),0_12px_24px_-10px_rgb(58_42_32/0.45)] ring-1 ring-ink/10 transition duration-500 ease-[var(--ease-film)] group-hover:-translate-y-2 md:size-20"
                             :style="{ backgroundColor: color.hex }"
                         >
                             <span class="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_30%_25%,rgb(255_255_255/0.55),transparent_45%)]"></span>

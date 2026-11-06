@@ -219,11 +219,22 @@ class WeddingContentSeeder extends Seeder
             ['site', 'footer_note', 'Footer note', 'text', 'Made with love for our family and friends.', null],
             ['site', 'site_url', 'Public website address', 'url', '', 'The address guests open, e.g. https://dianeandjomar.com. Invitation links and emails use it. Leave empty to use this server’s address.'],
 
-            ['email', 'invite_email_subject', 'Email subject', 'text', "You're invited to the wedding of {couple}", 'Use {couple}, {date} and {guest}.'],
+            ['email', 'invite_email_subject', 'Email subject', 'text', 'Wedding invitation for {guest} from {couple}', 'Use {couple}, {date} and {guest}. A subject with the guest’s name looks personal, not like bulk mail.'],
             ['email', 'invite_email_message', 'Email message', 'textarea',
                 'We would be honored to have you with us as we begin our forever. Your personal invitation has all the details — the ceremony, the reception, and everything in between.',
                 'Use {guest}, {seats} and {deadline}.'],
             ['email', 'invite_email_image', 'Email photo', 'image', self::IMG.'cover.jpg', 'A landscape photo works best. It is attached to the email, so it shows even before the site is online.'],
+            ['email', 'invite_email_from_name', 'Sender name', 'text', '', 'The name guests see in their inbox. Leave empty to use your names, e.g. “Diane & Jomar”. A real name is less likely to land in spam than “Admin”.'],
+            ['email', 'invite_email_reply_to', 'Reply-to email', 'email', '', 'Optional: a personal email you read. Guests who reply reach you, and replies teach their inbox that your emails are wanted.'],
+
+            ['sections', 'show_love_story', 'Love story chapters', 'toggle', '1', 'The story reel below the love letter.'],
+            ['sections', 'show_events', 'Ceremony & reception', 'toggle', '1', 'The venues and the map, and the “Save to calendar” buttons.'],
+            ['sections', 'show_program', 'Order of the day', 'toggle', '1', null],
+            ['sections', 'show_entourage', 'Entourage', 'toggle', '1', null],
+            ['sections', 'show_motif', 'Motif colors', 'toggle', '1', 'The color swatches in the dress code.'],
+            ['sections', 'show_gallery', 'Gallery', 'toggle', '1', 'Also the photo film strips across the page.'],
+            ['sections', 'show_gifts', 'Gift registry', 'toggle', '1', null],
+            ['sections', 'show_faqs', 'FAQs', 'toggle', '1', null],
         ];
 
         foreach ($settings as $i => [$group, $key, $label, $type, $value, $help]) {

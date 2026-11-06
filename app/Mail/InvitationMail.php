@@ -7,8 +7,10 @@ use App\Models\Setting;
 use App\Models\WeddingEvent;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Address;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
+use Illuminate\Mail\Mailables\Headers;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
@@ -31,7 +33,34 @@ class InvitationMail extends Mailable
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: ($this->isTest ? '[Test] ' : '').$this->subjectLine());
+        return new Envelope(
+            // Always the authenticated Gmail address, so SPF/DKIM/DMARC stay aligned; only the display name
+            // changes, because a real name ("Diane & Jomar") reads as personal mail, unlike "Admin Mail".
+            from: new Address((string) config('mail.from.address'), $this->senderName()),
+            replyTo: $this->replyToAddress() ? [new Address($this->replyToAddress(), $this->senderName())] : [],
+            subject: ($this->isTest ? '[Test] ' : '').$this->subjectLine(),
+        );
+    }
+
+    public function headers(): Headers
+    {
+        // Inbox providers then offer "Unsubscribe" instead of leaving "Report spam" as the only way out;
+        // spam reports are what hurt a sender most. Its absence was the only deduction on mail-tester.com.
+        $address = $this->replyToAddress() ?? (string) config('mail.from.address');
+
+        return new Headers(text: ['List-Unsubscribe' => "<mailto:{$address}?subject=Unsubscribe>"]);
+    }
+
+    private function replyToAddress(): ?string
+    {
+        $address = trim((string) ($this->settings['invite_email_reply_to'] ?? ''));
+
+        return filter_var($address, FILTER_VALIDATE_EMAIL) ? $address : null;
+    }
+
+    private function senderName(): string
+    {
+        return trim((string) ($this->settings['invite_email_from_name'] ?? '')) ?: ($this->couple() ?: (string) config('mail.from.name'));
     }
 
     public function content(): Content

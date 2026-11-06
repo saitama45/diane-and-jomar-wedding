@@ -80,9 +80,9 @@ function open() {
         <div ref="scene" class="absolute inset-0 bg-film">
             <img :src="settings.cover_image" alt="" class="ig-bg absolute inset-0 h-full w-full object-cover opacity-55" />
             <div class="absolute inset-0 bg-gradient-to-b from-film/80 via-film/25 to-film/90"></div>
-            <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_35%,rgb(22_19_18/0.85)_100%)]"></div>
+            <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_35%,rgb(43_29_21/0.85)_100%)]"></div>
             <div class="light-leak -left-1/4 top-0 h-[60vh] w-[70vw] bg-[#ff9a5a]/60"></div>
-            <div class="light-leak -right-1/4 bottom-0 h-[50vh] w-[60vw] bg-[#ff5f7e]/40 [animation-delay:-7s]"></div>
+            <div class="light-leak -right-1/4 bottom-0 h-[50vh] w-[60vw] bg-[#e0704a]/40 [animation-delay:-7s]"></div>
 
             <!-- Frame corners -->
             <span class="ig-corner absolute left-5 top-5 h-10 w-10 border-l border-t border-paper/40 md:left-10 md:top-10"></span>
@@ -131,15 +131,15 @@ function open() {
         </div>
 
         <!-- Projector countdown leader -->
-        <div ref="leader" class="absolute inset-0 hidden place-items-center overflow-hidden bg-[#cfc2ab] text-ink">
-            <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,rgb(22_19_18/0.75)_100%)]"></div>
+        <div ref="leader" class="absolute inset-0 hidden place-items-center overflow-hidden bg-[#d2bc9c] text-ink">
+            <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,rgb(43_29_21/0.75)_100%)]"></div>
             <div
                 ref="sweep"
                 class="absolute aspect-square w-[min(78vw,78vh)] rounded-full [--sweep:0deg]"
-                style="background: conic-gradient(rgb(42 36 33 / 0.5) var(--sweep), transparent var(--sweep))"
+                style="background: conic-gradient(rgb(58 42 32 / 0.5) var(--sweep), transparent var(--sweep))"
             ></div>
             <svg class="absolute aspect-square w-[min(78vw,78vh)]" viewBox="0 0 400 400" aria-hidden="true">
-                <g fill="none" stroke="#2a2421" stroke-opacity="0.85">
+                <g fill="none" stroke="#3a2a20" stroke-opacity="0.85">
                     <circle cx="200" cy="200" r="196" stroke-width="2.5" />
                     <circle cx="200" cy="200" r="168" stroke-width="1.5" />
                 </g>

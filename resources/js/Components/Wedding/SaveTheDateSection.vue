@@ -38,7 +38,7 @@ function play() {
         <div class="mx-auto grid max-w-6xl items-center gap-14 px-5 md:px-8 lg:grid-cols-2 lg:gap-16">
             <!-- Save-the-date card -->
             <div v-reveal="{ type: 'left', duration: 1.4 }" class="relative mx-auto w-full max-w-md">
-                <div class="relative overflow-hidden bg-film px-8 py-14 text-center text-paper shadow-[0_40px_80px_-30px_rgb(22_19_18/0.7)] md:px-12 md:py-16">
+                <div class="relative overflow-hidden bg-film px-8 py-14 text-center text-paper shadow-[0_40px_80px_-30px_rgb(43_29_21/0.7)] md:px-12 md:py-16">
                     <img :src="settings.cover_image" alt="" loading="lazy" class="absolute inset-0 h-full w-full object-cover opacity-35" />
                     <div class="absolute inset-0 bg-gradient-to-b from-film/40 to-film/80"></div>
                     <div class="absolute inset-3 border border-gold-light/40"></div>
@@ -64,7 +64,7 @@ function play() {
             <div v-reveal="{ type: 'right', duration: 1.4 }">
                 <SectionTitle kicker="Save-the-date · Now showing" title="Our Little Film" class="lg:text-left lg:[&_div]:justify-start" />
 
-                <div class="film-strip mt-10 px-3 shadow-[0_30px_60px_-30px_rgb(22_19_18/0.6)]">
+                <div class="film-strip mt-10 px-3 shadow-[0_30px_60px_-30px_rgb(43_29_21/0.6)]">
                     <div class="relative aspect-video overflow-hidden bg-black">
                         <template v-if="playing && video">
                             <iframe

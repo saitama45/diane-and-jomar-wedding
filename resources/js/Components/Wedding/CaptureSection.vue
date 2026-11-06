@@ -18,7 +18,7 @@ let ctx;
 
 onMounted(async () => {
     if (props.settings.capture_upload_url) {
-        qr.value = await QRCode.toDataURL(props.settings.capture_upload_url, { margin: 0, width: 360, color: { dark: '#2a2421', light: '#00000000' } });
+        qr.value = await QRCode.toDataURL(props.settings.capture_upload_url, { margin: 0, width: 360, color: { dark: '#3a2a20', light: '#00000000' } });
         await nextTick(); // the QR <img> must exist before it is animated
     }
 
@@ -51,7 +51,7 @@ async function copyHashtag() {
             <h2 v-reveal="{ type: 'blur', duration: 1.5 }" class="relative inline-block font-script leading-none text-ink">
                 <span class="block text-6xl md:text-7xl">Capture</span>
                 <span class="kicker my-1 block text-ink-soft">the</span>
-                <span class="inline-flex items-center gap-2 text-6xl text-rose md:text-7xl">Love <LineIcon name="heart" :size="34" :stroke="1" /></span>
+                <span class="inline-flex items-center gap-2 text-6xl text-terracotta md:text-7xl">Love <LineIcon name="heart" :size="34" :stroke="1" /></span>
             </h2>
 
             <div class="relative mx-auto mt-10 w-full max-w-md">

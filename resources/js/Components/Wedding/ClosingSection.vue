@@ -15,7 +15,7 @@ const initials = computed(() => [props.settings.bride_name, props.settings.groom
 <template>
     <section class="relative overflow-hidden bg-cream pt-24 md:pt-32">
         <div class="mx-auto grid max-w-6xl items-center gap-12 px-5 md:px-8 lg:grid-cols-2 lg:gap-20">
-            <div v-reveal="{ type: 'left', duration: 1.4 }" class="film-strip px-3 shadow-[0_30px_60px_-30px_rgb(22_19_18/0.6)]">
+            <div v-reveal="{ type: 'left', duration: 1.4 }" class="film-strip px-3 shadow-[0_30px_60px_-30px_rgb(43_29_21/0.6)]">
                 <img :src="settings.closing_image" alt="" loading="lazy" class="aspect-[4/5] w-full object-cover grayscale transition duration-[1.5s] hover:grayscale-0" />
             </div>
 
@@ -24,14 +24,14 @@ const initials = computed(() => [props.settings.bride_name, props.settings.groom
                     {{ settings.closing_title }}
                 </h2>
                 <p v-reveal="'up'" class="mt-8 font-serif text-xl italic leading-relaxed text-ink-soft">{{ settings.closing_message }}</p>
-                <p v-reveal="'fade'" class="mt-10 font-script text-5xl text-wine md:text-6xl">
+                <p v-reveal="'fade'" class="mt-10 font-script text-5xl text-rust md:text-6xl">
                     {{ settings.bride_name }} &amp; {{ settings.groom_name }}
                 </p>
                 <p v-reveal="'fade'" class="mt-3 kicker text-gold">{{ settings.hashtag }}</p>
             </div>
         </div>
 
-        <FilmStrip :images="photos" class="mt-24" :duration="90" height="h-20 md:h-28" />
+        <FilmStrip v-if="photos.length" :images="photos" class="mt-24" :duration="90" height="h-20 md:h-28" />
 
         <footer class="bg-film px-5 pb-12 pt-14 text-center text-paper">
             <button type="button" class="mx-auto grid size-20 place-items-center rounded-full border border-gold-light/50 font-serif text-2xl text-gold-light transition hover:border-gold-light" aria-label="Back to top" @click="scrollToTarget(0)">

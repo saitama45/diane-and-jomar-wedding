@@ -34,7 +34,7 @@ onBeforeUnmount(() => ctx?.revert());
 <template>
     <section id="entourage" ref="root" class="relative overflow-hidden bg-cream py-24 md:py-32">
         <!-- Title inside a strip of film -->
-        <div class="ent-banner film-strip mx-auto max-w-5xl -rotate-1 px-3 shadow-[0_30px_50px_-30px_rgb(22_19_18/0.6)]">
+        <div class="ent-banner film-strip mx-auto max-w-5xl -rotate-1 px-3 shadow-[0_30px_50px_-30px_rgb(43_29_21/0.6)]">
             <div class="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_3fr_1fr]">
                 <img v-if="photos[0]" :src="photos[0]" alt="" loading="lazy" class="hidden h-32 w-full object-cover opacity-60 grayscale sm:block" />
                 <div class="grid h-24 place-items-center bg-paper sm:h-32">
@@ -45,7 +45,7 @@ onBeforeUnmount(() => ctx?.revert());
         </div>
 
         <div class="mx-auto max-w-5xl px-5 md:px-8">
-            <p v-reveal="'blur'" class="mt-14 text-center font-script text-4xl text-mauve md:text-5xl">{{ settings.families_line }}</p>
+            <p v-reveal="'blur'" class="mt-14 text-center font-script text-4xl text-sage md:text-5xl">{{ settings.families_line }}</p>
 
             <div class="mt-14 flex flex-wrap justify-center gap-y-14">
                 <div

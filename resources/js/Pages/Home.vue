@@ -49,6 +49,16 @@ const music = ref();
 const title = computed(() => `${props.settings.bride_name} & ${props.settings.groom_name} — ${props.wedding.long}`);
 const photos = computed(() => props.gallery.map((photo) => photo.image));
 
+// Content the admin hid arrives as empty lists, so those sections (and their menu links) disappear.
+const hasDetails = computed(() => props.events.length > 0 || props.schedule.length > 0);
+const hiddenLinks = computed(() => [
+    !hasDetails.value && '#details',
+    !props.entourage.length && '#entourage',
+    !props.gallery.length && '#gallery',
+    !props.gift && '#gifts',
+    !props.faqs.length && '#faq',
+].filter(Boolean));
+
 onMounted(() => {
     startSmoothScroll();
     lockScroll(true);
@@ -81,16 +91,16 @@ async function onReveal() {
     <div class="grain" aria-hidden="true"></div>
     <PetalField v-if="revealed" />
     <ScrollProgress v-if="revealed" />
-    <SiteNav :settings="settings" :visible="revealed" />
+    <SiteNav :settings="settings" :visible="revealed" :hidden-links="hiddenLinks" />
 
     <main>
         <HeroSection :settings="settings" :wedding="wedding" :active="revealed" />
-        <FilmStrip :images="photos" :tilt="-1.5" class="-mt-6 relative z-10" :duration="80" />
+        <FilmStrip v-if="photos.length" :images="photos" :tilt="-1.5" class="-mt-6 relative z-10" :duration="80" />
         <StorySection :settings="settings" :stories="stories" />
         <CountdownSection :settings="settings" :wedding="wedding" :calendar-url="events[0]?.calendar" />
         <SaveTheDateSection :settings="settings" :wedding="wedding" :first-event="events[0]" />
-        <VenueSection :events="events" :schedule="schedule" />
-        <EntourageSection :settings="settings" :entourage="entourage" :photos="photos.slice(2, 4)" />
+        <VenueSection v-if="hasDetails" :events="events" :schedule="schedule" />
+        <EntourageSection v-if="entourage.length" :settings="settings" :entourage="entourage" :photos="photos.slice(2, 4)" />
         <DressCodeSection :settings="settings" :colors="colors" />
         <RsvpSection
             :settings="settings"
@@ -99,8 +109,8 @@ async function onReveal() {
             :deadline="rsvpDeadline"
             :closed="rsvpClosed"
         />
-        <GallerySection :settings="settings" :photos="gallery" />
-        <GiftSection :settings="settings" :gift="gift" />
+        <GallerySection v-if="gallery.length" :settings="settings" :photos="gallery" />
+        <GiftSection v-if="gift" :settings="settings" :gift="gift" />
         <CaptureSection :settings="settings" />
         <WishesSection :wishes="wishes" />
         <FaqSection :faqs="faqs" />

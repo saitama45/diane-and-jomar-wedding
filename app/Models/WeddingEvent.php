@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasVisibility;
 use Illuminate\Database\Eloquent\Model;
 
 class WeddingEvent extends Model
 {
+    use HasVisibility;
+
     protected $guarded = ['id'];
 
     protected function casts(): array

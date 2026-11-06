@@ -93,7 +93,7 @@ onBeforeUnmount(() => ctx?.revert());
                     <span class="tape -top-3 left-8 -rotate-6"></span>
                     <span class="tape -top-3 right-8 rotate-6"></span>
 
-                    <p class="font-script text-3xl text-mauve md:text-4xl">Dearest family &amp; friends,</p>
+                    <p class="font-script text-3xl text-sage md:text-4xl">Dearest family &amp; friends,</p>
                     <div v-reveal="{ type: 'blur', stagger: 0.25, start: 'top 75%' }" class="mt-6 space-y-5">
                         <p v-for="(paragraph, i) in paragraphs" :key="i" class="font-serif text-lg italic leading-relaxed text-ink-soft md:text-xl">
                             {{ paragraph }}
@@ -101,7 +101,7 @@ onBeforeUnmount(() => ctx?.revert());
                     </div>
                     <div v-reveal="{ type: 'fade', delay: 0.4 }" class="mt-10 text-right">
                         <p class="font-serif text-lg italic text-ink-soft">{{ settings.story_signature }}</p>
-                        <p class="font-script text-4xl text-wine md:text-5xl">{{ settings.bride_name }} &amp; {{ settings.groom_name }}</p>
+                        <p class="font-script text-4xl text-rust md:text-5xl">{{ settings.bride_name }} &amp; {{ settings.groom_name }}</p>
                     </div>
                 </article>
 
@@ -135,7 +135,7 @@ onBeforeUnmount(() => ctx?.revert());
                     :key="story.id"
                     class="reel-frame film-strip film-strip-still relative shrink-0 px-3 lg:w-[min(46vw,620px)] lg:px-3"
                 >
-                    <div class="grid gap-0 bg-[#201b19] sm:grid-cols-2">
+                    <div class="grid gap-0 bg-[#22170f] sm:grid-cols-2">
                         <div class="relative aspect-[4/3] overflow-hidden sm:aspect-auto">
                             <img v-if="story.image" :src="story.image" alt="" loading="lazy" class="absolute inset-0 h-full w-full object-cover" />
                         </div>

@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
         <meta name="csrf-token" content="{{ csrf_token() }}">
-        <meta name="theme-color" content="#161312">
+        <meta name="theme-color" content="#2b1d15">
 
         @isset($meta)
             <meta name="description" content="{{ $meta['description'] }}">

@@ -36,6 +36,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('content/{collection}', [Admin\CollectionController::class, 'index'])->name('content.index');
         Route::post('content/{collection}', [Admin\CollectionController::class, 'store'])->name('content.store');
         Route::put('content/{collection}/{id}', [Admin\CollectionController::class, 'update'])->whereNumber('id')->name('content.update');
+        Route::patch('content/{collection}/{id}/visibility', [Admin\CollectionController::class, 'visibility'])->whereNumber('id')->name('content.visibility');
+        Route::put('content/{collection}/section', [Admin\CollectionController::class, 'section'])->name('content.section');
         Route::delete('content/{collection}/{id}', [Admin\CollectionController::class, 'destroy'])->whereNumber('id')->name('content.destroy');
     });
 });

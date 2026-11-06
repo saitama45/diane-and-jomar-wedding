@@ -80,7 +80,7 @@ onBeforeUnmount(() => {
                 >
                     <button
                         type="button"
-                        class="group relative block w-full rotate-(--tilt) bg-[#fffdf9] p-2 pb-10 shadow-[0_25px_50px_-20px_rgb(42_36_33/0.45)] transition duration-700 ease-[var(--ease-film)] hover:z-10 hover:scale-[1.03] hover:rotate-0 md:p-3 md:pb-12"
+                        class="group relative block w-full rotate-(--tilt) bg-[#fffdf9] p-2 pb-10 shadow-[0_25px_50px_-20px_rgb(58_42_32/0.45)] transition duration-700 ease-[var(--ease-film)] hover:z-10 hover:scale-[1.03] hover:rotate-0 md:p-3 md:pb-12"
                         :style="{ '--tilt': `${tilts[i % tilts.length]}deg` }"
                         :aria-label="`Open photo${photo.caption ? ': ' + photo.caption : ''}`"
                         @click="open(i)"

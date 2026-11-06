@@ -27,6 +27,7 @@ class SettingsController extends Controller
         'music' => 'Music',
         'site' => 'Site',
         'email' => 'Invitation Email',
+        'sections' => 'Website Sections',
     ];
 
     private const RULES = [
@@ -38,6 +39,8 @@ class SettingsController extends Controller
         'image' => ['nullable', 'string', 'max:500'],
         'audio' => ['nullable', 'string', 'max:500'],
         'url' => ['nullable', 'string', 'max:500'],
+        'toggle' => ['nullable', 'in:0,1'],
+        'email' => ['nullable', 'email', 'max:255'],
     ];
 
     public function edit(): Response

@@ -17,7 +17,9 @@ use App\Models\WeddingEvent;
 |
 | Each entry becomes an editable list in the admin (/admin/content/{slug}).
 | "fields" drive both the form and the validation; "columns" pick what the
-| list table shows. Field types: text, textarea, number, datetime, color,
+| list table shows. "section" names the setting that shows or hides the
+| list's part of the website; its items can also be hidden one by one
+| (is_active). Field types: text, textarea, number, datetime, color,
 | image, url, select (with "options").
 |
 */
@@ -50,6 +52,7 @@ return [
             'title' => 'Love Story',
             'singular' => 'chapter',
             'description' => 'The chapters in the “story reel”.',
+            'section' => 'show_love_story', // website-section switch (a setting)
             'order' => [['sort_order', 'asc'], ['id', 'asc']],
             'columns' => ['image' => '', 'date_label' => 'When', 'title' => 'Title'],
             'fields' => [
@@ -66,6 +69,7 @@ return [
             'title' => 'Ceremony & Reception',
             'singular' => 'event',
             'description' => 'Venues, times and map pins.',
+            'section' => 'show_events', // website-section switch (a setting)
             'order' => [['sort_order', 'asc'], ['starts_at', 'asc']],
             'columns' => ['image' => '', 'title' => 'Event', 'starts_at' => 'Starts', 'venue' => 'Venue'],
             'fields' => [
@@ -86,6 +90,7 @@ return [
             'title' => 'Order of the Day',
             'singular' => 'program item',
             'description' => 'The timeline of the wedding day.',
+            'section' => 'show_program', // website-section switch (a setting)
             'order' => [['sort_order', 'asc'], ['id', 'asc']],
             'columns' => ['time_label' => 'Time', 'title' => 'Title', 'icon' => 'Icon'],
             'fields' => [
@@ -103,6 +108,7 @@ return [
             'title' => 'Entourage',
             'singular' => 'person',
             'description' => 'People are grouped by “Group”. Groups appear in “Group order”; people within a group in “Display order”.',
+            'section' => 'show_entourage', // website-section switch (a setting)
             'order' => [['group_order', 'asc'], ['sort_order', 'asc'], ['id', 'asc']],
             'columns' => ['group_name' => 'Group', 'name' => 'Name', 'group_order' => 'Group order'],
             'fields' => [
@@ -118,6 +124,7 @@ return [
             'title' => 'Motif Colors',
             'singular' => 'color',
             'description' => 'The palette shown in the dress code.',
+            'section' => 'show_motif', // website-section switch (a setting)
             'order' => [['sort_order', 'asc'], ['id', 'asc']],
             'columns' => ['hex' => '', 'name' => 'Name'],
             'fields' => [
@@ -132,6 +139,7 @@ return [
             'title' => 'Gallery',
             'singular' => 'photo',
             'description' => 'Prenup and engagement photos.',
+            'section' => 'show_gallery', // website-section switch (a setting)
             'order' => [['sort_order', 'asc'], ['id', 'asc']],
             'columns' => ['image' => '', 'caption' => 'Caption'],
             'fields' => [
@@ -146,6 +154,7 @@ return [
             'title' => 'FAQs',
             'singular' => 'question',
             'description' => 'Your questions, answered.',
+            'section' => 'show_faqs', // website-section switch (a setting)
             'order' => [['sort_order', 'asc'], ['id', 'asc']],
             'columns' => ['question' => 'Question'],
             'fields' => [
@@ -160,6 +169,7 @@ return [
             'title' => 'Gift Registry',
             'singular' => 'account',
             'description' => 'The website shows one QR code: the first account in this list (lowest order). Upload its real QR code image.',
+            'section' => 'show_gifts', // website-section switch (a setting)
             'order' => [['sort_order', 'asc'], ['id', 'asc']],
             'columns' => ['label' => 'Account', 'account_name' => 'Name', 'account_number' => 'Number'],
             'fields' => [

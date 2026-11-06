@@ -121,7 +121,7 @@ jobs:
     runs-on: windows-latest
     environment:
       name: production
-      url: ${{ vars.APP_URL || 'https://site103294.siteasp.net' }}
+      url: ${{ vars.APP_URL || 'https://diane-and-jomar-wedding.runasp.net' }}
 
     # MonsterASP.NET details. Only passwords and the app key are secrets; the optional
     # repository variables (APP_URL, APP_NAME, ADMIN_EMAIL, MAIL_FROM_NAME) override the defaults here.
@@ -130,7 +130,7 @@ jobs:
       WEBDEPLOY_URL: https://site103294.siteasp.net:8172/msdeploy.axd?site=site103294
       WEBDEPLOY_USERNAME: site103294
       APP_NAME: ${{ vars.APP_NAME || 'Diane & Jomar' }}
-      APP_URL: ${{ vars.APP_URL || 'https://site103294.siteasp.net' }}
+      APP_URL: ${{ vars.APP_URL || 'https://diane-and-jomar-wedding.runasp.net' }}
       # The website reaches the database over the host's private network; GitHub must use the public name.
       DB_HOST_SITE: db76831.databaseasp.net
       DB_HOST_PUBLIC: db76831.public.databaseasp.net

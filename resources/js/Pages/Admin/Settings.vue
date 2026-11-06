@@ -2,6 +2,7 @@
 import { Head, useForm } from '@inertiajs/vue3';
 import LineIcon from '@/Components/LineIcon.vue';
 import MediaField from '@/Components/Admin/MediaField.vue';
+import ToggleSwitch from '@/Components/Admin/ToggleSwitch.vue';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 
 defineOptions({ layout: AdminLayout });
@@ -19,7 +20,7 @@ const form = useForm({
 
 const submit = () => form.put('/admin/settings', { preserveScroll: true });
 
-const inputType = { number: 'number', date: 'date', datetime: 'datetime-local', url: 'url' };
+const inputType = { number: 'number', date: 'date', datetime: 'datetime-local', url: 'url', email: 'email' };
 </script>
 
 <template>
@@ -35,7 +36,7 @@ const inputType = { number: 'number', date: 'date', datetime: 'datetime-local', 
         </div>
 
         <div class="mt-6 flex flex-wrap gap-2">
-            <a v-for="group in groups" :key="group.key" :href="`#group-${group.key}`" class="rounded-full bg-white px-3 py-1 text-xs text-ink-soft ring-1 ring-ink/10 transition hover:text-wine hover:ring-gold">
+            <a v-for="group in groups" :key="group.key" :href="`#group-${group.key}`" class="rounded-full bg-white px-3 py-1 text-xs text-ink-soft ring-1 ring-ink/10 transition hover:text-rust hover:ring-gold">
                 {{ group.title }}
             </a>
         </div>
@@ -49,6 +50,15 @@ const inputType = { number: 'number', date: 'date', datetime: 'datetime-local', 
 
                         <textarea v-if="setting.type === 'textarea'" :id="setting.key" v-model="form.values[setting.key]" rows="4" class="admin-input"></textarea>
                         <MediaField v-else-if="setting.type === 'image' || setting.type === 'audio'" :id="setting.key" v-model="form.values[setting.key]" :kind="setting.type" />
+                        <div v-else-if="setting.type === 'toggle'" class="flex items-center gap-3">
+                            <ToggleSwitch
+                                :id="setting.key"
+                                :model-value="form.values[setting.key] !== '0'"
+                                :label="setting.label"
+                                @update:model-value="form.values[setting.key] = $event ? '1' : '0'"
+                            />
+                            <span class="text-sm text-ink-soft">{{ form.values[setting.key] !== '0' ? 'Shown on the website' : 'Hidden' }}</span>
+                        </div>
                         <input v-else :id="setting.key" v-model="form.values[setting.key]" :type="inputType[setting.type] ?? 'text'" class="admin-input" />
 
                         <p v-if="setting.help" class="mt-1.5 text-xs text-ink-soft">{{ setting.help }}</p>

@@ -41,7 +41,7 @@ watch(path, () => (mobileOpen.value = false));
 </script>
 
 <template>
-    <div class="min-h-screen bg-[#f4efe7] font-sans text-ink">
+    <div class="min-h-screen bg-[#f3eadd] font-sans text-ink">
         <!-- Sidebar -->
         <aside
             class="fixed inset-y-0 left-0 z-40 flex w-72 flex-col bg-film text-paper transition-transform duration-500 lg:translate-x-0"
@@ -79,7 +79,7 @@ watch(path, () => (mobileOpen.value = false));
 
         <!-- Main -->
         <div class="lg:pl-72">
-            <header class="sticky top-0 z-20 flex items-center gap-3 border-b border-ink/10 bg-[#f4efe7]/90 px-5 py-3 backdrop-blur lg:hidden">
+            <header class="sticky top-0 z-20 flex items-center gap-3 border-b border-ink/10 bg-[#f3eadd]/90 px-5 py-3 backdrop-blur lg:hidden">
                 <button type="button" class="grid size-10 place-items-center" aria-label="Open menu" @click="mobileOpen = true">
                     <LineIcon name="menu" :size="24" />
                 </button>

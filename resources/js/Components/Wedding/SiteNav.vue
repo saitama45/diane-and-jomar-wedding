@@ -6,17 +6,20 @@ import { gsap, lockScroll, reducedMotion, scrollToTarget } from '@/lib/motion';
 const props = defineProps({
     settings: { type: Object, required: true },
     visible: { type: Boolean, default: true },
+    hiddenLinks: { type: Array, default: () => [] }, // sections the admin hid
 });
 
-const links = [
-    { href: '#story', label: 'Our Story' },
-    { href: '#details', label: 'Details' },
-    { href: '#entourage', label: 'Entourage' },
-    { href: '#attire', label: 'Attire' },
-    { href: '#gallery', label: 'Gallery' },
-    { href: '#gifts', label: 'Gifts' },
-    { href: '#faq', label: 'FAQ' },
-];
+const links = computed(() =>
+    [
+        { href: '#story', label: 'Our Story' },
+        { href: '#details', label: 'Details' },
+        { href: '#entourage', label: 'Entourage' },
+        { href: '#attire', label: 'Attire' },
+        { href: '#gallery', label: 'Gallery' },
+        { href: '#gifts', label: 'Gifts' },
+        { href: '#faq', label: 'FAQ' },
+    ].filter((link) => !props.hiddenLinks.includes(link.href)),
+);
 
 const solid = ref(false);
 const menuOpen = ref(false);
