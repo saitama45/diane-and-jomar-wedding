@@ -3,6 +3,7 @@ import { Head, useForm } from '@inertiajs/vue3';
 import { computed, provide } from 'vue';
 import LineIcon from '@/Components/LineIcon.vue';
 import ToggleSwitch from '@/Components/Admin/ToggleSwitch.vue';
+import PhotoQrCard from '@/Components/Print/PhotoQrCard.vue';
 import SaveTheDateCard from '@/Components/Print/SaveTheDateCard.vue';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { designSize, printDpi } from '@/lib/pdf';
@@ -12,6 +13,7 @@ defineOptions({ layout: AdminLayout });
 const props = defineProps({
     papers: { type: Array, required: true }, // presets: key, label, note, width, height (mm, portrait)
     limits: { type: Object, required: true }, // custom size limits in mm, text size limits in %
+    designs: { type: Array, required: true }, // save-the-date | photo-qr: key, label
     items: { type: Array, required: true }, // the lines whose size can be fine-tuned: key, label
     defaults: { type: Object, required: true }, // the designed sizes and colours, for "Reset"
     options: { type: Object, required: true }, // the saved choices
@@ -53,6 +55,8 @@ const form = useForm({
     item_sizes: Object.fromEntries(props.items.map(({ key }) => [key, Number(props.options.item_sizes?.[key] ?? 100)])),
 });
 
+const isQrSign = computed(() => form.design === 'photo-qr');
+
 // What each fine-tunable line says on this card (lines the card does not show are left out).
 const itemText = computed(() => {
     const c = props.card;
@@ -72,11 +76,12 @@ const itemText = computed(() => {
         rsvp: 'RSVP',
         reply_by: c.deadline ? `Kindly reply by ${c.deadline}` : null,
         website: c.siteUrl.replace(/^https?:\/\//, ''),
-        qr: form.qr ? 'Scan to open your website' : null,
+        qr: isQrSign.value ? 'The camera and its QR code' : form.qr ? 'Scan to open your website' : null,
         hashtag: form.hashtag && c.hashtag ? c.hashtag : null,
     };
 });
-const shownItems = computed(() => props.items.filter(({ key }) => itemText.value[key]));
+// The QR sign has only two adjustable lines: its QR code (with the camera) and the hashtag.
+const shownItems = computed(() => props.items.filter(({ key }) => itemText.value[key] && (!isQrSign.value || ['qr', 'hashtag'].includes(key))));
 const itemsChanged = computed(() => Object.values(form.item_sizes).some((percent) => Number(percent) !== 100));
 
 function resetItems() {
@@ -144,6 +149,7 @@ function openPdf() {
         height: form.height,
         unit: form.unit,
         background: form.background,
+        design: form.design,
         qr: form.qr ? '1' : '0',
         hashtag: form.hashtag ? '1' : '0',
         ...Object.fromEntries(Object.entries(flat).map(([key, value]) => [key, typeof value === 'boolean' ? (value ? '1' : '0') : value])),
@@ -161,7 +167,7 @@ function openPdf() {
         <div>
             <h1 class="font-serif text-4xl text-ink">Print Cards</h1>
             <p class="mt-1 max-w-2xl text-sm text-ink-soft">
-                A save-the-date card to print, made from your names, wedding date and venues. Choose the paper, then open it as a PDF in a new tab.
+                Cards to print, made from your names, wedding details and website. Choose the design and the paper, then open it as a PDF in a new tab.
             </p>
         </div>
         <button type="button" class="admin-btn" :disabled="!!sizeError" @click="openPdf">
@@ -171,6 +177,28 @@ function openPdf() {
 
     <div class="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_auto]">
         <div class="space-y-6">
+            <!-- Which design -->
+            <section class="rounded-2xl bg-white p-5 ring-1 ring-ink/10">
+                <h2 class="font-serif text-2xl text-ink">Design</h2>
+                <div class="mt-4 grid gap-2 sm:grid-cols-2">
+                    <label
+                        v-for="option in designs"
+                        :key="option.key"
+                        class="flex cursor-pointer items-center gap-3 rounded-xl px-4 py-3 ring-1 transition"
+                        :class="form.design === option.key ? 'bg-[#f3eadd] ring-cocoa' : 'ring-ink/10 hover:ring-ink/30'"
+                    >
+                        <input v-model="form.design" type="radio" name="design" :value="option.key" class="sr-only" />
+                        <span class="grid size-10 shrink-0 place-items-center rounded-full bg-white text-cocoa ring-1 ring-ink/10">
+                            <LineIcon :name="option.key === 'photo-qr' ? 'camera' : 'envelope'" :size="18" />
+                        </span>
+                        <span>
+                            <span class="block text-sm font-medium text-ink">{{ option.label }}</span>
+                            <span class="block text-xs text-ink-soft">{{ option.key === 'photo-qr' ? 'For the tables: guests scan it to send you their photos' : 'Your names, the date and the venues' }}</span>
+                        </span>
+                    </label>
+                </div>
+            </section>
+
             <!-- Paper size -->
             <section class="rounded-2xl bg-white p-5 ring-1 ring-ink/10">
                 <h2 class="font-serif text-2xl text-ink">Paper size</h2>
@@ -243,7 +271,7 @@ function openPdf() {
                     </label>
                 </div>
 
-                <div class="mt-5 flex items-start gap-3">
+                <div v-if="!isQrSign" class="mt-5 flex items-start gap-3">
                     <ToggleSwitch v-model="form.qr" label="RSVP QR code" />
                     <div>
                         <p class="text-sm font-medium text-ink">RSVP QR code</p>
@@ -272,8 +300,8 @@ function openPdf() {
                 </div>
 
                 <!-- How the names sit -->
-                <p class="mt-4 text-sm font-medium text-ink">Names</p>
-                <div class="mt-2 grid gap-2 sm:grid-cols-2">
+                <p v-if="!isQrSign" class="mt-4 text-sm font-medium text-ink">Names</p>
+                <div v-if="!isQrSign" class="mt-2 grid gap-2 sm:grid-cols-2">
                     <label
                         v-for="layout in [
                             { key: 'stacked', label: 'Stacked', lines: [card.bride, '— and —', card.groom] },
@@ -416,7 +444,8 @@ function openPdf() {
                 :style="{ width: `${design.width * previewScale}px`, height: `${design.height * previewScale}px` }"
             >
                 <div class="absolute left-0 top-0 origin-top-left" :style="{ transform: `scale(${previewScale})` }">
-                    <SaveTheDateCard :card="card" :width="design.width" :height="design.height" :background="form.background" :qr="form.qr" :hashtag="form.hashtag" :look="look" />
+                    <PhotoQrCard v-if="isQrSign" :card="card" :width="design.width" :height="design.height" :background="form.background" :hashtag="form.hashtag" :look="look" />
+                    <SaveTheDateCard v-else :card="card" :width="design.width" :height="design.height" :background="form.background" :qr="form.qr" :hashtag="form.hashtag" :look="look" />
                 </div>
             </div>
         </div>

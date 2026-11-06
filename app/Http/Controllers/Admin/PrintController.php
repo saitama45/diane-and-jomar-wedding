@@ -44,6 +44,8 @@ class PrintController extends Controller
 
     /** Remembered choices: form field => [setting key (group "print", edited only on this page), default]. */
     private const SETTINGS = [
+        // Which design: the save-the-date card, or the photo-sharing QR sign ("Capture the Love").
+        'design' => ['print_design', 'save-the-date'],
         'paper' => ['print_paper', 'A5'],
         'orientation' => ['print_orientation', 'portrait'],
         'width' => ['print_custom_width', '5'],
@@ -69,6 +71,9 @@ class PrintController extends Controller
         // Fine-tuning per line of text: item key => percent (only the ones not at 100 %), stored as JSON.
         'item_sizes' => ['print_item_sizes', []],
     ];
+
+    /** The printable designs, by key. */
+    public const DESIGNS = ['save-the-date' => 'Save the Date', 'photo-qr' => 'Photo QR sign'];
 
     /** The lines of text (and the QR code) whose size can be fine-tuned, in card order. */
     public const ITEMS = [
@@ -112,6 +117,7 @@ class PrintController extends Controller
                 'min' => self::MIN_MM, 'max' => self::MAX_MM, 'minSize' => self::MIN_SIZE, 'maxSize' => self::MAX_SIZE,
                 'minItem' => self::MIN_ITEM, 'maxItem' => self::MAX_ITEM,
             ],
+            'designs' => collect(self::DESIGNS)->map(fn (string $label, string $key) => ['key' => $key, 'label' => $label])->values(),
             'items' => collect(self::ITEMS)->map(fn (string $label, string $key) => ['key' => $key, 'label' => $label])->values(),
             'defaults' => collect(self::SETTINGS)->map(fn (array $setting) => $setting[1]),
             'options' => $this->saved(),
@@ -145,6 +151,7 @@ class PrintController extends Controller
         $card = $this->card();
 
         return Inertia::render('Print/SaveTheDate', [
+            'design' => $options['design'],
             'card' => $card,
             'paper' => [
                 'label' => $options['label'],
@@ -156,7 +163,7 @@ class PrintController extends Controller
             ],
             'look' => collect($options)->only([...self::SIZES, ...self::COLORS, ...self::TEXT_STYLES, 'names_layout'])
                 ->put('item_sizes', (object) $options['item_sizes']),
-            'filename' => sprintf('Save the Date - %s & %s - %s.pdf', $card['bride'], $card['groom'], $options['label']),
+            'filename' => sprintf('%s - %s & %s - %s.pdf', self::DESIGNS[$options['design']], $card['bride'], $card['groom'], $options['label']),
         ]);
     }
 
@@ -182,6 +189,7 @@ class PrintController extends Controller
                 $field => ['required', 'regex:/^#[0-9a-fA-F]{6}$/'],
             ]),
             'names_layout' => ['required', Rule::in(['stacked', 'line'])],
+            'design' => ['required', Rule::in(array_keys(self::DESIGNS))],
             'item_sizes' => ['nullable', 'array'],
             'item_sizes.*' => ['integer', 'between:'.self::MIN_ITEM.','.self::MAX_ITEM],
         ])->validate();
@@ -278,6 +286,9 @@ class PrintController extends Controller
             'deadline' => filled($settings['rsvp_deadline'] ?? null) ? Carbon::parse($settings['rsvp_deadline'])->format('F j, Y') : null,
             'hashtag' => $text('hashtag'),
             'siteUrl' => Setting::siteUrl(),
+            // The photo-sharing sign: where its QR code leads (the site's upload page unless another album is set).
+            'shareUrl' => $text('capture_upload_url') ?: Setting::siteUrl().'/share',
+            'captureMessage' => $text('capture_message'),
             'decorImage' => $text('decor_corner_image') ?: null,
         ];
     }

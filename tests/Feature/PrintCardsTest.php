@@ -126,6 +126,25 @@ class PrintCardsTest extends TestCase
             ->assertSessionHasErrors(['item_sizes.heading', 'names_layout']);
     }
 
+    public function test_the_photo_qr_sign_prints_the_upload_page_link(): void
+    {
+        $this->actingAs(User::first());
+
+        $this->get('/admin/print')->assertInertia(fn (Assert $page) => $page
+            ->where('options.design', 'save-the-date')
+            ->where('designs.1.key', 'photo-qr')
+            ->where('card.shareUrl', fn (string $url) => str_ends_with($url, '/share')));
+
+        $this->get('/admin/print/save-the-date?design=photo-qr&paper=A4')->assertInertia(fn (Assert $page) => $page
+            ->where('design', 'photo-qr')
+            ->where('filename', 'Photo QR sign - Diane & Jomar - A4.pdf')
+            ->where('card.captureMessage', fn ($text) => str_starts_with($text, 'Scan the QR code')));
+
+        $this->put('/admin/print', ['design' => 'photo-qr'])->assertSessionHasNoErrors();
+        $this->assertSame('photo-qr', Setting::where('key', 'print_design')->value('value'));
+        $this->put('/admin/print', ['design' => 'poster'])->assertSessionHasErrors('design');
+    }
+
     public function test_guests_cannot_print(): void
     {
         $this->get('/admin/print')->assertRedirect('/admin/login');

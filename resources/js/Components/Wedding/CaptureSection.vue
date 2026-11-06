@@ -65,7 +65,15 @@ async function copyHashtag() {
                     <circle cx="252" cy="86" r="8" />
                     <path d="M30 96h60M210 96h60" stroke-opacity=".35" />
                 </svg>
-                <img v-if="qr" :src="qr" alt="QR code to upload your photos for us" class="cap-qr absolute left-1/2 top-[61.8%] w-[26%] -translate-x-1/2 -translate-y-1/2" />
+                <!--
+                    The frame centres the QR code on the lens (square, so it has its height before the picture
+                    loads); only the picture inside is animated. Animating the centred element itself let GSAP
+                    turn "-50% of the height" into pixels while the picture was still 0 px tall on slower phones,
+                    so the code slid below the lens.
+                -->
+                <div v-if="qr" class="absolute left-1/2 top-[61.8%] aspect-square w-[26%] -translate-x-1/2 -translate-y-1/2">
+                    <img :src="qr" alt="QR code to upload your photos for us" class="cap-qr block h-full w-full" />
+                </div>
             </div>
 
             <p v-reveal="'fade'" class="mt-8 kicker text-ink">Share your photos with us!</p>

@@ -6,10 +6,12 @@
 import { Head } from '@inertiajs/vue3';
 import { computed, onBeforeUnmount, onMounted, provide, ref } from 'vue';
 import LineIcon from '@/Components/LineIcon.vue';
+import PhotoQrCard from '@/Components/Print/PhotoQrCard.vue';
 import SaveTheDateCard from '@/Components/Print/SaveTheDateCard.vue';
 import { cardToPdf, designSize, printDpi } from '@/lib/pdf';
 
 const props = defineProps({
+    design: { type: String, default: 'save-the-date' }, // save-the-date | photo-qr (the photo-sharing sign)
     card: { type: Object, required: true },
     paper: { type: Object, required: true }, // label, width_mm, height_mm, background, qr, hashtag
     look: { type: Object, default: () => ({}) }, // text sizes and colours
@@ -50,7 +52,7 @@ onBeforeUnmount(() => pdfUrl.value && URL.revokeObjectURL(pdfUrl.value));
     <div class="flex h-dvh flex-col bg-[#4a3a30]">
         <header class="flex flex-wrap items-center justify-between gap-3 bg-film px-4 py-3 text-paper md:px-6">
             <div>
-                <p class="font-serif text-xl">Save the Date</p>
+                <p class="font-serif text-xl">{{ design === 'photo-qr' ? 'Photo QR sign' : 'Save the Date' }}</p>
                 <p class="text-xs text-paper/60">{{ paper.label }} · {{ mm(paper.width_mm) }} × {{ mm(paper.height_mm) }} mm · {{ dpi }} dpi</p>
             </div>
             <div class="flex flex-wrap items-center gap-2">
@@ -79,6 +81,7 @@ onBeforeUnmount(() => pdfUrl.value && URL.revokeObjectURL(pdfUrl.value));
 
     <!-- The card the PDF is drawn from, at its full design size, hidden behind the page (html2canvas needs it on screen). -->
     <div class="pointer-events-none fixed left-0 top-0 -z-10" aria-hidden="true">
-        <SaveTheDateCard ref="cardRef" :card="card" :width="size.width" :height="size.height" :background="paper.background" :qr="paper.qr" :hashtag="paper.hashtag" :look="look" />
+        <PhotoQrCard v-if="design === 'photo-qr'" ref="cardRef" :card="card" :width="size.width" :height="size.height" :background="paper.background" :hashtag="paper.hashtag" :look="look" />
+        <SaveTheDateCard v-else ref="cardRef" :card="card" :width="size.width" :height="size.height" :background="paper.background" :qr="paper.qr" :hashtag="paper.hashtag" :look="look" />
     </div>
 </template>
