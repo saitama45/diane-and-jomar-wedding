@@ -116,6 +116,10 @@ function open() {
                         <p class="font-serif text-base italic text-ink-soft md:text-lg">{{ settings.city_line }}</p>
                     </div>
 
+                    <p v-if="settings.hashtag" class="ig-reveal mt-4 font-serif text-base font-semibold tracking-[0.1em] text-rust md:mt-5 md:text-lg [@media(max-height:600px)]:hidden">
+                        {{ settings.hashtag }}
+                    </p>
+
                     <!-- The entrance animation moves this wrapper: the button's own transform transition would leave it stuck mid-way. -->
                     <div class="ig-reveal mt-8 md:mt-10">
                         <button

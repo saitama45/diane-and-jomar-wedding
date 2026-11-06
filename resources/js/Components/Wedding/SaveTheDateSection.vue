@@ -117,6 +117,8 @@ function play() {
                         <p v-if="reception.address" class="mt-0.5 font-serif text-base italic text-ink-soft">{{ reception.address }}</p>
                         <p class="mt-2 font-serif text-sm font-semibold tracking-[0.25em] text-cocoa">{{ reception.time }}</p>
                     </template>
+
+                    <p v-if="settings.hashtag" class="mt-7 font-serif text-lg font-semibold tracking-[0.1em] text-rust">{{ settings.hashtag }}</p>
                 </article>
 
                 <!-- Wax seal on the edge of the card -->

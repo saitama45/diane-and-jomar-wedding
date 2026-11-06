@@ -15,15 +15,17 @@ const props = defineProps({
 
 const customImage = inject('decorImage', computed(() => null));
 
-const placement = computed(
-    () =>
-        ({
-            'top-left': 'left-0 top-0',
-            'top-right': 'right-0 top-0 -scale-x-100',
-            'bottom-left': 'bottom-0 left-0 -rotate-90',
-            'bottom-right': 'bottom-0 right-0 rotate-180',
-        })[props.corner],
-);
+// Where it sits, and how the top-left arrangement is turned to fit that corner. The turn is done inside
+// the SVG (or as a plain CSS transform on an uploaded image), not with Tailwind's rotate/scale classes,
+// so the printed card's renderer (html2canvas) turns it too.
+const CORNERS = {
+    'top-left': { place: 'left-0 top-0', svg: '', css: 'none' },
+    'top-right': { place: 'right-0 top-0', svg: 'translate(340 0) scale(-1 1)', css: 'scaleX(-1)' },
+    'bottom-left': { place: 'bottom-0 left-0', svg: 'rotate(-90 170 170)', css: 'rotate(-90deg)' },
+    'bottom-right': { place: 'bottom-0 right-0', svg: 'rotate(180 170 170)', css: 'rotate(180deg)' },
+};
+const corner = computed(() => CORNERS[props.corner] ?? CORNERS['top-left']);
+const placement = computed(() => corner.value.place);
 
 // ---- the arrangement (corner at 0,0; everything grows toward the page; same seed = same picture) ----
 
@@ -43,6 +45,7 @@ const roses = [rose([54, 60], 42, 8), rose([124, 30], 29, 40), rose([30, 128], 2
         aria-hidden="true"
         class="pointer-events-none absolute size-48 select-none object-contain object-left-top opacity-75 md:size-[22rem] md:opacity-100"
         :class="[placement, behind && '-z-10']"
+        :style="{ transform: corner.css }"
     />
     <svg
         v-else
@@ -70,6 +73,7 @@ const roses = [rose([54, 60], 42, 8), rose([124, 30], 29, 40), rose([30, 128], 2
             </radialGradient>
         </defs>
 
+        <g :transform="corner.svg || undefined">
         <!-- Dried palm spears (back) -->
         <g v-for="(fan, i) in fans" :key="`fan${i}`" opacity="0.92">
             <template v-for="(shape, s) in fan.shapes" :key="s">
@@ -104,6 +108,7 @@ const roses = [rose([54, 60], 42, 8), rose([124, 30], 29, 40), rose([30, 128], 2
         <g v-for="(r, i) in roses" :key="`ro${i}`" filter="url(#boho-shadow)">
             <path v-for="(petal, p) in r.petals" :key="p" :d="petal" :fill="`url(#boho-rose-${i})`" stroke="#c7aa82" stroke-width="0.55" stroke-opacity="0.7" />
             <path :d="r.swirl" fill="none" stroke="#a8875f" stroke-width="0.9" stroke-linecap="round" />
+        </g>
         </g>
     </svg>
 </template>

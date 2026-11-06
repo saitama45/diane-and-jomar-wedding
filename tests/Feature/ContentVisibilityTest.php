@@ -78,4 +78,19 @@ class ContentVisibilityTest extends TestCase
         $mail->assertHasSubject('Wedding invitation for Mr. & Mrs. Juan Dela Cruz from Diane & Jomar');
         $this->assertSame('<mailto:couple@example.com?subject=Unsubscribe>', $mail->headers()->text['List-Unsubscribe']);
     }
+
+    public function test_the_invitation_email_has_the_boho_look_and_the_hashtag(): void
+    {
+        $mail = new InvitationMail(Invitation::where('code', 'JUAN27')->first());
+
+        $mail->assertSeeInOrderInHtml(['The Wedding Celebration of', 'Diane', 'and', 'Jomar', '#DianeAndJomarForever', 'Dear Mr. &amp; Mrs. Juan Dela Cruz'], false);
+        $mail->assertSeeInOrderInHtml(['Ceremony will be held at', 'San Agustin Church', 'Reception follows at', 'The Manila Hotel']);
+        $mail->assertSeeInText('#DianeAndJomarForever');
+
+        // The painted corner flowers travel inside the email (inline attachments), like the photo.
+        $this->assertFileExists(public_path('images/email/flora-top-left.png'));
+        $this->assertFileExists(public_path('images/email/flora-bottom-right.png'));
+        // (A preview renders them as data URIs; a sent email attaches them inline.)
+        $this->assertSame(2, substr_count($mail->render(), '<img class="flora" src="data:image/png;base64,'));
+    }
 }

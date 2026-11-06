@@ -24,10 +24,20 @@ export function printDpi(widthMm, heightMm) {
 
 /** Draws `node` (the card, at its design size) onto a PDF page of widthMm × heightMm and returns the PDF as a Blob. */
 export async function cardToPdf(node, { widthMm, heightMm, title }) {
-    const [{ toJpeg }, { jsPDF }] = await Promise.all([import('html-to-image'), import('jspdf')]);
+    // html2canvas paints the card straight onto a canvas. (html-to-image went through an SVG <foreignObject>,
+    // which Safari draws without pictures and text colours: the QR code was missing on iPhones.)
+    const [{ default: html2canvas }, { jsPDF }] = await Promise.all([import('html2canvas-pro'), import('jspdf')]);
 
-    const pixelRatio = ((widthMm / 25.4) * printDpi(widthMm, heightMm)) / node.offsetWidth;
-    const image = await toJpeg(node, { pixelRatio, quality: 0.95, backgroundColor: '#ffffff' });
+    const scale = ((widthMm / 25.4) * printDpi(widthMm, heightMm)) / node.offsetWidth;
+    const canvas = await html2canvas(node, {
+        scale,
+        backgroundColor: '#ffffff',
+        logging: false,
+        // Lay the copy out at the card's own size, whatever the size of the screen.
+        windowWidth: node.offsetWidth,
+        windowHeight: node.offsetHeight,
+    });
+    const image = canvas.toDataURL('image/jpeg', 0.95);
 
     const pdf = new jsPDF({ orientation: widthMm > heightMm ? 'landscape' : 'portrait', unit: 'mm', format: [widthMm, heightMm], compress: true });
     pdf.setProperties({ title });

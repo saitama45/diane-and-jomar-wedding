@@ -184,12 +184,14 @@
 }
 
 /* Cream invitation paper with soft watercolour washes in the top-right and bottom-left corners
-   (the corners the painted flowers leave free): the opening screen and the save-the-date card. */
+   (the corners the painted flowers leave free): the opening screen and the save-the-date card.
+   The washes fade to their own colour at zero alpha, not "transparent" (black), or the printed card's
+   renderer (html2canvas) draws grey blotches. */
 @utility boho-paper {
     background:
-        radial-gradient(ellipse 70% 45% at 100% 0%, rgb(200 167 131 / 0.26), transparent 70%),
-        radial-gradient(ellipse 70% 40% at 0% 100%, rgb(200 167 131 / 0.3), transparent 70%),
-        radial-gradient(ellipse 60% 30% at 50% 55%, rgb(232 217 195 / 0.35), transparent 75%),
+        radial-gradient(ellipse 70% 45% at 100% 0%, rgb(200 167 131 / 0.26), rgb(200 167 131 / 0) 70%),
+        radial-gradient(ellipse 70% 40% at 0% 100%, rgb(200 167 131 / 0.3), rgb(200 167 131 / 0) 70%),
+        radial-gradient(ellipse 60% 30% at 50% 55%, rgb(232 217 195 / 0.35), rgb(232 217 195 / 0) 75%),
         #fcf7ef;
 }
 

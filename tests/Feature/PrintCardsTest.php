@@ -99,6 +99,33 @@ class PrintCardsTest extends TestCase
         $this->put('/admin/print', ['text_size' => 300, 'accent_color' => 'red'])->assertSessionHasErrors(['text_size', 'accent_color']);
     }
 
+    public function test_names_are_stacked_and_each_line_can_be_resized(): void
+    {
+        $this->actingAs(User::first());
+
+        $this->get('/admin/print')->assertInertia(fn (Assert $page) => $page
+            ->where('options.names_layout', 'stacked')
+            ->where('items.0.key', 'heading')
+            ->where('items', fn ($items) => collect($items)->pluck('key')->contains('ceremony_venue')));
+
+        $this->put('/admin/print', [
+            'names_layout' => 'line',
+            'item_sizes' => ['ceremony_venue' => 120, 'reception_venue' => 100, 'not_a_line' => 150],
+        ])->assertSessionHasNoErrors();
+        $this->assertSame('{"ceremony_venue":120}', Setting::where('key', 'print_item_sizes')->value('value'));
+
+        $this->get('/admin/print/save-the-date')->assertInertia(fn (Assert $page) => $page
+            ->where('look.names_layout', 'line')
+            ->where('look.item_sizes.ceremony_venue', 120));
+
+        $this->get('/admin/print/save-the-date?'.http_build_query(['item_sizes' => ['hashtag' => 140]]))->assertInertia(fn (Assert $page) => $page
+            ->where('look.item_sizes.hashtag', 140)
+            ->missing('look.item_sizes.ceremony_venue'));
+
+        $this->put('/admin/print', ['item_sizes' => ['heading' => 400], 'names_layout' => 'spiral'])
+            ->assertSessionHasErrors(['item_sizes.heading', 'names_layout']);
+    }
+
     public function test_guests_cannot_print(): void
     {
         $this->get('/admin/print')->assertRedirect('/admin/login');

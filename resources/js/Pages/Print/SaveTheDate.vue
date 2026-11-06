@@ -77,8 +77,8 @@ onBeforeUnmount(() => pdfUrl.value && URL.revokeObjectURL(pdfUrl.value));
         </div>
     </div>
 
-    <!-- The card the PDF is drawn from, kept off screen at its full design size. -->
-    <div class="pointer-events-none fixed left-[-30000px] top-0" aria-hidden="true">
+    <!-- The card the PDF is drawn from, at its full design size, hidden behind the page (html2canvas needs it on screen). -->
+    <div class="pointer-events-none fixed left-0 top-0 -z-10" aria-hidden="true">
         <SaveTheDateCard ref="cardRef" :card="card" :width="size.width" :height="size.height" :background="paper.background" :qr="paper.qr" :hashtag="paper.hashtag" :look="look" />
     </div>
 </template>

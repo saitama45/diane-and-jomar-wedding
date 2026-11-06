@@ -12,6 +12,7 @@ defineOptions({ layout: AdminLayout });
 const props = defineProps({
     papers: { type: Array, required: true }, // presets: key, label, note, width, height (mm, portrait)
     limits: { type: Object, required: true }, // custom size limits in mm, text size limits in %
+    items: { type: Array, required: true }, // the lines whose size can be fine-tuned: key, label
     defaults: { type: Object, required: true }, // the designed sizes and colours, for "Reset"
     options: { type: Object, required: true }, // the saved choices
     card: { type: Object, required: true },
@@ -44,7 +45,46 @@ const SIZE_FIELDS = [
 
 provide('decorImage', computed(() => props.card.decorImage));
 
-const form = useForm({ ...props.options, width: String(props.options.width), height: String(props.options.height) });
+const form = useForm({
+    ...props.options,
+    width: String(props.options.width),
+    height: String(props.options.height),
+    // Every line at its saved percent (100 = as designed).
+    item_sizes: Object.fromEntries(props.items.map(({ key }) => [key, Number(props.options.item_sizes?.[key] ?? 100)])),
+});
+
+// What each fine-tunable line says on this card (lines the card does not show are left out).
+const itemText = computed(() => {
+    const c = props.card;
+    return {
+        heading: c.heading,
+        monogram: [c.bride, c.groom].map((n) => (n ?? '').charAt(0)).join(' & '),
+        and: form.names_layout === 'stacked' ? 'and' : '&',
+        date: `${c.weekday} · ${c.time} · ${c.month} ${c.year}`,
+        day: c.day,
+        ceremony_line: c.ceremony ? c.ceremonyLine : null,
+        ceremony_venue: c.ceremony?.venue ?? c.city,
+        ceremony_address: c.ceremony?.address || null,
+        reception_line: c.reception ? c.receptionLine : null,
+        reception_venue: c.reception?.venue ?? null,
+        reception_address: c.reception?.address || null,
+        reception_time: c.reception?.time ?? null,
+        rsvp: 'RSVP',
+        reply_by: c.deadline ? `Kindly reply by ${c.deadline}` : null,
+        website: c.siteUrl.replace(/^https?:\/\//, ''),
+        qr: form.qr ? 'Scan to open your website' : null,
+        hashtag: form.hashtag && c.hashtag ? c.hashtag : null,
+    };
+});
+const shownItems = computed(() => props.items.filter(({ key }) => itemText.value[key]));
+const itemsChanged = computed(() => Object.values(form.item_sizes).some((percent) => Number(percent) !== 100));
+
+function resetItems() {
+    Object.keys(form.item_sizes).forEach((key) => (form.item_sizes[key] = 100));
+}
+
+// Only the lines that differ from the design travel in the link and are saved.
+const itemOverrides = () => Object.fromEntries(Object.entries(form.item_sizes).filter(([, percent]) => Number(percent) !== 100).map(([key, percent]) => [key, Number(percent)]));
 
 const isCustom = computed(() => form.paper === 'custom');
 
@@ -81,18 +121,22 @@ const look = computed(() => ({
     names_color: form.names_color,
     details_color: form.details_color,
     ...Object.fromEntries(STYLE_FIELDS.map((key) => [key, !!form[key]])),
+    names_layout: form.names_layout,
+    item_sizes: itemOverrides(),
 }));
 
-const LOOK_KEYS = [...SIZE_FIELDS.map((f) => f.key), ...COLOR_FIELDS.map((f) => f.key), ...STYLE_FIELDS];
-const lookChanged = computed(() => LOOK_KEYS.some((key) => String(form[key]).toLowerCase() !== String(props.defaults[key]).toLowerCase()));
+const LOOK_KEYS = [...SIZE_FIELDS.map((f) => f.key), ...COLOR_FIELDS.map((f) => f.key), ...STYLE_FIELDS, 'names_layout'];
+const lookChanged = computed(() => LOOK_KEYS.some((key) => String(form[key]).toLowerCase() !== String(props.defaults[key]).toLowerCase()) || itemsChanged.value);
 
 function resetLook() {
     LOOK_KEYS.forEach((key) => (form[key] = props.defaults[key]));
+    resetItems();
 }
 
 // Opens the PDF in a new tab straight away (inside the click, so it is not blocked) and remembers the choices.
 function openPdf() {
     if (sizeError.value) return;
+    const { item_sizes: overrides, ...flat } = look.value;
     const query = new URLSearchParams({
         paper: form.paper,
         orientation: form.orientation,
@@ -102,10 +146,11 @@ function openPdf() {
         background: form.background,
         qr: form.qr ? '1' : '0',
         hashtag: form.hashtag ? '1' : '0',
-        ...Object.fromEntries(Object.entries(look.value).map(([key, value]) => [key, typeof value === 'boolean' ? (value ? '1' : '0') : value])),
+        ...Object.fromEntries(Object.entries(flat).map(([key, value]) => [key, typeof value === 'boolean' ? (value ? '1' : '0') : value])),
+        ...Object.fromEntries(Object.entries(overrides).map(([key, percent]) => [`item_sizes[${key}]`, percent])),
     });
     window.open(`/admin/print/save-the-date?${query}`, '_blank');
-    form.put('/admin/print', { preserveScroll: true });
+    form.transform((data) => ({ ...data, item_sizes: overrides })).put('/admin/print', { preserveScroll: true });
 }
 </script>
 
@@ -226,7 +271,27 @@ function openPdf() {
                     </button>
                 </div>
 
-                <div class="mt-4 grid gap-5 sm:grid-cols-2">
+                <!-- How the names sit -->
+                <p class="mt-4 text-sm font-medium text-ink">Names</p>
+                <div class="mt-2 grid gap-2 sm:grid-cols-2">
+                    <label
+                        v-for="layout in [
+                            { key: 'stacked', label: 'Stacked', lines: [card.bride, '— and —', card.groom] },
+                            { key: 'line', label: 'One line', lines: [`${card.bride} & ${card.groom}`] },
+                        ]"
+                        :key="layout.key"
+                        class="flex cursor-pointer items-center gap-4 rounded-xl px-4 py-3 ring-1 transition"
+                        :class="form.names_layout === layout.key ? 'bg-[#f3eadd] ring-cocoa' : 'ring-ink/10 hover:ring-ink/30'"
+                    >
+                        <input v-model="form.names_layout" type="radio" name="names_layout" :value="layout.key" class="sr-only" />
+                        <span class="w-28 shrink-0 text-center font-script leading-tight text-caramel">
+                            <span v-for="(line, i) in layout.lines" :key="i" class="block" :class="line === '— and —' ? 'text-sm' : 'text-xl'">{{ line }}</span>
+                        </span>
+                        <span class="text-sm font-medium text-ink">{{ layout.label }}</span>
+                    </label>
+                </div>
+
+                <div class="mt-5 grid gap-5 sm:grid-cols-2">
                     <div v-for="field in SIZE_FIELDS" :key="field.key">
                         <div class="flex items-baseline justify-between gap-3">
                             <label :for="`size-${field.key}`" class="admin-label mb-0">{{ field.label }}</label>
@@ -290,6 +355,47 @@ function openPdf() {
                     </div>
                 </div>
                 <p v-for="field in [...SIZE_FIELDS, ...COLOR_FIELDS]" v-show="form.errors[field.key]" :key="`e-${field.key}`" class="mt-1 text-sm text-red-700">{{ form.errors[field.key] }}</p>
+            </section>
+
+            <!-- Fine-tune every line -->
+            <section class="rounded-2xl bg-white p-5 ring-1 ring-ink/10">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <h2 class="font-serif text-2xl text-ink">Each line</h2>
+                        <p class="text-sm text-ink-soft">Make any single line bigger or smaller, on top of the sizes above. 100% is the design.</p>
+                    </div>
+                    <button v-if="itemsChanged" type="button" class="text-sm text-ink-soft underline-offset-4 hover:text-rust hover:underline" @click="resetItems">
+                        Reset every line
+                    </button>
+                </div>
+
+                <div class="mt-4 divide-y divide-ink/10">
+                    <div v-for="line in shownItems" :key="line.key" class="grid items-center gap-x-4 gap-y-1 py-2.5 sm:grid-cols-[minmax(0,1fr)_14rem_3.5rem]">
+                        <div class="min-w-0">
+                            <label :for="`item-${line.key}`" class="block text-sm font-medium text-ink">{{ line.label }}</label>
+                            <p class="truncate text-xs text-ink-soft">{{ itemText[line.key] }}</p>
+                        </div>
+                        <input
+                            :id="`item-${line.key}`"
+                            v-model.number="form.item_sizes[line.key]"
+                            type="range"
+                            :min="limits.minItem"
+                            :max="limits.maxItem"
+                            step="5"
+                            class="w-full accent-[#7b5539]"
+                        />
+                        <button
+                            type="button"
+                            class="justify-self-end text-sm tabular-nums"
+                            :class="form.item_sizes[line.key] === 100 ? 'text-ink-soft' : 'font-medium text-cocoa hover:text-rust'"
+                            :title="form.item_sizes[line.key] === 100 ? '' : 'Back to 100%'"
+                            @click="form.item_sizes[line.key] = 100"
+                        >
+                            {{ form.item_sizes[line.key] }}%
+                        </button>
+                    </div>
+                </div>
+                <p v-if="form.errors.item_sizes" class="mt-1 text-sm text-red-700">{{ form.errors.item_sizes }}</p>
             </section>
 
             <section class="rounded-2xl bg-[#f3eadd] p-5 text-sm text-ink-soft">

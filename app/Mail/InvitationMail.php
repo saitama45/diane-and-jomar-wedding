@@ -101,6 +101,14 @@ class InvitationMail extends Mailable
                 'families' => $this->settings['families_line'] ?? '',
                 'imagePath' => $imagePath,
                 'imageUrl' => $imageUrl,
+                // The boho invitation look of the website: the painted corner flowers as images (attached inline,
+                // email cannot draw them), the monogram, and the save-the-date card's venue lines.
+                'floraTop' => is_file($path = public_path('images/email/flora-top-left.png')) ? $path : null,
+                'floraBottom' => is_file($path = public_path('images/email/flora-bottom-right.png')) ? $path : null,
+                'initials' => collect([$this->settings['bride_name'] ?? '', $this->settings['groom_name'] ?? ''])
+                    ->map(fn (string $name) => Str::upper(Str::substr(trim($name), 0, 1)))->all(),
+                'ceremonyLine' => trim((string) ($this->settings['std_ceremony_line'] ?? '')) ?: 'Ceremony will be held at',
+                'receptionLine' => trim((string) ($this->settings['std_reception_line'] ?? '')) ?: 'Reception follows at',
             ],
         );
     }

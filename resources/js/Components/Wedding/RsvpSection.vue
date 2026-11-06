@@ -121,6 +121,7 @@ onBeforeUnmount(() => ctx?.revert());
                     </p>
                 </div>
                 <p v-reveal="'up'" class="mx-auto mt-6 max-w-md font-serif text-xl italic leading-relaxed text-paper/75 lg:mx-0">{{ message }}</p>
+                <p v-if="settings.hashtag" v-reveal="'up'" class="mt-5 font-serif text-xl font-semibold tracking-[0.1em] text-gold-light">{{ settings.hashtag }}</p>
                 <p v-if="previous && !thanks" class="mt-6 inline-flex items-center gap-2 border border-gold-light/40 px-4 py-2 text-sm text-gold-light">
                     <LineIcon name="check" :size="16" />
                     You already replied — you can update your answer anytime.

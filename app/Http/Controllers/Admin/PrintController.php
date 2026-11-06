@@ -64,7 +64,37 @@ class PrintController extends Controller
         'accent_italic' => ['print_accent_italic', false],
         'details_bold' => ['print_details_bold', false],
         'details_italic' => ['print_details_italic', false],
+        // The names on top of each other (Jomar / and / Diana, as the couple asked) or on one line.
+        'names_layout' => ['print_names_layout', 'stacked'],
+        // Fine-tuning per line of text: item key => percent (only the ones not at 100 %), stored as JSON.
+        'item_sizes' => ['print_item_sizes', []],
     ];
+
+    /** The lines of text (and the QR code) whose size can be fine-tuned, in card order. */
+    public const ITEMS = [
+        'heading' => 'Save the Date heading',
+        'monogram' => 'Monogram and wreath',
+        'and' => '“and” between the names',
+        'date' => 'Weekday, time, month and year',
+        'day' => 'Day of the month',
+        'ceremony_line' => 'Line before the ceremony venue',
+        'ceremony_venue' => 'Ceremony venue',
+        'ceremony_address' => 'Ceremony address',
+        'reception_line' => 'Line before the reception venue',
+        'reception_venue' => 'Reception venue',
+        'reception_address' => 'Reception address',
+        'reception_time' => 'Reception time',
+        'rsvp' => 'RSVP',
+        'reply_by' => 'Reply-by date',
+        'website' => 'Website address',
+        'qr' => 'QR code',
+        'hashtag' => 'Hashtag',
+    ];
+
+    /** Per-line fine-tuning, in percent. */
+    private const MIN_ITEM = 50;
+
+    private const MAX_ITEM = 200;
 
     private const SWITCHES = ['qr', 'hashtag', ...self::TEXT_STYLES];
 
@@ -78,7 +108,11 @@ class PrintController extends Controller
     {
         return Inertia::render('Admin/Print', [
             'papers' => collect(self::PAPERS)->map(fn (array $paper, string $key) => ['key' => $key] + $paper)->values(),
-            'limits' => ['min' => self::MIN_MM, 'max' => self::MAX_MM, 'minSize' => self::MIN_SIZE, 'maxSize' => self::MAX_SIZE],
+            'limits' => [
+                'min' => self::MIN_MM, 'max' => self::MAX_MM, 'minSize' => self::MIN_SIZE, 'maxSize' => self::MAX_SIZE,
+                'minItem' => self::MIN_ITEM, 'maxItem' => self::MAX_ITEM,
+            ],
+            'items' => collect(self::ITEMS)->map(fn (string $label, string $key) => ['key' => $key, 'label' => $label])->values(),
             'defaults' => collect(self::SETTINGS)->map(fn (array $setting) => $setting[1]),
             'options' => $this->saved(),
             'card' => $this->card(),
@@ -91,7 +125,11 @@ class PrintController extends Controller
         $options = $this->resolve(array_merge($this->saved(), $request->all())); // anything not sent keeps its saved value
 
         foreach (self::SETTINGS as $field => [$key]) {
-            $value = in_array($field, self::SWITCHES, true) ? ($options[$field] ? '1' : '0') : (string) ($options[$field] ?? '');
+            $value = match (true) {
+                in_array($field, self::SWITCHES, true) => $options[$field] ? '1' : '0',
+                $field === 'item_sizes' => json_encode((object) $options['item_sizes']),
+                default => (string) ($options[$field] ?? ''),
+            };
             Setting::updateOrCreate(['key' => $key], [
                 'group' => 'print', 'label' => 'Print: '.$field, 'type' => 'text', 'value' => $value, 'sort_order' => 900,
             ]);
@@ -116,7 +154,8 @@ class PrintController extends Controller
                 'qr' => $options['qr'],
                 'hashtag' => $options['hashtag'],
             ],
-            'look' => collect($options)->only([...self::SIZES, ...self::COLORS, ...self::TEXT_STYLES]),
+            'look' => collect($options)->only([...self::SIZES, ...self::COLORS, ...self::TEXT_STYLES, 'names_layout'])
+                ->put('item_sizes', (object) $options['item_sizes']),
             'filename' => sprintf('Save the Date - %s & %s - %s.pdf', $card['bride'], $card['groom'], $options['label']),
         ]);
     }
@@ -142,7 +181,17 @@ class PrintController extends Controller
             ...collect(self::COLORS)->mapWithKeys(fn (string $field) => [
                 $field => ['required', 'regex:/^#[0-9a-fA-F]{6}$/'],
             ]),
+            'names_layout' => ['required', Rule::in(['stacked', 'line'])],
+            'item_sizes' => ['nullable', 'array'],
+            'item_sizes.*' => ['integer', 'between:'.self::MIN_ITEM.','.self::MAX_ITEM],
         ])->validate();
+
+        // Only known lines; 100 % is the designed size, so it need not be kept.
+        $data['item_sizes'] = collect($data['item_sizes'] ?? [])
+            ->only(array_keys(self::ITEMS))
+            ->map(fn ($percent) => (int) $percent)
+            ->reject(fn (int $percent) => $percent === 100)
+            ->all();
 
         if ($data['paper'] === 'custom') {
             $toMm = $data['unit'] === 'in' ? 25.4 : 1;
@@ -189,6 +238,7 @@ class PrintController extends Controller
                 $value === null => $default,
                 in_array($field, self::SWITCHES, true) => $value === '1',
                 in_array($field, self::SIZES, true) => (int) $value,
+                $field === 'item_sizes' => (array) (json_decode($value, true) ?: []),
                 default => $value,
             };
         })->all();
