@@ -11,7 +11,7 @@
  * the rest have their own size, and every line can be fine-tuned (`item_sizes`, percent per line).
  */
 import QRCode from 'qrcode';
-import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { computed, inject, nextTick, onMounted, ref, watch } from 'vue';
 import BohoCorner from '@/Components/Wedding/BohoCorner.vue';
 import PampasWreath from '@/Components/Wedding/PampasWreath.vue';
 
@@ -56,7 +56,9 @@ function text(key, group, size, { weight = 400, italic = false, soft = false, na
 const px = (size, key = null) => `${size * k.value * (key ? item(key) : 1)}px`;
 
 const initials = computed(() => [props.card.bride, props.card.groom].map((name) => (name ?? '').trim().charAt(0).toUpperCase()));
-const flora = computed(() => Math.round(Math.min(props.width, props.height) * 0.46));
+// The garden flowers are denser than the pampas, so their corners print a little smaller.
+const theme = inject('decorTheme', computed(() => 'boho'));
+const flora = computed(() => Math.round(Math.min(props.width, props.height) * (theme.value === 'garden' ? 0.4 : 0.46)));
 const host = computed(() => (props.card.siteUrl ?? '').replace(/^https?:\/\//, ''));
 const showHashtag = computed(() => props.hashtag && !!props.card.hashtag);
 
@@ -96,6 +98,10 @@ defineExpose({ ready });
     >
         <BohoCorner corner="top-right" :style="{ width: `${flora}px`, height: `${flora}px`, opacity: 1 }" />
         <BohoCorner corner="bottom-left" :style="{ width: `${flora}px`, height: `${flora}px`, opacity: 1 }" />
+        <template v-if="theme === 'garden'">
+            <BohoCorner corner="top-left" :style="{ width: `${flora * 0.85}px`, height: `${flora * 0.85}px`, opacity: 1 }" />
+            <BohoCorner corner="bottom-right" :style="{ width: `${flora * 0.85}px`, height: `${flora * 0.85}px`, opacity: 1 }" />
+        </template>
 
         <div class="absolute inset-0 flex items-center justify-center">
             <div ref="content" class="shrink-0" :style="{ width: px(520), transform: `scale(${scale})` }">
@@ -149,7 +155,8 @@ defineExpose({ ready });
 
                 <div class="mt-8 flex items-center justify-center gap-5">
                     <!-- eslint-disable-next-line vue/no-v-html -- an SVG made by the qrcode library from the site address -->
-                    <span v-if="qr && qrSvg" class="block shrink-0 [&_svg]:size-full" :style="{ width: px(88, 'qr'), height: px(88, 'qr') }" v-html="qrSvg"></span>
+                    <!-- a solid cream backing: nothing behind it (corner flowers) may show through, or phones cannot read it -->
+                    <span v-if="qr && qrSvg" class="block shrink-0 [&_svg]:size-full" :style="{ width: px(88, 'qr'), height: px(88, 'qr'), padding: px(6), background: '#fffaf2', boxSizing: 'content-box' }" v-html="qrSvg"></span>
                     <div :class="qr && qrSvg ? 'text-left' : 'text-center'">
                         <p class="font-serif tracking-[0.24em]" :style="text('rsvp', 'accent', 26, { weight: 600 })">RSVP</p>
                         <p v-if="card.deadline" class="font-serif" :style="text('reply_by', 'details', 16, { italic: true, soft: true })">Kindly reply by {{ card.deadline }}</p>

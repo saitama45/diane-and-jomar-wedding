@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Http\Controllers\Admin\ThemeController;
 use App\Models\Invitation;
 use App\Models\Setting;
 use App\Models\WeddingEvent;
@@ -103,14 +104,30 @@ class InvitationMail extends Mailable
                 'imageUrl' => $imageUrl,
                 // The boho invitation look of the website: the painted corner flowers as images (attached inline,
                 // email cannot draw them), the monogram, and the save-the-date card's venue lines.
-                'floraTop' => is_file($path = public_path('images/email/flora-top-left.png')) ? $path : null,
-                'floraBottom' => is_file($path = public_path('images/email/flora-bottom-right.png')) ? $path : null,
+                'floraTop' => $this->flora('top-left'),
+                'floraBottom' => $this->flora('bottom-right'),
+                // Only themes that decorate all four corners (garden) have these two.
+                'floraTopRight' => $this->flora('top-right', fallback: false),
+                'floraBottomLeft' => $this->flora('bottom-left', fallback: false),
                 'initials' => collect([$this->settings['bride_name'] ?? '', $this->settings['groom_name'] ?? ''])
                     ->map(fn (string $name) => Str::upper(Str::substr(trim($name), 0, 1)))->all(),
                 'ceremonyLine' => trim((string) ($this->settings['std_ceremony_line'] ?? '')) ?: 'Ceremony will be held at',
                 'receptionLine' => trim((string) ($this->settings['std_reception_line'] ?? '')) ?: 'Reception follows at',
             ],
         );
+    }
+
+    /** The chosen theme's corner flowers (public/images/email/{theme}-{corner}.png), or the boho ones. */
+    private function flora(string $corner, bool $fallback = true): ?string
+    {
+        $prefix = config('wedding.themes.'.ThemeController::current().'.email', 'flora');
+        foreach ($fallback ? [$prefix, 'flora'] : [$prefix] as $name) {
+            if (is_file($path = public_path("images/email/{$name}-{$corner}.png"))) {
+                return $path;
+            }
+        }
+
+        return null;
     }
 
     private function subjectLine(): string

@@ -6,6 +6,8 @@
     $photo = $imagePath ? $message->embed($imagePath) : $imageUrl;
     $floraTopSrc = $floraTop ? $message->embed($floraTop) : null;
     $floraBottomSrc = $floraBottom ? $message->embed($floraBottom) : null;
+    $floraTopRightSrc = $floraTopRight ? $message->embed($floraTopRight) : null;
+    $floraBottomLeftSrc = $floraBottomLeft ? $message->embed($floraBottomLeft) : null;
     $serif = "'Cormorant Garamond', Georgia, 'Times New Roman', serif";
     $script = "'Pinyon Script', 'Snell Roundhand', 'Apple Chancery', Georgia, serif";
     $sans = "'Jost', 'Helvetica Neue', Helvetica, Arial, sans-serif";
@@ -74,7 +76,13 @@
                                         </tr>
                                     </table>
                                 </td>
-                                <td class="flora-cell" width="170" style="width:170px;">&nbsp;</td>
+                                <td class="flora-cell" width="170" valign="top" align="right" style="width:170px;line-height:0;font-size:0;">
+                                    @if ($floraTopRightSrc)
+                                        <img class="flora" src="{{ $floraTopRightSrc }}" width="170" height="170" alt="" style="display:block;width:170px;height:170px;border:0;margin-left:auto;">
+                                    @else
+                                        &nbsp;
+                                    @endif
+                                </td>
                             </tr>
                         </table>
                     </td>
@@ -227,7 +235,13 @@
                     <td>
                         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                             <tr>
-                                <td class="flora-cell" width="170" style="width:170px;">&nbsp;</td>
+                                <td class="flora-cell" width="170" valign="bottom" style="width:170px;line-height:0;font-size:0;">
+                                    @if ($floraBottomLeftSrc)
+                                        <img class="flora" src="{{ $floraBottomLeftSrc }}" width="170" height="170" alt="" style="display:block;width:170px;height:170px;border:0;">
+                                    @else
+                                        &nbsp;
+                                    @endif
+                                </td>
                                 <td align="center" valign="middle" style="padding:18px 0 0;">
                                     <p style="margin:0;font-family:{!! $script !!};font-size:28px;line-height:1.2;color:{{ $caramel }};">With love,</p>
                                     <p style="margin:2px 0 0;font-family:{!! $serif !!};font-size:17px;letter-spacing:1px;color:{{ $ink }};">{{ $bride }} &amp; {{ $groom }}</p>

@@ -7,7 +7,7 @@
  * SVG itself, so it can never slip out of the lens.
  */
 import QRCode from 'qrcode';
-import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { computed, inject, nextTick, onMounted, ref, watch } from 'vue';
 import BohoCorner from '@/Components/Wedding/BohoCorner.vue';
 
 const props = defineProps({
@@ -47,7 +47,8 @@ function text(group, size, { weight = 400, italic = false, soft = false, names =
 const cameraWidth = computed(() => 560 * Math.min(1.3, item('qr')));
 const qrSide = computed(() => 78 * Math.min(1.25, item('qr'))); // in camera units; the inner ring fits 79
 const host = computed(() => (props.card.shareUrl ?? '').replace(/^https?:\/\//, ''));
-const flora = computed(() => Math.round(Math.min(props.width, props.height) * 0.42));
+const theme = inject('decorTheme', computed(() => 'boho'));
+const flora = computed(() => Math.round(Math.min(props.width, props.height) * (theme.value === 'garden' ? 0.36 : 0.42)));
 
 async function makeQr() {
     if (!props.card.shareUrl) {
@@ -88,6 +89,10 @@ defineExpose({ ready });
     >
         <BohoCorner corner="top-right" :style="{ width: `${flora}px`, height: `${flora}px`, opacity: 1 }" />
         <BohoCorner corner="bottom-left" :style="{ width: `${flora}px`, height: `${flora}px`, opacity: 1 }" />
+        <template v-if="theme === 'garden'">
+            <BohoCorner corner="top-left" :style="{ width: `${flora * 0.85}px`, height: `${flora * 0.85}px`, opacity: 1 }" />
+            <BohoCorner corner="bottom-right" :style="{ width: `${flora * 0.85}px`, height: `${flora * 0.85}px`, opacity: 1 }" />
+        </template>
 
         <div class="absolute inset-0 flex items-center justify-center">
             <!-- Wide enough for the camera whatever the text size (the camera has its own size: "QR code" in Each line) -->
@@ -115,7 +120,8 @@ defineExpose({ ready });
                     <path d="M108 62l14-26h56l14 26" />
                     <path d="M44 62v-12a6 6 0 0 1 6-6h24a6 6 0 0 1 6 6v12" />
                     <circle :cx="LENS.x" :cy="LENS.y" r="66" fill="#ffffff" fill-opacity="0.55" />
-                    <circle :cx="LENS.x" :cy="LENS.y" r="56" stroke-opacity=".5" />
+                    <!-- a solid backing behind the QR code, so nothing shows through it -->
+                    <circle :cx="LENS.x" :cy="LENS.y" r="56" fill="#fffaf2" stroke-opacity=".5" />
                     <circle cx="252" cy="86" r="8" />
                     <path d="M30 96h60M210 96h60" stroke-opacity=".35" />
                     <svg

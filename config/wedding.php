@@ -205,6 +205,16 @@ return [
     ],
 
     /*
+     * The decoration themes (Admin > Theme, the `decor_theme` setting). The flowers are drawn in code:
+     * BohoCorner.vue / PampasWreath.vue (boho) and GardenCorner.vue / GardenBloom.vue (garden); the
+     * invitation email uses PNG snapshots of them from public/images/email/{email}-top-left.png etc.
+     */
+    'themes' => [
+        'boho' => ['label' => 'Boho Pampas', 'email' => 'flora', 'description' => 'Dried pampas plumes, palm spears, cream roses and bunny tails in browns and beige.'],
+        'garden' => ['label' => 'Watercolor Garden', 'email' => 'garden', 'description' => 'Watercolour peach blooms, lilac blossoms, sage and eucalyptus leaves, gold line-art leaves and gold dots.'],
+    ],
+
+    /*
      * Suggested background music (Admin > Music). Public-domain recordings from Wikimedia Commons, so the
      * website needs no credit line; converted to 128 kbps MP3 with matched loudness in public/music.
      */

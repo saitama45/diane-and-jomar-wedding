@@ -151,3 +151,122 @@ export function painter(seed) {
 
     return { pampas, palmFan, rose, leafSprig, bunnyTail };
 }
+
+/*
+ * The "Watercolor Garden" theme: big peach blooms with a teal and ochre eye, lilac blossoms, small rust
+ * flowers, sage and eucalyptus leaves, gold line-art leaves and gold dots. Same rules as `painter`:
+ * seeded, so it is identical on every visit, and drawn for the top-left corner (turned for the others).
+ */
+export function gardenPainter(seed) {
+    const random = seeded(seed);
+    const jitter = (amount) => (random() - 0.5) * 2 * amount;
+
+    /** A pointed petal from `center` toward `deg`: `inner` and `outer` are fractions of `radius`. */
+    function petal(center, deg, radius, { inner = 0.1, outer = 1, width = 0.3 } = {}) {
+        const dir = toward(deg);
+        const normal = normalOf(dir);
+        const r = radius * outer;
+        const w = r * width;
+        const start = add(center, dir, radius * inner);
+        const tip = add(center, dir, r);
+        const shoulder = add(center, dir, r * 0.55);
+        return (
+            `M${fmt(start)} C${fmt(add(shoulder, normal, w))} ${fmt(add(add(center, dir, r * 0.92), normal, w * 0.45))} ${fmt(tip)} ` +
+            `C${fmt(add(add(center, dir, r * 0.92), normal, -w * 0.45))} ${fmt(add(shoulder, normal, -w))} ${fmt(start)} Z`
+        );
+    }
+
+    /** A gerbera-like bloom: three rings of pointed petals around a teal-ringed ochre eye. */
+    function bloom(center, radius, turn) {
+        const ring = (count, outer, width, offset) =>
+            Array.from({ length: count }, (_, i) =>
+                petal(center, turn + offset + (360 * i) / count + jitter(5), radius, { outer: outer * (0.92 + random() * 0.14), width: width * (0.9 + random() * 0.2) }),
+            );
+        const dots = Array.from({ length: 14 }, () => {
+            const p = onCircle(center, radius * (0.05 + random() * 0.13), random() * 360);
+            return { x: p[0], y: p[1], r: radius * (0.012 + random() * 0.012) };
+        });
+        return {
+            center,
+            radius,
+            outer: ring(13, 1, 0.4, 0),
+            middle: ring(11, 0.76, 0.42, 14),
+            inner: ring(9, 0.5, 0.46, 5),
+            dots,
+        };
+    }
+
+    /** A small five-petal blossom with round petals. */
+    function blossom(center, radius, turn, petals = 5) {
+        const shapes = Array.from({ length: petals }, (_, i) => {
+            const deg = turn + (360 * i) / petals + jitter(6);
+            const c = onCircle(center, radius * 0.52, deg);
+            return { cx: c[0], cy: c[1], rx: radius * 0.52, ry: radius * 0.36, angle: deg };
+        });
+        return { center, radius, shapes };
+    }
+
+    /** One filled leaf along a curved midrib. */
+    function leaf(base, deg, length, width, bend = 0) {
+        const dir = toward(deg);
+        const normal = normalOf(dir);
+        const tip = add(base, dir, length);
+        const mid = add(add(base, dir, length * 0.5), normal, bend);
+        return {
+            d:
+                `M${fmt(base)} Q${fmt(add(mid, normal, width))} ${fmt(tip)} ` +
+                `Q${fmt(add(mid, normal, -width * 0.8))} ${fmt(base)} Z`,
+            // one half of the leaf, painted lighter for a two-tone watercolour leaf
+            half: `M${fmt(base)} Q${fmt(add(mid, normal, width))} ${fmt(tip)} Q${fmt(mid)} ${fmt(base)} Z`,
+            rib: `M${fmt(base)} Q${fmt(mid)} ${fmt(add(base, dir, length * 0.92))}`,
+        };
+    }
+
+    /** A stem with leaves on both sides (`outline` draws them as gold line art). */
+    function branch(base, deg, length, bend, { leaves = 9, size = 1, round = false } = {}) {
+        const stem = curve(base, deg, length, bend);
+        const shapes = [];
+        let side = 1;
+        for (let i = 0; i < leaves; i++) {
+            const t = 0.16 + (0.8 * i) / Math.max(1, leaves - 1);
+            const p = stem.at(t);
+            const along = stem.along(t);
+            const angle = (Math.atan2(along[1], along[0]) * 180) / Math.PI + side * (round ? 70 : 42 + random() * 12);
+            const len = (round ? 15 : 30 + random() * 8) * (1 - t * 0.35) * size;
+            if (round) {
+                const c = onCircle(p, len * 0.75, angle);
+                shapes.push({ round: true, cx: c[0], cy: c[1], r: len * 0.62 });
+            } else {
+                shapes.push(leaf(p, angle, len, len * 0.32, side * len * 0.06));
+            }
+            side = -side;
+        }
+        const tip = stem.at(1);
+        shapes.push(round ? { round: true, cx: tip[0], cy: tip[1], r: 6 * size } : leaf(tip, (Math.atan2(stem.along(1)[1], stem.along(1)[0]) * 180) / Math.PI, 24 * size, 7 * size));
+        return { stem: stem.d, shapes };
+    }
+
+    /** Gold dots scattered along an arc around the arrangement. */
+    function dots(count, center, from, to, minR, maxR) {
+        return Array.from({ length: count }, () => {
+            const p = onCircle(center, minR + random() * (maxR - minR), from + random() * (to - from));
+            return { x: p[0], y: p[1], r: 1.6 + random() * 3.6 };
+        });
+    }
+
+    /** A thin flower stem; `tip` is where its flower goes. */
+    function stem(base, deg, length, bend) {
+        const c = curve(base, deg, length, bend);
+        return { d: c.d, tip: c.at(1) };
+    }
+
+    /** A small cluster of round berries or buds around `center`. */
+    function berries(center, count, spread, size) {
+        return Array.from({ length: count }, () => {
+            const p = onCircle(center, random() * spread, random() * 360);
+            return { x: p[0], y: p[1], r: size * (0.7 + random() * 0.5) };
+        });
+    }
+
+    return { bloom, blossom, leaf, branch, dots, petal, stem, berries, random };
+}

@@ -46,6 +46,8 @@ const props = defineProps({
 
 // Custom corner flowers uploaded in Site Settings > Decorations replace the drawn ones (BohoCorner.vue).
 provide('decorImage', computed(() => props.settings.decor_corner_image || null));
+// The flower theme (Admin > Theme): BohoCorner, PampasWreath and SectionTitle draw by it.
+provide('decorTheme', computed(() => props.settings.decor_theme || 'boho'));
 
 const showIntro = ref(true);
 const revealed = ref(false);

@@ -245,6 +245,7 @@ class WeddingContentSeeder extends Seeder
             ['sections', 'show_attire_samples', 'Attire samples', 'toggle', '1', 'The outfit pictures under the dress code.'],
 
             ['decor', 'decor_corner_image', 'Corner flowers (optional)', 'image', '', 'Leave empty for the painted boho flowers. Or upload your own: a PNG with a transparent background, arranged for the top-left corner (it is turned to fit the other corners).'],
+            ['theme', 'decor_theme', 'Theme', 'text', 'boho', 'Chosen on the Theme page.'],
 
             ['entourage', 'entourage_title', 'Section title', 'text', 'Our Families and Sponsors', 'The big title of the section with your families, sponsors and entourage.'],
             ['entourage', 'entourage_menu_label', 'Menu label', 'text', 'Families & Sponsors', 'The short name of that section in the website menu.'],

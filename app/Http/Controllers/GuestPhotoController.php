@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Admin\ThemeController;
 use App\Models\GuestPhoto;
 use App\Models\Setting;
 use Illuminate\Http\JsonResponse;
@@ -28,6 +29,7 @@ class GuestPhotoController extends Controller
             'message' => $settings['capture_message'] ?? '',
             'open' => self::open(),
             'maxMb' => self::MAX_MB,
+            'theme' => ThemeController::current(),
         ]);
     }
 

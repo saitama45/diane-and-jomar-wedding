@@ -290,6 +290,7 @@ class PrintController extends Controller
             'shareUrl' => $text('capture_upload_url') ?: Setting::siteUrl().'/share',
             'captureMessage' => $text('capture_message'),
             'decorImage' => $text('decor_corner_image') ?: null,
+            'theme' => ThemeController::current(), // Admin > Theme
         ];
     }
 }

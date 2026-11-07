@@ -12,6 +12,7 @@ const nav = [
     { href: '/admin/content/invitations', label: 'Invitations', icon: 'ticket' },
     { href: '/admin/photos', label: 'Guest Photos', icon: 'camera' },
     { href: '/admin/settings', label: 'Site Settings', icon: 'sliders' },
+    { href: '/admin/theme', label: 'Theme', icon: 'sparkle' },
     { href: '/admin/music', label: 'Music', icon: 'music' },
     { href: '/admin/print', label: 'Print Cards', icon: 'printer' },
     { heading: 'Content' },

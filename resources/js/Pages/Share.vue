@@ -5,7 +5,7 @@
  * couple sees everything in Admin > Guest Photos.
  */
 import { Head } from '@inertiajs/vue3';
-import { computed, onBeforeUnmount, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, provide, ref, watch } from 'vue';
 import LineIcon from '@/Components/LineIcon.vue';
 import BohoCorner from '@/Components/Wedding/BohoCorner.vue';
 
@@ -15,7 +15,10 @@ const props = defineProps({
     message: { type: String, default: '' },
     open: { type: Boolean, default: true },
     maxMb: { type: Number, default: 25 },
+    theme: { type: String, default: 'boho' }, // Admin > Theme
 });
+
+provide('decorTheme', computed(() => props.theme));
 
 const NAME_KEY = 'share-photos-name';
 const remembered = () => {
@@ -198,9 +201,13 @@ onBeforeUnmount(() => items.value.forEach((item) => URL.revokeObjectURL(item.pre
 <template>
     <Head :title="`Share your photos — ${couple}`" />
 
-    <main class="boho-paper relative isolate min-h-dvh overflow-hidden px-5 pb-16 pt-14 text-center text-ink sm:pt-20">
+    <main class="boho-paper relative isolate min-h-dvh overflow-hidden px-5 pb-16 pt-32 text-center text-ink sm:pt-20">
         <BohoCorner corner="top-left" class="size-40! opacity-100! sm:size-64!" />
         <BohoCorner corner="bottom-right" class="fixed! size-40! opacity-100! sm:size-64!" />
+        <template v-if="theme === 'garden'">
+            <BohoCorner corner="top-right" class="size-36! opacity-100! sm:size-56!" />
+            <BohoCorner corner="bottom-left" class="fixed! size-36! opacity-100! sm:size-56!" />
+        </template>
 
         <div class="relative mx-auto max-w-xl">
             <p class="kicker text-ink-soft">Capture the love</p>

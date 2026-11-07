@@ -1,5 +1,5 @@
 <script setup>
-import { onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, inject, onBeforeUnmount, onMounted, ref } from 'vue';
 import LineIcon from '@/Components/LineIcon.vue';
 import BohoCorner from '@/Components/Wedding/BohoCorner.vue';
 import { gsap, reducedMotion } from '@/lib/motion';
@@ -10,6 +10,9 @@ defineProps({
     venue: { type: String, default: null }, // the ceremony venue
     guestName: { type: String, default: null },
 });
+
+// The garden theme decorates all four corners, like a printed floral invitation.
+const theme = inject('decorTheme', computed(() => 'boho'));
 
 const emit = defineEmits(['open', 'reveal', 'done']);
 
@@ -78,6 +81,10 @@ function open() {
             <div class="linen absolute inset-0 opacity-60" aria-hidden="true"></div>
             <BohoCorner corner="top-left" :behind="false" class="ig-flora size-[25vh]! opacity-100! sm:size-[36vh]! lg:size-[50vh]!" />
             <BohoCorner corner="bottom-right" :behind="false" class="ig-flora size-[25vh]! opacity-100! sm:size-[36vh]! lg:size-[50vh]!" />
+            <template v-if="theme === 'garden'">
+                <BohoCorner corner="top-right" :behind="false" class="ig-flora size-[22vh]! opacity-100! sm:size-[32vh]! lg:size-[44vh]!" />
+                <BohoCorner corner="bottom-left" :behind="false" class="ig-flora size-[22vh]! opacity-100! sm:size-[32vh]! lg:size-[44vh]!" />
+            </template>
 
             <div ref="content" class="relative z-10 h-full overflow-y-auto">
                 <div class="flex min-h-full flex-col items-center justify-center px-6 py-10 text-center">

@@ -2,11 +2,13 @@
 /*
  * Painted-look boho corner arrangement: pampas plumes, dried palm spears, cream roses, bunny-tail grass
  * and dark dried leaves, drawn from code for the top-left corner and turned to fit the others.
- * If the admin uploaded their own corner artwork (Site Settings > Decorations), that image is used instead.
+ * If the admin uploaded their own corner artwork (Site Settings > Decorations), that image is used instead;
+ * with the "Watercolor Garden" theme (Admin > Theme, provided as `decorTheme`) GardenCorner.vue is drawn.
  * Decorative only: it sits behind the section content (the section needs `isolate`).
  */
 import { computed, inject } from 'vue';
 import { painter } from '@/lib/bohoArt';
+import GardenCorner from './GardenCorner.vue';
 
 const props = defineProps({
     corner: { type: String, default: 'top-left' }, // top-left | top-right | bottom-left | bottom-right
@@ -14,6 +16,7 @@ const props = defineProps({
 });
 
 const customImage = inject('decorImage', computed(() => null));
+const theme = inject('decorTheme', computed(() => 'boho'));
 
 // Where it sits, and how the top-left arrangement is turned to fit that corner. The turn is done inside
 // the SVG (or as a plain CSS transform on an uploaded image), not with Tailwind's rotate/scale classes,
@@ -46,6 +49,14 @@ const roses = [rose([54, 60], 42, 8), rose([124, 30], 29, 40), rose([30, 128], 2
         class="pointer-events-none absolute size-48 select-none object-contain object-left-top opacity-75 md:size-[22rem] md:opacity-100"
         :class="[placement, behind && '-z-10']"
         :style="{ transform: corner.css }"
+    />
+    <!-- Watercolor Garden: each corner has its own arrangement, a little larger than the pampas -->
+    <GardenCorner
+        v-else-if="theme === 'garden'"
+        :corner="props.corner"
+        :turn="corner.svg"
+        class="pointer-events-none absolute size-56 select-none opacity-90 md:size-[27rem] md:opacity-100"
+        :class="[placement, behind && '-z-10']"
     />
     <svg
         v-else

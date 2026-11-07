@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, inject, ref } from 'vue';
 import LineIcon from '@/Components/LineIcon.vue';
 import BohoCorner from './BohoCorner.vue';
 import PampasWreath from './PampasWreath.vue';
@@ -32,6 +32,7 @@ const ceremony = computed(() => props.events[0] ?? null);
 const reception = computed(() => props.events[1] ?? null);
 
 const emit = defineEmits(['film-play']);
+const theme = inject('decorTheme', computed(() => 'boho'));
 
 // "Our Little Film" can be switched off in Site Settings > Save the Date; the card then stands alone.
 const showFilm = computed(() => props.settings.show_std_film !== '0');
@@ -71,6 +72,10 @@ function play() {
                     <div class="linen absolute inset-0 -z-10 opacity-60" aria-hidden="true"></div>
                     <BohoCorner corner="top-left" class="size-36! opacity-100! sm:size-48!" />
                     <BohoCorner corner="bottom-right" class="size-36! opacity-100! sm:size-48!" />
+                    <template v-if="theme === 'garden'">
+                        <BohoCorner corner="top-right" class="size-32! opacity-100! sm:size-40!" />
+                        <BohoCorner corner="bottom-left" class="size-32! opacity-100! sm:size-40!" />
+                    </template>
 
                     <PampasWreath class="mx-auto size-40 sm:size-44">
                         <span class="flex items-baseline font-serif text-[2.5rem] font-medium leading-none text-rust sm:text-[2.8rem]" aria-hidden="true">

@@ -37,6 +37,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('photos/download', [Admin\GuestPhotoController::class, 'download'])->name('photos.download');
         Route::delete('photos/{photo}', [Admin\GuestPhotoController::class, 'destroy'])->whereNumber('photo')->name('photos.destroy');
 
+        Route::get('theme', [Admin\ThemeController::class, 'edit'])->name('theme');
+        Route::put('theme', [Admin\ThemeController::class, 'update'])->name('theme.update');
+
         Route::get('music', [Admin\MusicController::class, 'edit'])->name('music');
         Route::put('music', [Admin\MusicController::class, 'update'])->name('music.update');
 

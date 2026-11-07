@@ -20,6 +20,7 @@ const props = defineProps({
 
 // The admin's own corner artwork (Site Settings > Decorations) replaces the painted flowers here too.
 provide('decorImage', computed(() => props.card.decorImage));
+provide('decorTheme', computed(() => props.card.theme ?? 'boho'));
 
 const size = computed(() => designSize(props.paper.width_mm, props.paper.height_mm));
 const dpi = computed(() => printDpi(props.paper.width_mm, props.paper.height_mm));

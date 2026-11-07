@@ -46,6 +46,7 @@ const SIZE_FIELDS = [
 ];
 
 provide('decorImage', computed(() => props.card.decorImage));
+provide('decorTheme', computed(() => props.card.theme ?? 'boho'));
 
 const form = useForm({
     ...props.options,
