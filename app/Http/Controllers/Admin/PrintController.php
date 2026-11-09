@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AttireSample;
+use App\Models\MotifColor;
 use App\Models\Setting;
 use App\Models\WeddingEvent;
 use Illuminate\Http\RedirectResponse;
@@ -70,10 +72,20 @@ class PrintController extends Controller
         'names_layout' => ['print_names_layout', 'stacked'],
         // Fine-tuning per line of text: item key => percent (only the ones not at 100 %), stored as JSON.
         'item_sizes' => ['print_item_sizes', []],
+        // The Attire & Motif card: its wording, who it is for, and what it shows.
+        'attire_heading' => ['print_attire_heading', 'Attire & Motif'],
+        'attire_message' => ['print_attire_message', "We'd love to see you in these tones"],
+        'attire_audience' => ['print_attire_audience', 'all'], // all | guests | sponsors
+        'attire_palette' => ['print_attire_palette', true],
+        'attire_color_names' => ['print_attire_color_names', true],
+        'attire_pictures' => ['print_attire_pictures', true],
+        'attire_labels' => ['print_attire_labels', true],
+        'attire_text' => ['print_attire_text', true],
+        'attire_columns' => ['print_attire_columns', 2], // outfit pictures per row
     ];
 
     /** The printable designs, by key. */
-    public const DESIGNS = ['save-the-date' => 'Save the Date', 'photo-qr' => 'Photo QR sign'];
+    public const DESIGNS = ['save-the-date' => 'Save the Date', 'photo-qr' => 'Photo QR sign', 'attire' => 'Attire & Motif'];
 
     /** The lines of text (and the QR code) whose size can be fine-tuned, in card order. */
     public const ITEMS = [
@@ -93,7 +105,17 @@ class PrintController extends Controller
         'reply_by' => 'Reply-by date',
         'website' => 'Website address',
         'qr' => 'QR code',
-        'hashtag' => 'Hashtag',
+        // The Attire & Motif card
+        'attire_heading' => 'Heading',
+        'attire_message' => 'Message above the colours',
+        'attire_swatches' => 'Colour circles',
+        'attire_color_names' => 'Colour names',
+        'attire_pictures' => 'Outfit pictures',
+        'attire_labels' => 'Picture labels',
+        'attire_titles' => 'Principal Sponsors / Our Guests',
+        'attire_styles' => 'Formal / Semi-Formal',
+        'attire_details' => 'Dress code details',
+        'hashtag' => 'Hashtag', // last on every card
     ];
 
     /** Per-line fine-tuning, in percent. */
@@ -101,7 +123,11 @@ class PrintController extends Controller
 
     private const MAX_ITEM = 200;
 
-    private const SWITCHES = ['qr', 'hashtag', ...self::TEXT_STYLES];
+    private const SWITCHES = ['qr', 'hashtag', ...self::TEXT_STYLES, ...self::ATTIRE_SWITCHES];
+
+    private const ATTIRE_SWITCHES = ['attire_palette', 'attire_color_names', 'attire_pictures', 'attire_labels', 'attire_text'];
+
+    private const ATTIRE_OPTIONS = ['attire_heading', 'attire_message', 'attire_audience', 'attire_columns', ...self::ATTIRE_SWITCHES];
 
     private const TEXT_STYLES = ['names_bold', 'names_italic', 'accent_bold', 'accent_italic', 'details_bold', 'details_italic'];
 
@@ -163,6 +189,7 @@ class PrintController extends Controller
             ],
             'look' => collect($options)->only([...self::SIZES, ...self::COLORS, ...self::TEXT_STYLES, 'names_layout'])
                 ->put('item_sizes', (object) $options['item_sizes']),
+            'attire' => collect($options)->only(self::ATTIRE_OPTIONS),
             'filename' => sprintf('%s - %s & %s - %s.pdf', self::DESIGNS[$options['design']], $card['bride'], $card['groom'], $options['label']),
         ]);
     }
@@ -190,6 +217,10 @@ class PrintController extends Controller
             ]),
             'names_layout' => ['required', Rule::in(['stacked', 'line'])],
             'design' => ['required', Rule::in(array_keys(self::DESIGNS))],
+            'attire_heading' => ['nullable', 'string', 'max:80'],
+            'attire_message' => ['nullable', 'string', 'max:200'],
+            'attire_audience' => ['required', Rule::in(['all', 'guests', 'sponsors'])],
+            'attire_columns' => ['required', Rule::in([1, 2, 3])],
             'item_sizes' => ['nullable', 'array'],
             'item_sizes.*' => ['integer', 'between:'.self::MIN_ITEM.','.self::MAX_ITEM],
         ])->validate();
@@ -289,6 +320,16 @@ class PrintController extends Controller
             // The photo-sharing sign: where its QR code leads (the site's upload page unless another album is set).
             'shareUrl' => $text('capture_upload_url') ?: Setting::siteUrl().'/share',
             'captureMessage' => $text('capture_message'),
+            // The Attire & Motif card: only items still marked visible in their admin lists.
+            'attire' => [
+                'sponsors' => $text('dress_sponsors_attire'),
+                'gentlemen' => $text('dress_gentlemen'),
+                'ladies' => $text('dress_ladies'),
+                'guests' => $text('dress_guests_attire'),
+                'guestsNote' => $text('dress_guests_note'),
+                'colors' => MotifColor::visible()->orderBy('sort_order')->orderBy('id')->get(['id', 'name', 'hex']),
+                'samples' => AttireSample::visible()->orderBy('sort_order')->orderBy('id')->get(['id', 'image', 'audience', 'wearer', 'caption']),
+            ],
             'decorImage' => $text('decor_corner_image') ?: null,
             'theme' => ThemeController::current(), // Admin > Theme
         ];

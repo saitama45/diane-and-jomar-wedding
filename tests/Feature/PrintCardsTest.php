@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\AttireSample;
+use App\Models\MotifColor;
 use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -143,6 +145,58 @@ class PrintCardsTest extends TestCase
         $this->put('/admin/print', ['design' => 'photo-qr'])->assertSessionHasNoErrors();
         $this->assertSame('photo-qr', Setting::where('key', 'print_design')->value('value'));
         $this->put('/admin/print', ['design' => 'poster'])->assertSessionHasErrors('design');
+    }
+
+    public function test_the_attire_card_prints_the_visible_colours_pictures_and_dress_code(): void
+    {
+        AttireSample::create(['image' => '/storage/uploads/ladies.png', 'audience' => 'guests', 'wearer' => 'ladies']);
+        AttireSample::create(['image' => '/storage/uploads/hidden.png', 'audience' => 'guests', 'wearer' => 'gentlemen', 'is_active' => false]);
+        $hidden = MotifColor::first();
+        $hidden->update(['is_active' => false]);
+        $this->actingAs(User::first());
+
+        $this->get('/admin/print')->assertInertia(fn (Assert $page) => $page
+            ->where('designs.2.key', 'attire')
+            ->where('options.attire_heading', 'Attire & Motif')
+            ->where('options.attire_palette', true)
+            ->where('card.attire.sponsors', 'Formal')
+            ->has('card.attire.colors', MotifColor::count() - 1)
+            ->has('card.attire.samples', 1)
+            ->where('card.attire.samples.0.image', '/storage/uploads/ladies.png'));
+
+        $this->get('/admin/print/save-the-date?design=attire&paper=A5')->assertInertia(fn (Assert $page) => $page
+            ->where('design', 'attire')
+            ->where('filename', 'Attire & Motif - Diane & Jomar - A5.pdf')
+            ->where('attire.attire_columns', 2)
+            ->where('attire.attire_text', true));
+    }
+
+    public function test_the_attire_card_can_be_adjusted_and_remembers_it(): void
+    {
+        $this->actingAs(User::first());
+
+        $this->put('/admin/print', [
+            'design' => 'attire',
+            'attire_heading' => 'What to Wear',
+            'attire_message' => '',
+            'attire_audience' => 'sponsors',
+            'attire_palette' => false,
+            'attire_pictures' => true,
+            'attire_columns' => 3,
+            'item_sizes' => ['attire_swatches' => 150, 'attire_pictures' => 70],
+        ])->assertSessionHasNoErrors();
+
+        $this->get('/admin/print/save-the-date')->assertInertia(fn (Assert $page) => $page
+            ->where('design', 'attire')
+            ->where('attire.attire_heading', 'What to Wear')
+            ->where('attire.attire_message', '') // an emptied line stays off the card
+            ->where('attire.attire_audience', 'sponsors')
+            ->where('attire.attire_palette', false)
+            ->where('attire.attire_columns', '3')
+            ->where('look.item_sizes.attire_swatches', 150));
+
+        $this->put('/admin/print', ['attire_audience' => 'kids', 'attire_columns' => 9])
+            ->assertSessionHasErrors(['attire_audience', 'attire_columns']);
     }
 
     public function test_guests_cannot_print(): void

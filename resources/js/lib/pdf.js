@@ -33,6 +33,7 @@ export async function cardToPdf(node, { widthMm, heightMm, title }) {
         scale,
         backgroundColor: '#ffffff',
         logging: false,
+        useCORS: true, // outfit pictures that were pasted as a link to another site
         // Lay the copy out at the card's own size, whatever the size of the screen.
         windowWidth: node.offsetWidth,
         windowHeight: node.offsetHeight,

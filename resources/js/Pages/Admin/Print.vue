@@ -3,6 +3,7 @@ import { Head, useForm } from '@inertiajs/vue3';
 import { computed, provide } from 'vue';
 import LineIcon from '@/Components/LineIcon.vue';
 import ToggleSwitch from '@/Components/Admin/ToggleSwitch.vue';
+import AttireCard from '@/Components/Print/AttireCard.vue';
 import PhotoQrCard from '@/Components/Print/PhotoQrCard.vue';
 import SaveTheDateCard from '@/Components/Print/SaveTheDateCard.vue';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
@@ -13,7 +14,7 @@ defineOptions({ layout: AdminLayout });
 const props = defineProps({
     papers: { type: Array, required: true }, // presets: key, label, note, width, height (mm, portrait)
     limits: { type: Object, required: true }, // custom size limits in mm, text size limits in %
-    designs: { type: Array, required: true }, // save-the-date | photo-qr: key, label
+    designs: { type: Array, required: true }, // save-the-date | photo-qr | attire: key, label
     items: { type: Array, required: true }, // the lines whose size can be fine-tuned: key, label
     defaults: { type: Object, required: true }, // the designed sizes and colours, for "Reset"
     options: { type: Object, required: true }, // the saved choices
@@ -32,10 +33,31 @@ const SWATCHES = [
 ];
 
 const COLOR_FIELDS = [
-    { key: 'names_color', group: 'names', label: 'Names', note: 'Your names and the script lines' },
-    { key: 'accent_color', group: 'accent', label: 'Accents', note: 'Heading, monogram, day, RSVP and hashtag' },
-    { key: 'details_color', group: 'details', label: 'Details', note: 'Date, venues, addresses and small lines' },
+    { key: 'names_color', group: 'names', label: 'Names', note: 'Your names and the script lines', attireNote: 'The heading and the script labels' },
+    { key: 'accent_color', group: 'accent', label: 'Accents', note: 'Heading, monogram, day, RSVP and hashtag', attireNote: 'Principal Sponsors, Our Guests and hashtag' },
+    { key: 'details_color', group: 'details', label: 'Details', note: 'Date, venues, addresses and small lines', attireNote: 'Message, colour names and dress code' },
 ];
+
+const DESIGN_INFO = {
+    'save-the-date': { icon: 'envelope', note: 'Your names, the date and the venues' },
+    'photo-qr': { icon: 'camera', note: 'For the tables: guests scan it to send you their photos' },
+    attire: { icon: 'hanger', note: 'Your colours, outfit pictures and dress code' },
+};
+
+const ATTIRE_SWITCHES = [
+    { key: 'attire_palette', label: 'Colour palette', note: 'The circles from Motif Colors' },
+    { key: 'attire_color_names', label: 'Colour names', note: 'The name under each circle' },
+    { key: 'attire_pictures', label: 'Outfit pictures', note: 'From Attire Samples' },
+    { key: 'attire_labels', label: 'Picture labels', note: 'Ladies / Gentlemen and the caption' },
+    { key: 'attire_text', label: 'Written dress code', note: 'Formal, Semi-Formal and the details' },
+];
+
+// Which lines each design offers in Each line.
+const DESIGN_ITEMS = {
+    'save-the-date': (key) => !key.startsWith('attire_'),
+    'photo-qr': (key) => ['qr', 'hashtag'].includes(key),
+    attire: (key) => key.startsWith('attire_') || key === 'hashtag',
+};
 
 // Bold / italic switches per text group (off = the designed mix of weights and styles).
 const STYLE_FIELDS = COLOR_FIELDS.flatMap(({ group }) => [`${group}_bold`, `${group}_italic`]);
@@ -52,11 +74,14 @@ const form = useForm({
     ...props.options,
     width: String(props.options.width),
     height: String(props.options.height),
+    attire_columns: Number(props.options.attire_columns),
     // Every line at its saved percent (100 = as designed).
     item_sizes: Object.fromEntries(props.items.map(({ key }) => [key, Number(props.options.item_sizes?.[key] ?? 100)])),
 });
 
 const isQrSign = computed(() => form.design === 'photo-qr');
+const isAttire = computed(() => form.design === 'attire');
+const isSaveTheDate = computed(() => !isQrSign.value && !isAttire.value);
 
 // What each fine-tunable line says on this card (lines the card does not show are left out).
 const itemText = computed(() => {
@@ -79,10 +104,18 @@ const itemText = computed(() => {
         website: c.siteUrl.replace(/^https?:\/\//, ''),
         qr: isQrSign.value ? 'The camera and its QR code' : form.qr ? 'Scan to open your website' : null,
         hashtag: form.hashtag && c.hashtag ? c.hashtag : null,
+        attire_heading: form.attire_heading,
+        attire_message: form.attire_palette ? form.attire_message : null,
+        attire_swatches: form.attire_palette && c.attire.colors.length ? `${c.attire.colors.length} colours` : null,
+        attire_color_names: form.attire_palette && form.attire_color_names ? c.attire.colors.map((color) => color.name).join(', ') : null,
+        attire_pictures: form.attire_pictures && c.attire.samples.length ? `${c.attire.samples.length} from Attire Samples` : null,
+        attire_labels: form.attire_pictures && form.attire_labels && c.attire.samples.length ? 'Ladies, Gentlemen and captions' : null,
+        attire_titles: 'The small titles',
+        attire_styles: form.attire_text ? [c.attire.sponsors, c.attire.guests].filter(Boolean).join(' / ') : null,
+        attire_details: form.attire_text ? 'Gentlemen, Ladies and the guests note' : null,
     };
 });
-// The QR sign has only two adjustable lines: its QR code (with the camera) and the hashtag.
-const shownItems = computed(() => props.items.filter(({ key }) => itemText.value[key] && (!isQrSign.value || ['qr', 'hashtag'].includes(key))));
+const shownItems = computed(() => props.items.filter(({ key }) => itemText.value[key] && (DESIGN_ITEMS[form.design] ?? DESIGN_ITEMS['save-the-date'])(key)));
 const itemsChanged = computed(() => Object.values(form.item_sizes).some((percent) => Number(percent) !== 100));
 
 function resetItems() {
@@ -131,6 +164,15 @@ const look = computed(() => ({
     item_sizes: itemOverrides(),
 }));
 
+// The Attire & Motif card's wording, audience and switches.
+const attire = computed(() => ({
+    attire_heading: form.attire_heading ?? '',
+    attire_message: form.attire_message ?? '',
+    attire_audience: form.attire_audience,
+    attire_columns: Number(form.attire_columns),
+    ...Object.fromEntries(ATTIRE_SWITCHES.map(({ key }) => [key, !!form[key]])),
+}));
+
 const LOOK_KEYS = [...SIZE_FIELDS.map((f) => f.key), ...COLOR_FIELDS.map((f) => f.key), ...STYLE_FIELDS, 'names_layout'];
 const lookChanged = computed(() => LOOK_KEYS.some((key) => String(form[key]).toLowerCase() !== String(props.defaults[key]).toLowerCase()) || itemsChanged.value);
 
@@ -143,6 +185,7 @@ function resetLook() {
 function openPdf() {
     if (sizeError.value) return;
     const { item_sizes: overrides, ...flat } = look.value;
+    const onOff = (values) => Object.fromEntries(Object.entries(values).map(([key, value]) => [key, typeof value === 'boolean' ? (value ? '1' : '0') : value]));
     const query = new URLSearchParams({
         paper: form.paper,
         orientation: form.orientation,
@@ -153,7 +196,8 @@ function openPdf() {
         design: form.design,
         qr: form.qr ? '1' : '0',
         hashtag: form.hashtag ? '1' : '0',
-        ...Object.fromEntries(Object.entries(flat).map(([key, value]) => [key, typeof value === 'boolean' ? (value ? '1' : '0') : value])),
+        ...onOff(flat),
+        ...onOff(attire.value),
         ...Object.fromEntries(Object.entries(overrides).map(([key, percent]) => [`item_sizes[${key}]`, percent])),
     });
     window.open(`/admin/print/save-the-date?${query}`, '_blank');
@@ -181,7 +225,7 @@ function openPdf() {
             <!-- Which design -->
             <section class="rounded-2xl bg-white p-5 ring-1 ring-ink/10">
                 <h2 class="font-serif text-2xl text-ink">Design</h2>
-                <div class="mt-4 grid gap-2 sm:grid-cols-2">
+                <div class="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
                     <label
                         v-for="option in designs"
                         :key="option.key"
@@ -190,11 +234,11 @@ function openPdf() {
                     >
                         <input v-model="form.design" type="radio" name="design" :value="option.key" class="sr-only" />
                         <span class="grid size-10 shrink-0 place-items-center rounded-full bg-white text-cocoa ring-1 ring-ink/10">
-                            <LineIcon :name="option.key === 'photo-qr' ? 'camera' : 'envelope'" :size="18" />
+                            <LineIcon :name="DESIGN_INFO[option.key]?.icon ?? 'envelope'" :size="18" />
                         </span>
                         <span>
                             <span class="block text-sm font-medium text-ink">{{ option.label }}</span>
-                            <span class="block text-xs text-ink-soft">{{ option.key === 'photo-qr' ? 'For the tables: guests scan it to send you their photos' : 'Your names, the date and the venues' }}</span>
+                            <span class="block text-xs text-ink-soft">{{ DESIGN_INFO[option.key]?.note }}</span>
                         </span>
                     </label>
                 </div>
@@ -272,7 +316,7 @@ function openPdf() {
                     </label>
                 </div>
 
-                <div v-if="!isQrSign" class="mt-5 flex items-start gap-3">
+                <div v-if="isSaveTheDate" class="mt-5 flex items-start gap-3">
                     <ToggleSwitch v-model="form.qr" label="RSVP QR code" />
                     <div>
                         <p class="text-sm font-medium text-ink">RSVP QR code</p>
@@ -291,6 +335,70 @@ function openPdf() {
                 </div>
             </section>
 
+            <!-- The Attire & Motif card -->
+            <section v-if="isAttire" class="rounded-2xl bg-white p-5 ring-1 ring-ink/10">
+                <h2 class="font-serif text-2xl text-ink">Attire &amp; Motif</h2>
+                <p class="mt-1 text-sm text-ink-soft">The colours come from Motif Colors, the pictures from Attire Samples, and the written dress code from Site Settings → Dress Code.</p>
+
+                <p class="mt-4 text-sm font-medium text-ink">Who is this card for?</p>
+                <div class="mt-2 inline-flex flex-wrap rounded-xl bg-[#f3eadd] p-1 text-sm">
+                    <button
+                        v-for="option in [
+                            { key: 'all', label: 'Everyone' },
+                            { key: 'guests', label: 'Our guests' },
+                            { key: 'sponsors', label: 'Principal sponsors' },
+                        ]"
+                        :key="option.key"
+                        type="button"
+                        class="rounded-lg px-4 py-1.5 transition"
+                        :class="form.attire_audience === option.key ? 'bg-white text-ink shadow-sm' : 'text-ink-soft hover:text-ink'"
+                        @click="form.attire_audience = option.key"
+                    >
+                        {{ option.label }}
+                    </button>
+                </div>
+
+                <div class="mt-5 grid gap-4 sm:grid-cols-2">
+                    <div>
+                        <label for="attire-heading" class="admin-label">Heading</label>
+                        <input id="attire-heading" v-model="form.attire_heading" type="text" maxlength="80" class="admin-input" />
+                        <p v-if="form.errors.attire_heading" class="mt-1 text-sm text-red-700">{{ form.errors.attire_heading }}</p>
+                    </div>
+                    <div>
+                        <label for="attire-message" class="admin-label">Message above the colours</label>
+                        <input id="attire-message" v-model="form.attire_message" type="text" maxlength="200" class="admin-input" />
+                        <p v-if="form.errors.attire_message" class="mt-1 text-sm text-red-700">{{ form.errors.attire_message }}</p>
+                    </div>
+                </div>
+                <p class="mt-1 text-xs text-ink-soft">Leave a box empty to leave that line off the card.</p>
+
+                <div class="mt-5 grid gap-x-6 gap-y-4 sm:grid-cols-2">
+                    <div v-for="option in ATTIRE_SWITCHES" :key="option.key" class="flex items-start gap-3">
+                        <ToggleSwitch v-model="form[option.key]" :label="option.label" />
+                        <div>
+                            <p class="text-sm font-medium text-ink">{{ option.label }}</p>
+                            <p class="text-xs text-ink-soft">{{ option.note }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <template v-if="form.attire_pictures">
+                    <p class="mt-5 text-sm font-medium text-ink">Outfit pictures per row</p>
+                    <div class="mt-2 inline-flex rounded-xl bg-[#f3eadd] p-1 text-sm">
+                        <button
+                            v-for="count in [1, 2, 3]"
+                            :key="count"
+                            type="button"
+                            class="rounded-lg px-4 py-1.5 tabular-nums transition"
+                            :class="Number(form.attire_columns) === count ? 'bg-white text-ink shadow-sm' : 'text-ink-soft hover:text-ink'"
+                            @click="form.attire_columns = count"
+                        >
+                            {{ count }}
+                        </button>
+                    </div>
+                </template>
+            </section>
+
             <!-- Text size and colour -->
             <section class="rounded-2xl bg-white p-5 ring-1 ring-ink/10">
                 <div class="flex flex-wrap items-center justify-between gap-3">
@@ -301,8 +409,8 @@ function openPdf() {
                 </div>
 
                 <!-- How the names sit -->
-                <p v-if="!isQrSign" class="mt-4 text-sm font-medium text-ink">Names</p>
-                <div v-if="!isQrSign" class="mt-2 grid gap-2 sm:grid-cols-2">
+                <p v-if="isSaveTheDate" class="mt-4 text-sm font-medium text-ink">Names</p>
+                <div v-if="isSaveTheDate" class="mt-2 grid gap-2 sm:grid-cols-2">
                     <label
                         v-for="layout in [
                             { key: 'stacked', label: 'Stacked', lines: [card.bride, '— and —', card.groom] },
@@ -344,7 +452,7 @@ function openPdf() {
                     <div v-for="field in COLOR_FIELDS" :key="field.key" class="flex flex-wrap items-center gap-x-4 gap-y-2">
                         <div class="w-44">
                             <p class="text-sm font-medium text-ink">{{ field.label }}</p>
-                            <p class="text-xs text-ink-soft">{{ field.note }}</p>
+                            <p class="text-xs text-ink-soft">{{ isAttire ? field.attireNote : field.note }}</p>
                         </div>
                         <div class="flex items-center gap-1">
                             <button
@@ -445,7 +553,8 @@ function openPdf() {
                 :style="{ width: `${design.width * previewScale}px`, height: `${design.height * previewScale}px` }"
             >
                 <div class="absolute left-0 top-0 origin-top-left" :style="{ transform: `scale(${previewScale})` }">
-                    <PhotoQrCard v-if="isQrSign" :card="card" :width="design.width" :height="design.height" :background="form.background" :hashtag="form.hashtag" :look="look" />
+                    <AttireCard v-if="isAttire" :card="card" :width="design.width" :height="design.height" :background="form.background" :hashtag="form.hashtag" :look="look" :attire="attire" />
+                    <PhotoQrCard v-else-if="isQrSign" :card="card" :width="design.width" :height="design.height" :background="form.background" :hashtag="form.hashtag" :look="look" />
                     <SaveTheDateCard v-else :card="card" :width="design.width" :height="design.height" :background="form.background" :qr="form.qr" :hashtag="form.hashtag" :look="look" />
                 </div>
             </div>
