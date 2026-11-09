@@ -1,13 +1,14 @@
 <script setup>
 import { Head, useForm } from '@inertiajs/vue3';
-import { computed, provide } from 'vue';
+import { computed, nextTick, onBeforeUnmount, provide, ref } from 'vue';
 import LineIcon from '@/Components/LineIcon.vue';
+import ImagePreviewModal from '@/Components/Admin/ImagePreviewModal.vue';
 import ToggleSwitch from '@/Components/Admin/ToggleSwitch.vue';
 import AttireCard from '@/Components/Print/AttireCard.vue';
 import PhotoQrCard from '@/Components/Print/PhotoQrCard.vue';
 import SaveTheDateCard from '@/Components/Print/SaveTheDateCard.vue';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { designSize, printDpi } from '@/lib/pdf';
+import { cardToJpeg, designSize, printDpi } from '@/lib/pdf';
 
 defineOptions({ layout: AdminLayout });
 
@@ -181,6 +182,75 @@ function resetLook() {
     resetItems();
 }
 
+// The chosen design, for the live preview and the full-size drawing behind Preview.
+const cardComponent = computed(() => (isAttire.value ? AttireCard : isQrSign.value ? PhotoQrCard : SaveTheDateCard));
+const cardProps = computed(() => ({
+    card: props.card,
+    width: design.value.width,
+    height: design.value.height,
+    background: form.background,
+    hashtag: form.hashtag,
+    look: look.value,
+    ...(isAttire.value ? { attire: attire.value } : {}),
+    ...(isSaveTheDate.value ? { qr: form.qr } : {}),
+}));
+
+function rememberChoices() {
+    form.transform((data) => ({ ...data, item_sizes: itemOverrides() })).put('/admin/print', { preserveScroll: true });
+}
+
+// ---- Preview: the card drawn at print quality, in a full-screen viewer, ready to download as a JPG ----
+
+const designTitle = computed(() => props.designs.find((option) => option.key === form.design)?.label ?? 'Card');
+const paperLabel = computed(() => {
+    if (isCustom.value) return `${Number(form.width)} × ${Number(form.height)} ${form.unit}`;
+    const paper = props.papers.find((p) => p.key === form.paper) ?? props.papers[0];
+    return `${paper.label}${form.orientation === 'landscape' ? ' landscape' : ''}`;
+});
+const jpgName = computed(() => `${designTitle.value} - ${props.card.bride} & ${props.card.groom} - ${paperLabel.value}.jpg`);
+
+const previewOpen = ref(false);
+const previewDrawing = ref(false); // the full-size card is mounted, hidden behind the viewer, only while it is drawn
+const previewUrl = ref(null);
+const previewError = ref(null);
+const drawingCard = ref();
+let previewRun = 0;
+
+function clearPreview() {
+    if (previewUrl.value) URL.revokeObjectURL(previewUrl.value);
+    previewUrl.value = null;
+    previewError.value = null;
+}
+
+async function openPreview() {
+    if (sizeError.value) return;
+    const run = ++previewRun;
+    clearPreview();
+    previewOpen.value = true;
+    previewDrawing.value = true;
+    await nextTick();
+    try {
+        await drawingCard.value.ready();
+        const blob = await cardToJpeg(drawingCard.value.$el, { widthMm: paperMm.value.width, heightMm: paperMm.value.height });
+        if (run !== previewRun) return; // closed while it was drawing
+        previewUrl.value = URL.createObjectURL(blob);
+        rememberChoices();
+    } catch (e) {
+        if (run === previewRun) previewError.value = e?.message ?? String(e);
+    } finally {
+        if (run === previewRun) previewDrawing.value = false;
+    }
+}
+
+function closePreview() {
+    previewRun++;
+    previewOpen.value = false;
+    previewDrawing.value = false;
+    clearPreview();
+}
+
+onBeforeUnmount(clearPreview);
+
 // Opens the PDF in a new tab straight away (inside the click, so it is not blocked) and remembers the choices.
 function openPdf() {
     if (sizeError.value) return;
@@ -201,7 +271,7 @@ function openPdf() {
         ...Object.fromEntries(Object.entries(overrides).map(([key, percent]) => [`item_sizes[${key}]`, percent])),
     });
     window.open(`/admin/print/save-the-date?${query}`, '_blank');
-    form.transform((data) => ({ ...data, item_sizes: overrides })).put('/admin/print', { preserveScroll: true });
+    rememberChoices();
 }
 </script>
 
@@ -215,9 +285,14 @@ function openPdf() {
                 Cards to print, made from your names, wedding details and website. Choose the design and the paper, then open it as a PDF in a new tab.
             </p>
         </div>
-        <button type="button" class="admin-btn" :disabled="!!sizeError" @click="openPdf">
-            <LineIcon name="printer" :size="16" /> Open PDF
-        </button>
+        <div class="flex flex-wrap items-center gap-3">
+            <button type="button" class="admin-btn-ghost" :disabled="!!sizeError" @click="openPreview">
+                <LineIcon name="eye" :size="16" /> Preview
+            </button>
+            <button type="button" class="admin-btn" :disabled="!!sizeError" @click="openPdf">
+                <LineIcon name="printer" :size="16" /> Open PDF
+            </button>
+        </div>
     </div>
 
     <div class="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_auto]">
@@ -553,11 +628,29 @@ function openPdf() {
                 :style="{ width: `${design.width * previewScale}px`, height: `${design.height * previewScale}px` }"
             >
                 <div class="absolute left-0 top-0 origin-top-left" :style="{ transform: `scale(${previewScale})` }">
-                    <AttireCard v-if="isAttire" :card="card" :width="design.width" :height="design.height" :background="form.background" :hashtag="form.hashtag" :look="look" :attire="attire" />
-                    <PhotoQrCard v-else-if="isQrSign" :card="card" :width="design.width" :height="design.height" :background="form.background" :hashtag="form.hashtag" :look="look" />
-                    <SaveTheDateCard v-else :card="card" :width="design.width" :height="design.height" :background="form.background" :qr="form.qr" :hashtag="form.hashtag" :look="look" />
+                    <component :is="cardComponent" v-bind="cardProps" />
                 </div>
             </div>
+            <button type="button" class="admin-btn-ghost mt-3 w-full justify-center" :disabled="!!sizeError" @click="openPreview">
+                <LineIcon name="eye" :size="16" /> Full preview
+            </button>
         </div>
     </div>
+
+    <ImagePreviewModal
+        v-if="previewOpen"
+        :src="previewUrl"
+        :error="previewError"
+        :title="designTitle"
+        :subtitle="`${paperLabel} · ${dpi} dpi`"
+        :filename="jpgName"
+        @close="closePreview"
+    />
+
+    <!-- The card the picture is drawn from, at its full design size, hidden behind the viewer (html2canvas needs it on screen). -->
+    <Teleport to="body">
+        <div v-if="previewDrawing" class="pointer-events-none fixed left-0 top-0 -z-10" aria-hidden="true">
+            <component :is="cardComponent" ref="drawingCard" v-bind="cardProps" />
+        </div>
+    </Teleport>
 </template>

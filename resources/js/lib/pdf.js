@@ -22,14 +22,14 @@ export function printDpi(widthMm, heightMm) {
     return Math.floor(Math.min(PRINT_DPI, Math.sqrt(MAX_PIXELS / squareInches)));
 }
 
-/** Draws `node` (the card, at its design size) onto a PDF page of widthMm × heightMm and returns the PDF as a Blob. */
-export async function cardToPdf(node, { widthMm, heightMm, title }) {
+/** Draws `node` (the card, at its design size) onto a canvas at print resolution for a page of widthMm wide. */
+async function cardToCanvas(node, widthMm, heightMm) {
     // html2canvas paints the card straight onto a canvas. (html-to-image went through an SVG <foreignObject>,
     // which Safari draws without pictures and text colours: the QR code was missing on iPhones.)
-    const [{ default: html2canvas }, { jsPDF }] = await Promise.all([import('html2canvas-pro'), import('jspdf')]);
+    const { default: html2canvas } = await import('html2canvas-pro');
 
     const scale = ((widthMm / 25.4) * printDpi(widthMm, heightMm)) / node.offsetWidth;
-    const canvas = await html2canvas(node, {
+    return html2canvas(node, {
         scale,
         backgroundColor: '#ffffff',
         logging: false,
@@ -38,6 +38,11 @@ export async function cardToPdf(node, { widthMm, heightMm, title }) {
         windowWidth: node.offsetWidth,
         windowHeight: node.offsetHeight,
     });
+}
+
+/** Draws `node` onto a PDF page of widthMm × heightMm and returns the PDF as a Blob. */
+export async function cardToPdf(node, { widthMm, heightMm, title }) {
+    const [canvas, { jsPDF }] = await Promise.all([cardToCanvas(node, widthMm, heightMm), import('jspdf')]);
     const image = canvas.toDataURL('image/jpeg', 0.95);
 
     const pdf = new jsPDF({ orientation: widthMm > heightMm ? 'landscape' : 'portrait', unit: 'mm', format: [widthMm, heightMm], compress: true });
@@ -45,4 +50,13 @@ export async function cardToPdf(node, { widthMm, heightMm, title }) {
     pdf.addImage(image, 'JPEG', 0, 0, widthMm, heightMm, undefined, 'FAST');
 
     return pdf.output('blob');
+}
+
+/** Draws `node` at print resolution and returns it as a JPEG Blob (Admin > Print Cards > Preview). */
+export async function cardToJpeg(node, { widthMm, heightMm }) {
+    const canvas = await cardToCanvas(node, widthMm, heightMm);
+
+    return new Promise((resolve, reject) => {
+        canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('The picture is too large for this browser.'))), 'image/jpeg', 0.95);
+    });
 }
