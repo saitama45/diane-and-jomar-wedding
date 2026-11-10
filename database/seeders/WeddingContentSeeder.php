@@ -172,7 +172,7 @@ class WeddingContentSeeder extends Seeder
             ['couple', 'families_line', 'Families line', 'text', 'Reyes — Santos', 'Shown above the entourage.'],
             ['couple', 'hashtag', 'Wedding hashtag', 'text', '#DianeAndJomarForever', null],
 
-            ['wedding', 'wedding_datetime', 'Wedding date & time', 'datetime', '2027-04-24 10:00', 'Drives the countdown and the save-the-date.'],
+            ['wedding', 'wedding_datetime', 'Wedding date & time', 'datetime', '2027-04-24 10:00', 'The time on every invitation, the printed cards and the email, and the countdown. It is also the ceremony’s start (the first event in Ceremony & Reception): changing one changes the other.'],
             ['wedding', 'city_line', 'City / location line', 'text', 'Intramuros, Manila', 'Shown under the ceremony venue on the opening screen and in the email. Keep it short, e.g. “Putatan, Muntinlupa City”: the venue name itself comes from Ceremony & Reception.'],
             ['wedding', 'rsvp_deadline', 'RSVP deadline', 'date', '2027-03-24', null],
 

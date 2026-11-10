@@ -46,6 +46,7 @@ Live at https://diane-and-jomar-wedding.runasp.net (`site103294.siteasp.net` is 
 - `pdo_sqlsrv` returns integer columns as strings — cast integer columns used in JS arithmetic (see `Invitation::casts`, `Rsvp::casts`).
 - Named SQL Server instance: keep `DB_PORT` empty; empty `DB_USERNAME`/`DB_PASSWORD` means Windows authentication.
 - Write `.env` without a BOM (Windows PowerShell `Set-Content -Encoding utf8` adds one and breaks the first key).
+- One wedding time: Site Settings > Wedding date & time (`wedding_datetime`; the invitations, print cards, email and countdown read it) and the ceremony (first visible event; the Details section reads it) are kept in step both ways by `WeddingEvent::booted` and `Setting::booted`. The reception keeps its own time.
 - Invitation links are `/?invite=CODE`; `/?to=Name` only personalises the greeting. Seats are enforced server-side in `RsvpController`.
 - Every guest-facing link is built from `Setting::siteUrl()` (the `site_url` setting, edited on the Invitations page); empty means the current server. Never hard-code `url()` for links that leave the site.
 - `.env` mail is live Gmail SMTP. Tests use `MAIL_MAILER=array` (phpunit.xml); manual checks must not press Send / Send test unless the user asks.

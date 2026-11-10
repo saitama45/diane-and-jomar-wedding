@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Once;
 
 class Setting extends Model
@@ -13,6 +14,13 @@ class Setting extends Model
     {
         // siteUrl() is memoised per request; forget it as soon as any setting changes.
         static::saved(fn () => Once::flush());
+
+        // A new wedding date & time moves the ceremony too (WeddingEvent::booted does the other direction).
+        static::saved(function (Setting $setting) {
+            if ($setting->key === WeddingEvent::WEDDING_SETTING && ! $setting->wasRecentlyCreated && $setting->wasChanged('value') && filled($setting->value)) {
+                WeddingEvent::moveCeremonyTo(Carbon::parse($setting->value));
+            }
+        });
     }
 
     /**

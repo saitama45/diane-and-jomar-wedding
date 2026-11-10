@@ -69,7 +69,7 @@ return [
             'model' => WeddingEvent::class,
             'title' => 'Ceremony & Reception',
             'singular' => 'event',
-            'description' => 'Venues, times and map pins.',
+            'description' => 'Venues, times and map pins. The first event (the ceremony) starts at the Wedding date & time in Site Settings: changing one changes the other, so the invitations and printed cards always show the ceremony’s time.',
             'section' => 'show_events', // website-section switch (a setting)
             'order' => [['sort_order', 'asc'], ['starts_at', 'asc']],
             'columns' => ['image' => '', 'title' => 'Event', 'starts_at' => 'Starts', 'venue' => 'Venue'],
