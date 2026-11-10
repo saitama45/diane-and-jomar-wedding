@@ -16,7 +16,7 @@ const links = computed(() =>
         { href: '#entourage', label: props.settings.entourage_menu_label?.trim() || 'Entourage' },
         { href: '#attire', label: 'Attire' },
         { href: '#gallery', label: 'Gallery' },
-        { href: '#gifts', label: 'Gifts' },
+        { href: '#gifts', label: props.settings.gift_menu_label?.trim() || 'Gifts' },
         { href: '#faq', label: 'FAQ' },
     ].filter((link) => !props.hiddenLinks.includes(link.href)),
 );

@@ -27,6 +27,11 @@ const sampleGroups = computed(() =>
 );
 const ordered = computed(() => sampleGroups.value.flatMap((group) => group.items));
 
+// The gift guide: the gift message (Site Settings > Gift Registry) at the end of the dress code.
+const giftMessage = computed(() => (props.settings.gift_message ?? '').trim());
+const giftTitle = computed(() => (props.settings.gift_guide_title ?? '').trim());
+const showGift = computed(() => props.settings.show_gift_guide !== '0' && !!giftMessage.value);
+
 const active = ref(null);
 const current = computed(() => (active.value === null ? null : ordered.value[active.value]));
 
@@ -182,6 +187,15 @@ onBeforeUnmount(() => {
                     <p class="mx-auto mt-6 max-w-sm font-serif text-lg italic leading-relaxed text-ink-soft">{{ settings.dress_guests_note }}</p>
                 </article>
             </div>
+
+            <!-- Gift guide -->
+            <article v-if="showGift" v-reveal="{ type: 'up' }" class="paper-card mt-8 px-8 py-10 text-center">
+                <span class="mx-auto grid size-14 place-items-center rounded-full ring-1 ring-gold/40 text-gold">
+                    <LineIcon name="gift" :size="26" />
+                </span>
+                <p v-if="giftTitle" class="mt-5 kicker text-gold">{{ giftTitle }}</p>
+                <p class="mx-auto mt-4 max-w-2xl text-pretty font-serif text-xl italic leading-relaxed text-ink-soft">{{ giftMessage }}</p>
+            </article>
         </div>
 
         <!-- Full-size viewer -->

@@ -4,6 +4,7 @@ namespace App\Mail;
 
 use App\Http\Controllers\Admin\ThemeController;
 use App\Models\Invitation;
+use App\Models\MotifColor;
 use App\Models\Setting;
 use App\Models\WeddingEvent;
 use Illuminate\Bus\Queueable;
@@ -114,8 +115,53 @@ class InvitationMail extends Mailable
                     ->map(fn (string $name) => Str::upper(Str::substr(trim($name), 0, 1)))->all(),
                 'ceremonyLine' => trim((string) ($this->settings['std_ceremony_line'] ?? '')) ?: 'Ceremony will be held at',
                 'receptionLine' => trim((string) ($this->settings['std_reception_line'] ?? '')) ?: 'Reception follows at',
+                // Below the venues, as at the end of the website's dress code.
+                'attire' => $this->attire(),
+                'giftGuide' => $this->giftGuide(),
             ],
         );
+    }
+
+    /**
+     * The motif colours and the written dress code (Site Settings > Dress Code), unless switched off in
+     * Site Settings > Invitation Email. Colours follow the website's "Motif colors" switch and visible list.
+     *
+     * @return array{colors: array<int, array{name: string, hex: string}>, sponsors: string, gentlemen: string, ladies: string, guests: string, guestsNote: string}|null
+     */
+    private function attire(): ?array
+    {
+        if (($this->settings['invite_email_attire'] ?? '1') === '0') {
+            return null;
+        }
+
+        $text = fn (string $key) => trim((string) ($this->settings[$key] ?? ''));
+        $attire = [
+            'colors' => ($this->settings['show_motif'] ?? '1') === '0' ? [] : MotifColor::visible()->orderBy('sort_order')->orderBy('id')->get()
+                ->map(fn (MotifColor $color) => ['name' => (string) $color->name, 'hex' => (string) $color->hex])->all(),
+            'sponsors' => $text('dress_sponsors_attire'),
+            'gentlemen' => $text('dress_gentlemen'),
+            'ladies' => $text('dress_ladies'),
+            'guests' => $text('dress_guests_attire'),
+            'guestsNote' => $text('dress_guests_note'),
+        ];
+
+        return array_filter($attire) ? $attire : null;
+    }
+
+    /**
+     * The gift guide: the website's gift message under its heading (Site Settings > Gift Registry).
+     *
+     * @return array{title: string, message: string}|null
+     */
+    private function giftGuide(): ?array
+    {
+        $message = trim((string) ($this->settings['gift_message'] ?? ''));
+
+        if ($message === '' || ($this->settings['show_gift_guide'] ?? '1') === '0') {
+            return null;
+        }
+
+        return ['title' => trim((string) ($this->settings['gift_guide_title'] ?? '')), 'message' => $message];
     }
 
     /** The chosen theme's corner flowers (public/images/email/{theme}-{corner}.png), or the boho ones. */

@@ -46,6 +46,7 @@
             .day { font-size: 46px !important; }
             .side { font-size: 11px !important; letter-spacing: 2px !important; }
             .stack { display: block !important; width: 100% !important; }
+            .stack-next { padding-top: 26px !important; }
         }
     </style>
 </head>
@@ -220,6 +221,80 @@
                                     <p style="margin:3px 0 0;font-family:{!! $serif !!};font-size:15px;font-style:italic;color:{{ $soft }};">{{ $event['address'] }}</p>
                                 @endif
                             @endforeach
+                        </td>
+                    </tr>
+                @endif
+
+                {{-- Attire & motif and the gift guide, as at the end of the website's dress code --}}
+                @if ($attire || $giftGuide)
+                    <tr>
+                        <td class="px" align="center" style="padding:34px 44px 0;">
+                            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+                                <tr><td width="72" style="width:72px;border-top:1px solid {{ $line }};font-size:0;line-height:0;">&nbsp;</td></tr>
+                            </table>
+
+                            @if ($attire)
+                                <p style="margin:22px 0 0;font-family:{!! $script !!};font-size:36px;line-height:1.2;color:{{ $caramel }};">Attire &amp; Motif</p>
+                                @if ($attire['colors'])
+                                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:14px auto 0;">
+                                        <tr>
+                                            @foreach ($attire['colors'] as $color)
+                                                @if (! $loop->first)
+                                                    <td width="8" style="width:8px;font-size:0;line-height:0;">&nbsp;</td>
+                                                @endif
+                                                <td width="28" height="28" bgcolor="{{ $color['hex'] }}" style="width:28px;height:28px;border-radius:14px;background:{{ $color['hex'] }};border:1px solid #d9c7ad;font-size:0;line-height:0;">&nbsp;</td>
+                                            @endforeach
+                                        </tr>
+                                    </table>
+                                    <p style="margin:10px 0 0;font-family:{!! $serif !!};font-size:15px;line-height:1.5;font-style:italic;color:{{ $soft }};">{{ collect($attire['colors'])->pluck('name')->join(' · ') }}</p>
+                                @endif
+
+                                @php
+                                    $sponsorsDress = $attire['sponsors'] || $attire['gentlemen'] || $attire['ladies'];
+                                    $guestsDress = $attire['guests'] || $attire['guestsNote'];
+                                    $dressWidth = $sponsorsDress && $guestsDress ? '50%' : '100%';
+                                @endphp
+                                @if ($sponsorsDress || $guestsDress)
+                                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:16px;">
+                                        <tr>
+                                            @if ($sponsorsDress)
+                                                <td class="stack" width="{{ $dressWidth }}" align="center" valign="top" style="padding:12px 10px 0;">
+                                                    <p style="margin:0;font-family:{!! $sans !!};font-size:10px;letter-spacing:4px;text-transform:uppercase;color:{{ $rust }};">Principal Sponsors</p>
+                                                    @if ($attire['sponsors'])
+                                                        <p style="margin:6px 0 0;font-family:{!! $serif !!};font-size:24px;line-height:1.25;color:{{ $ink }};">{{ $attire['sponsors'] }}</p>
+                                                    @endif
+                                                    @if ($attire['gentlemen'])
+                                                        <p style="margin:8px 0 0;font-family:{!! $script !!};font-size:24px;line-height:1.2;color:{{ $caramel }};">Gentlemen</p>
+                                                        <p style="margin:0;font-family:{!! $serif !!};font-size:16px;line-height:1.5;color:{{ $soft }};">{{ $attire['gentlemen'] }}</p>
+                                                    @endif
+                                                    @if ($attire['ladies'])
+                                                        <p style="margin:8px 0 0;font-family:{!! $script !!};font-size:24px;line-height:1.2;color:{{ $caramel }};">Ladies</p>
+                                                        <p style="margin:0;font-family:{!! $serif !!};font-size:16px;line-height:1.5;color:{{ $soft }};">{{ $attire['ladies'] }}</p>
+                                                    @endif
+                                                </td>
+                                            @endif
+                                            @if ($guestsDress)
+                                                <td class="stack{{ $sponsorsDress ? ' stack-next' : '' }}" width="{{ $dressWidth }}" align="center" valign="top" style="padding:12px 10px 0;">
+                                                    <p style="margin:0;font-family:{!! $sans !!};font-size:10px;letter-spacing:4px;text-transform:uppercase;color:{{ $rust }};">Our Guests</p>
+                                                    @if ($attire['guests'])
+                                                        <p style="margin:6px 0 0;font-family:{!! $serif !!};font-size:24px;line-height:1.25;color:{{ $ink }};">{{ $attire['guests'] }}</p>
+                                                    @endif
+                                                    @if ($attire['guestsNote'])
+                                                        <p style="margin:8px 0 0;font-family:{!! $serif !!};font-size:16px;line-height:1.6;font-style:italic;color:{{ $soft }};">{{ $attire['guestsNote'] }}</p>
+                                                    @endif
+                                                </td>
+                                            @endif
+                                        </tr>
+                                    </table>
+                                @endif
+                            @endif
+
+                            @if ($giftGuide)
+                                @if ($giftGuide['title'])
+                                    <p style="margin:{{ $attire ? '28px' : '22px' }} 0 0;font-family:{!! $script !!};font-size:32px;line-height:1.2;color:{{ $caramel }};">{{ $giftGuide['title'] }}</p>
+                                @endif
+                                <p style="margin:{{ $giftGuide['title'] ? '8px' : ($attire ? '28px' : '22px') }} auto 0;max-width:470px;font-family:{!! $serif !!};font-size:17px;line-height:1.65;font-style:italic;color:{{ $soft }};">{{ $giftGuide['message'] }}</p>
+                            @endif
                         </td>
                     </tr>
                 @endif

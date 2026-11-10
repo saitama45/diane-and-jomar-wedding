@@ -2,7 +2,7 @@
 /*
  * The printable Attire & Motif card (Admin > Print Cards): the heading, the motif colours (Admin > Motif
  * Colors), the outfit pictures (Admin > Attire Samples) and the written dress code (Site Settings > Dress
- * Code). `attire` holds its wording, who it is for and what it shows; `look` the text colours and sizes
+ * Code), and the gift guide (Site Settings > Gift Registry). `attire` holds its wording, who it is for and what it shows; `look` the text colours and sizes
  * (`item_sizes` per line). The content shrinks to fit whatever paper is chosen.
  */
 import { computed, inject, nextTick, onMounted, ref, watch } from 'vue';
@@ -71,6 +71,7 @@ const groups = computed(() => {
 const dress = computed(() => (props.attire.attire_text === false ? {} : (props.card.attire ?? {})));
 const showSponsors = computed(() => showFor('sponsors') && !!(dress.value.sponsors || dress.value.gentlemen || dress.value.ladies));
 const showGuests = computed(() => showFor('guests') && !!(dress.value.guests || dress.value.guestsNote));
+const showGift = computed(() => props.attire.attire_gift !== false && !!props.card.attire?.gift);
 const showHashtag = computed(() => props.hashtag && !!props.card.hashtag);
 
 // Shrink the content (never enlarge it) so it fits inside the paper's margins.
@@ -153,6 +154,12 @@ defineExpose({ ready });
                         <p v-if="dress.guests" class="mt-1 font-serif leading-tight" :style="text('details', 32, { key: 'attire_styles' })">{{ dress.guests }}</p>
                         <p v-if="dress.guestsNote" class="mt-2 font-serif leading-snug" :style="text('details', 18, { italic: true, soft: true, key: 'attire_details' })">{{ dress.guestsNote }}</p>
                     </div>
+                </div>
+
+                <!-- The gift guide: the website's gift message -->
+                <div v-if="showGift" class="mx-auto mt-7" :style="{ maxWidth: `${Math.min(baseWidth, 760)}px` }">
+                    <p v-if="card.attire.giftTitle" class="font-sans uppercase tracking-[0.3em]" :style="text('accent', 14, { weight: 500, key: 'attire_titles' })">{{ card.attire.giftTitle }}</p>
+                    <p class="mt-2 font-serif leading-snug" :style="text('details', 18, { italic: true, soft: true, key: 'attire_gift' })">{{ card.attire.gift }}</p>
                 </div>
 
                 <p v-if="showHashtag" class="mt-6 font-serif tracking-[0.08em]" :style="text('accent', 22, { weight: 600, key: 'hashtag' })">{{ card.hashtag }}</p>

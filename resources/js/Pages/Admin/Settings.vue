@@ -57,7 +57,7 @@ const inputType = { number: 'number', date: 'date', datetime: 'datetime-local', 
                                 :label="setting.label"
                                 @update:model-value="form.values[setting.key] = $event ? '1' : '0'"
                             />
-                            <span class="text-sm text-ink-soft">{{ form.values[setting.key] !== '0' ? 'Shown on the website' : 'Hidden' }}</span>
+                            <span class="text-sm text-ink-soft">{{ form.values[setting.key] !== '0' ? 'On' : 'Off' }}</span>
                         </div>
                         <input v-else :id="setting.key" v-model="form.values[setting.key]" :type="inputType[setting.type] ?? 'text'" class="admin-input" />
 

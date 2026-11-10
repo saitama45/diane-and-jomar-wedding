@@ -82,6 +82,7 @@ class PrintController extends Controller
         'attire_pictures' => ['print_attire_pictures', true],
         'attire_labels' => ['print_attire_labels', true],
         'attire_text' => ['print_attire_text', true],
+        'attire_gift' => ['print_attire_gift', true], // the gift guide: Site Settings > Gift Registry
         'attire_columns' => ['print_attire_columns', 2], // outfit pictures per row
         // The Families & Sponsors card. A missing heading starts as the website's section title.
         'entourage_heading' => ['print_entourage_heading', null],
@@ -121,6 +122,7 @@ class PrintController extends Controller
         'attire_titles' => 'Principal Sponsors / Our Guests',
         'attire_styles' => 'Formal / Semi-Formal',
         'attire_details' => 'Dress code details',
+        'attire_gift' => 'Gift guide',
         // The Families & Sponsors card
         'entourage_heading' => 'Heading',
         'entourage_families' => 'Families line',
@@ -138,7 +140,7 @@ class PrintController extends Controller
 
     private const ENTOURAGE_OPTIONS = ['entourage_heading', 'entourage_families', 'entourage_columns', 'entourage_hidden'];
 
-    private const ATTIRE_SWITCHES = ['attire_palette', 'attire_color_names', 'attire_pictures', 'attire_labels', 'attire_text'];
+    private const ATTIRE_SWITCHES = ['attire_palette', 'attire_color_names', 'attire_pictures', 'attire_labels', 'attire_text', 'attire_gift'];
 
     private const ATTIRE_OPTIONS = ['attire_heading', 'attire_message', 'attire_audience', 'attire_columns', ...self::ATTIRE_SWITCHES];
 
@@ -370,6 +372,9 @@ class PrintController extends Controller
                 'ladies' => $text('dress_ladies'),
                 'guests' => $text('dress_guests_attire'),
                 'guestsNote' => $text('dress_guests_note'),
+                // The gift guide: the website's gift message under its own heading (Site Settings > Gift Registry).
+                'giftTitle' => $text('gift_guide_title'),
+                'gift' => $text('gift_message'),
                 'colors' => MotifColor::visible()->orderBy('sort_order')->orderBy('id')->get(['id', 'name', 'hex']),
                 'samples' => AttireSample::visible()->orderBy('sort_order')->orderBy('id')->get(['id', 'image', 'audience', 'wearer', 'caption']),
             ],

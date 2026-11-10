@@ -35,6 +35,27 @@ class SectionHeadingsTest extends TestCase
             ->where('settings.entourage_menu_label', ''));
     }
 
+    public function test_the_gift_section_is_renamed_from_its_admin_page(): void
+    {
+        $this->actingAs(User::first());
+
+        $this->get('/admin/content/gifts')->assertInertia(fn (Assert $page) => $page
+            ->has('collection.headings', 2)
+            ->where('collection.headings.0.key', 'gift_title')
+            ->where('collection.headings.0.value', 'Gift registry')
+            ->where('collection.headings.1.key', 'gift_menu_label')
+            ->where('collection.headings.1.value', 'Gifts'));
+
+        $this->put('/admin/content/gifts/headings', ['headings' => [
+            'gift_title' => ' Gift Guide ',
+            'gift_menu_label' => 'Gift Guide',
+        ]])->assertSessionHasNoErrors();
+
+        $this->get('/')->assertInertia(fn (Assert $page) => $page
+            ->where('settings.gift_title', 'Gift Guide')
+            ->where('settings.gift_menu_label', 'Gift Guide'));
+    }
+
     public function test_only_lists_with_headings_can_be_renamed_and_only_by_the_admin(): void
     {
         $this->put('/admin/content/entourage/headings', ['headings' => ['entourage_title' => 'Hacked']])->assertRedirect('/admin/login');

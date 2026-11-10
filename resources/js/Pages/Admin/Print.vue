@@ -36,8 +36,8 @@ const SWATCHES = [
 
 const COLOR_FIELDS = [
     { key: 'names_color', group: 'names', label: 'Names', note: 'Your names and the script lines', attireNote: 'The heading and the script labels', entourageNote: 'The heading and the group titles' },
-    { key: 'accent_color', group: 'accent', label: 'Accents', note: 'Heading, monogram, day, RSVP and hashtag', attireNote: 'Principal Sponsors, Our Guests and hashtag', entourageNote: 'The families line and hashtag' },
-    { key: 'details_color', group: 'details', label: 'Details', note: 'Date, venues, addresses and small lines', attireNote: 'Message, colour names and dress code', entourageNote: 'The names' },
+    { key: 'accent_color', group: 'accent', label: 'Accents', note: 'Heading, monogram, day, RSVP and hashtag', attireNote: 'Principal Sponsors, Our Guests, Gift Guide and hashtag', entourageNote: 'The families line and hashtag' },
+    { key: 'details_color', group: 'details', label: 'Details', note: 'Date, venues, addresses and small lines', attireNote: 'Message, colour names, dress code and gift guide', entourageNote: 'The names' },
 ];
 
 const DESIGN_INFO = {
@@ -53,6 +53,7 @@ const ATTIRE_SWITCHES = [
     { key: 'attire_pictures', label: 'Outfit pictures', note: 'From Attire Samples' },
     { key: 'attire_labels', label: 'Picture labels', note: 'Ladies / Gentlemen and the caption' },
     { key: 'attire_text', label: 'Written dress code', note: 'Formal, Semi-Formal and the details' },
+    { key: 'attire_gift', label: 'Gift guide', note: 'Your gift message, under the dress code' },
 ];
 
 // Which lines each design offers in Each line.
@@ -126,6 +127,7 @@ const itemText = computed(() => {
         attire_titles: 'The small titles',
         attire_styles: form.attire_text ? [c.attire.sponsors, c.attire.guests].filter(Boolean).join(' / ') : null,
         attire_details: form.attire_text ? 'Gentlemen, Ladies and the guests note' : null,
+        attire_gift: form.attire_gift && c.attire.gift ? c.attire.gift : null,
         entourage_heading: form.entourage_heading,
         entourage_families: form.entourage_families ? c.entourage.families : null,
         entourage_groups: c.entourage.groups.filter((g) => isShown(g.group)).map((g) => g.group).join(', ') || null,
@@ -493,7 +495,7 @@ function openPdf() {
             <!-- The Attire & Motif card -->
             <section v-if="isAttire" class="rounded-2xl bg-white p-5 ring-1 ring-ink/10">
                 <h2 class="font-serif text-2xl text-ink">Attire &amp; Motif</h2>
-                <p class="mt-1 text-sm text-ink-soft">The colours come from Motif Colors, the pictures from Attire Samples, and the written dress code from Site Settings → Dress Code.</p>
+                <p class="mt-1 text-sm text-ink-soft">The colours come from Motif Colors, the pictures from Attire Samples, the written dress code from Site Settings → Dress Code, and the gift guide from Site Settings → Gift Registry.</p>
 
                 <p class="mt-4 text-sm font-medium text-ink">Who is this card for?</p>
                 <div class="mt-2 inline-flex flex-wrap rounded-xl bg-[#f3eadd] p-1 text-sm">

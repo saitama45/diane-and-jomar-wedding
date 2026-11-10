@@ -1,6 +1,6 @@
 <script setup>
 import BohoCorner from '@/Components/Wedding/BohoCorner.vue';
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import QRCode from 'qrcode';
 import LineIcon from '@/Components/LineIcon.vue';
 import { copyText } from '@/lib/copy';
@@ -10,6 +10,12 @@ const props = defineProps({
     settings: { type: Object, required: true },
     // One account only: the first gift option in the admin list.
     gift: { type: Object, default: null },
+});
+
+// The section title (Admin > Gift Registry > Name on the website): the first word large, the rest in script.
+const title = computed(() => {
+    const [first, ...rest] = ((props.settings.gift_title ?? '').trim() || 'Gift registry').split(/\s+/);
+    return { first, rest: rest.join(' ') };
 });
 
 // Sample QR code while the account has no uploaded QR image yet.
@@ -45,8 +51,8 @@ async function copy() {
 
             <div class="text-center lg:text-left">
                 <h2 v-reveal="{ type: 'blur', duration: 1.5 }" class="inline-flex flex-col items-start">
-                    <span class="font-serif text-7xl font-light leading-none text-ink md:text-8xl">Gift</span>
-                    <span class="ml-10 mt-2 font-script text-5xl leading-tight text-terracotta md:ml-14 md:text-6xl">registry</span>
+                    <span class="font-serif text-7xl font-light leading-none text-ink md:text-8xl">{{ title.first }}</span>
+                    <span v-if="title.rest" class="ml-10 mt-2 font-script text-5xl leading-tight text-terracotta md:ml-14 md:text-6xl">{{ title.rest }}</span>
                 </h2>
                 <p v-reveal="'up'" class="mx-auto mt-8 max-w-lg font-serif text-xl italic leading-relaxed text-ink-soft lg:mx-0">
                     {{ settings.gift_message }}

@@ -207,8 +207,12 @@ class WeddingContentSeeder extends Seeder
             ['dress_code', 'dress_guests_attire', 'Guests attire', 'text', 'Semi-Formal', null],
             ['dress_code', 'dress_guests_note', 'Guests note', 'textarea', "We'd love to see you in soft, neutral tones from our palette. Kindly avoid white — it's reserved for the bride.", null],
 
+            ['gifts', 'gift_title', 'Section title', 'text', 'Gift registry', 'The big title of the gift section, e.g. “Gift Guide”. The first word is set large and the rest in script below it.'],
+            ['gifts', 'gift_menu_label', 'Menu label', 'text', 'Gifts', 'The short name of the gift section in the website menu.'],
             ['gifts', 'gift_image', 'Gift section photo', 'image', self::IMG.'gift.jpg', null],
             ['gifts', 'gift_message', 'Gift message', 'textarea', "With all that we have, we've been truly blessed. Your presence and prayers are all that we request — but if you desire to give nonetheless, a monetary gift towards our new home is one we humbly suggest.", null],
+            ['gifts', 'gift_guide_title', 'Gift guide heading', 'text', 'Gift Guide', 'The gift message also appears with the dress code, under this heading: on the website, in the invitation email and on the printed Attire & Motif card. Leave empty for no heading.'],
+            ['gifts', 'show_gift_guide', 'Gift guide with the dress code', 'toggle', '1', 'Shows the gift message at the end of the dress code on the website and in the invitation email. The printed Attire & Motif card has its own switch in Print Cards.'],
 
             ['capture', 'capture_message', 'Photo sharing message', 'textarea', 'Scan the QR code with your smartphone and upload your favorite moments from our day. We would love to see the wedding through your eyes!', null],
             ['capture', 'capture_upload_url', 'Other shared album (optional)', 'url', '', 'Leave empty: the QR code opens your own upload page and the photos arrive in Admin > Guest Photos. Paste a Google Photos or Drive album link only to send guests there instead.'],
@@ -234,6 +238,7 @@ class WeddingContentSeeder extends Seeder
             ['email', 'invite_email_image', 'Email photo', 'image', self::IMG.'cover.jpg', 'A landscape photo works best. It is attached to the email, so it shows even before the site is online.'],
             ['email', 'invite_email_from_name', 'Sender name', 'text', '', 'The name guests see in their inbox. Leave empty to use your names, e.g. “Diane & Jomar”. A real name is less likely to land in spam than “Admin”.'],
             ['email', 'invite_email_reply_to', 'Reply-to email', 'email', '', 'Optional: a personal email you read. Guests who reply reach you, and replies teach their inbox that your emails are wanted.'],
+            ['email', 'invite_email_attire', 'Attire & motif in the email', 'toggle', '1', 'The motif colours and the dress code, below the venues. The gift guide follows when “Gift guide with the dress code” (Gift Registry) is on.'],
 
             ['sections', 'show_love_story', 'Love story chapters', 'toggle', '1', 'The story reel below the love letter.'],
             ['sections', 'show_events', 'Ceremony & reception', 'toggle', '1', 'The venues and the map, and the “Save to calendar” buttons.'],

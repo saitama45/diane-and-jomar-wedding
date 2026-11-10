@@ -191,6 +191,7 @@ return [
             'singular' => 'account',
             'description' => 'The website shows one QR code: the first account in this list (lowest order). Upload its real QR code image.',
             'section' => 'show_gifts', // website-section switch (a setting)
+            'headings' => ['gift_title', 'gift_menu_label'], // the section's name on the website (settings)
             'order' => [['sort_order', 'asc'], ['id', 'asc']],
             'columns' => ['label' => 'Account', 'account_name' => 'Name', 'account_number' => 'Number'],
             'fields' => [
