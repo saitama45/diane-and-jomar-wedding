@@ -7,6 +7,7 @@ import { Head } from '@inertiajs/vue3';
 import { computed, onBeforeUnmount, onMounted, provide, ref } from 'vue';
 import LineIcon from '@/Components/LineIcon.vue';
 import AttireCard from '@/Components/Print/AttireCard.vue';
+import EntourageCard from '@/Components/Print/EntourageCard.vue';
 import PhotoQrCard from '@/Components/Print/PhotoQrCard.vue';
 import SaveTheDateCard from '@/Components/Print/SaveTheDateCard.vue';
 import { cardToPdf, designSize, printDpi } from '@/lib/pdf';
@@ -17,6 +18,7 @@ const props = defineProps({
     paper: { type: Object, required: true }, // label, width_mm, height_mm, background, qr, hashtag
     look: { type: Object, default: () => ({}) }, // text sizes and colours
     attire: { type: Object, default: () => ({}) }, // the Attire & Motif card's wording and switches
+    entourage: { type: Object, default: () => ({}) }, // the Families & Sponsors card's wording, groups and columns
     filename: { type: String, required: true },
 });
 
@@ -27,7 +29,7 @@ provide('decorTheme', computed(() => props.card.theme ?? 'boho'));
 const size = computed(() => designSize(props.paper.width_mm, props.paper.height_mm));
 const dpi = computed(() => printDpi(props.paper.width_mm, props.paper.height_mm));
 const mm = (value) => Number(value.toFixed(1));
-const title = computed(() => ({ 'photo-qr': 'Photo QR sign', attire: 'Attire & Motif' })[props.design] ?? 'Save the Date');
+const title = computed(() => ({ 'photo-qr': 'Photo QR sign', attire: 'Attire & Motif', entourage: 'Families & Sponsors' })[props.design] ?? 'Save the Date');
 
 const cardRef = ref();
 const pdfUrl = ref(null);
@@ -85,7 +87,8 @@ onBeforeUnmount(() => pdfUrl.value && URL.revokeObjectURL(pdfUrl.value));
 
     <!-- The card the PDF is drawn from, at its full design size, hidden behind the page (html2canvas needs it on screen). -->
     <div class="pointer-events-none fixed left-0 top-0 -z-10" aria-hidden="true">
-        <AttireCard v-if="design === 'attire'" ref="cardRef" :card="card" :width="size.width" :height="size.height" :background="paper.background" :hashtag="paper.hashtag" :look="look" :attire="attire" />
+        <EntourageCard v-if="design === 'entourage'" ref="cardRef" :card="card" :width="size.width" :height="size.height" :background="paper.background" :hashtag="paper.hashtag" :look="look" :entourage="entourage" />
+        <AttireCard v-else-if="design === 'attire'" ref="cardRef" :card="card" :width="size.width" :height="size.height" :background="paper.background" :hashtag="paper.hashtag" :look="look" :attire="attire" />
         <PhotoQrCard v-else-if="design === 'photo-qr'" ref="cardRef" :card="card" :width="size.width" :height="size.height" :background="paper.background" :hashtag="paper.hashtag" :look="look" />
         <SaveTheDateCard v-else ref="cardRef" :card="card" :width="size.width" :height="size.height" :background="paper.background" :qr="paper.qr" :hashtag="paper.hashtag" :look="look" />
     </div>

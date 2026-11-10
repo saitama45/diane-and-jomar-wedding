@@ -77,7 +77,8 @@ class InvitationMail extends Mailable
                 'preheader' => $this->couple().' · '.$date->format('F j, Y').' · '.($this->settings['city_line'] ?? ''),
                 'bride' => $this->settings['bride_name'] ?? '',
                 'groom' => $this->settings['groom_name'] ?? '',
-                'kicker' => $this->settings['cover_kicker'] ?? 'The wedding celebration of',
+                // The heading on every invitation (Site Settings > Invitation Wording) wins over the email's own.
+                'kicker' => trim((string) ($this->settings['invite_heading'] ?? '')) ?: trim((string) ($this->settings['cover_kicker'] ?? '')),
                 'inviteLine' => $this->settings['invite_line'] ?? '',
                 'guest' => $this->invitation->guest_name,
                 'seatsLabel' => $this->invitation->seats.' '.Str::plural('seat', $this->invitation->seats),

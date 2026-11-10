@@ -14,6 +14,7 @@ class SettingsController extends Controller
     private const GROUPS = [
         'couple' => 'The Couple',
         'wedding' => 'Wedding Day',
+        'invitation' => 'Invitation Wording',
         'cover' => 'Cover & Hero',
         'story' => 'Love Letter',
         'countdown' => 'Countdown',
@@ -56,6 +57,8 @@ class SettingsController extends Controller
                 'title' => self::GROUPS[$group] ?? str($group)->headline()->toString(),
                 'settings' => $settings->map->only('key', 'label', 'type', 'value', 'help')->values(),
             ])
+            // In the order of GROUPS (unknown groups last), not of whichever setting was added first.
+            ->sortBy(fn ($group) => array_search($group['key'], array_keys(self::GROUPS), true) === false ? PHP_INT_MAX : array_search($group['key'], array_keys(self::GROUPS), true))
             ->values();
 
         return Inertia::render('Admin/Settings', ['groups' => $groups]);

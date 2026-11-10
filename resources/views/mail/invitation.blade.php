@@ -91,7 +91,9 @@
                 {{-- The invitation --}}
                 <tr>
                     <td class="px" align="center" style="padding:6px 44px 0;">
-                        <p style="margin:0;font-family:{!! $sans !!};font-size:11px;line-height:1.9;letter-spacing:4px;text-transform:uppercase;color:{{ $soft }};">{{ $kicker }}</p>
+                        @if ($kicker)
+                            <p style="margin:0;font-family:{!! $sans !!};font-size:11px;line-height:1.9;letter-spacing:4px;text-transform:uppercase;color:{{ $soft }};">{!! nl2br(e($kicker)) !!}</p>
+                        @endif
 
                         <p class="name" style="margin:10px 0 0;font-family:{!! $script !!};font-size:62px;line-height:1.1;font-weight:400;color:{{ $caramel }};">{{ $bride }}</p>
                         <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:2px auto;">

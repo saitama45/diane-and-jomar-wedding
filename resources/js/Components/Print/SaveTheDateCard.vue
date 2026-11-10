@@ -55,6 +55,8 @@ function text(key, group, size, { weight = 400, italic = false, soft = false, na
 }
 const px = (size, key = null) => `${size * k.value * (key ? item(key) : 1)}px`;
 
+// A long heading (e.g. "to celebrate the civil ceremony of") is set a little smaller and tighter.
+const longHeading = computed(() => Math.max(0, ...(props.card.heading ?? '').split('\n').map((line) => line.trim().length)) > 18);
 const initials = computed(() => [props.card.bride, props.card.groom].map((name) => (name ?? '').trim().charAt(0).toUpperCase()));
 // The garden flowers are denser than the pampas, so their corners print a little smaller.
 const theme = inject('decorTheme', computed(() => 'boho'));
@@ -105,7 +107,14 @@ defineExpose({ ready });
 
         <div class="absolute inset-0 flex items-center justify-center">
             <div ref="content" class="shrink-0" :style="{ width: px(520), transform: `scale(${scale})` }">
-                <p class="font-serif uppercase tracking-[0.34em]" :style="text('heading', 'accent', 22, { weight: 600 })">{{ card.heading }}</p>
+                <p
+                    v-if="card.heading"
+                    class="whitespace-pre-line font-serif uppercase leading-snug"
+                    :class="longHeading ? 'tracking-[0.15em]' : 'tracking-[0.34em]'"
+                    :style="text('heading', 'accent', longHeading ? 15 : 22, { weight: 600 })"
+                >
+                    {{ card.heading }}
+                </p>
 
                 <PampasWreath class="mx-auto mt-3" :style="{ width: px(200, 'monogram'), height: px(200, 'monogram') }">
                     <span class="flex items-baseline font-serif leading-none" :style="text('monogram', 'accent', 58, { weight: 500 })">

@@ -56,6 +56,6 @@ class SectionHeadingsTest extends TestCase
             ->where('events.1.venue', 'The Manila Hotel'));
 
         $this->actingAs(User::first())->get('/admin/settings')->assertInertia(fn (Assert $page) => $page
-            ->where('groups', fn ($groups) => collect(collect($groups)->firstWhere('key', 'save_the_date')['settings'])->pluck('key')->contains('std_ceremony_line')));
+            ->where('groups', fn ($groups) => collect(collect($groups)->firstWhere('key', 'invitation')['settings'])->pluck('key')->contains('std_ceremony_line')));
     }
 }

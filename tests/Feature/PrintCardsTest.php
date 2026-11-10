@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\AttireSample;
+use App\Models\EntourageMember;
 use App\Models\MotifColor;
 use App\Models\Setting;
 use App\Models\User;
@@ -197,6 +198,57 @@ class PrintCardsTest extends TestCase
 
         $this->put('/admin/print', ['attire_audience' => 'kids', 'attire_columns' => 9])
             ->assertSessionHasErrors(['attire_audience', 'attire_columns']);
+    }
+
+    public function test_the_families_and_sponsors_card_prints_the_visible_entourage(): void
+    {
+        EntourageMember::where('name', 'Kevin Lim')->update(['is_active' => false]);
+        $this->actingAs(User::first());
+
+        $this->get('/admin/print')->assertInertia(fn (Assert $page) => $page
+            ->where('designs.3.key', 'entourage')
+            ->where('options.entourage_heading', 'Our Families and Sponsors') // starts as the website's section title
+            ->where('options.entourage_families', true)
+            ->where('options.entourage_hidden', [])
+            ->where('card.entourage.families', 'Reyes — Santos')
+            ->where('card.entourage.groups.0.group', 'Parents of the Groom')
+            ->where('card.entourage.groups', fn ($groups) => collect($groups)->firstWhere('group', 'Groomsmen')['names'] === ['Paolo Mercado', 'Rafael Torres', 'Nathan Cruz']));
+
+        $this->get('/admin/print/save-the-date?'.http_build_query(['design' => 'entourage', 'paper' => 'A4', 'entourage_hidden' => '["Flower Girls"]']))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('design', 'entourage')
+                ->where('filename', 'Families & Sponsors - Diane & Jomar - A4.pdf')
+                ->where('entourage.entourage_hidden', ['Flower Girls']));
+    }
+
+    public function test_the_families_card_remembers_its_choices_and_an_empty_list_in_the_link_wins(): void
+    {
+        $this->actingAs(User::first());
+
+        $this->put('/admin/print', [
+            'design' => 'entourage',
+            'entourage_heading' => '',
+            'entourage_families' => false,
+            'entourage_columns' => 3,
+            'entourage_hidden' => ['Best Man', 'Best Man', 'Ring Bearer'],
+            'item_sizes' => ['entourage_names' => 120],
+        ])->assertSessionHasNoErrors();
+
+        $this->get('/admin/print/save-the-date')->assertInertia(fn (Assert $page) => $page
+            ->where('entourage.entourage_heading', '') // emptied stays empty, so the heading is left off
+            ->where('entourage.entourage_families', false)
+            ->where('entourage.entourage_columns', '3')
+            ->where('entourage.entourage_hidden', ['Best Man', 'Ring Bearer'])
+            ->where('look.item_sizes.entourage_names', 120));
+
+        // The PDF link sends its lists as JSON text, so "nothing hidden" and "every line at 100 %" still override.
+        $this->get('/admin/print/save-the-date?'.http_build_query(['entourage_hidden' => '[]', 'item_sizes' => '{}']))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('entourage.entourage_hidden', [])
+                ->missing('look.item_sizes.entourage_names'));
+
+        $this->put('/admin/print', ['entourage_columns' => 7, 'entourage_hidden' => [str_repeat('x', 90)]])
+            ->assertSessionHasErrors(['entourage_columns', 'entourage_hidden.0']);
     }
 
     public function test_guests_cannot_print(): void

@@ -177,8 +177,9 @@ class WeddingContentSeeder extends Seeder
             ['wedding', 'rsvp_deadline', 'RSVP deadline', 'date', '2027-03-24', null],
 
             ['cover', 'cover_image', 'Share preview photo', 'image', self::IMG.'cover.jpg', self::COVER_IMAGE_HELP],
-            ['cover', 'cover_kicker', 'Cover heading', 'text', 'The Wedding Celebration of', null],
-            ['cover', 'invite_line', 'Invitation line', 'text', 'Together with our families, we joyfully invite you to celebrate our wedding', null],
+            ['invitation', 'invite_heading', 'Heading on every invitation', 'textarea', '', 'At the top of the opening screen, the save-the-date card (website and print) and the invitation email. For example “You are invited” and, on the next line, “to celebrate the civil ceremony of”. Leave empty to use the two headings below.'],
+            ['invitation', 'cover_kicker', 'Opening screen and email heading', 'text', 'The Wedding Celebration of', 'Above your names when the heading on every invitation is empty. Leave empty to hide.'],
+            ['invitation', 'invite_line', 'Opening screen and email: line below your names', 'text', 'Together with our families, we joyfully invite you to celebrate our wedding', 'Leave empty to hide.'],
             ['cover', 'hero_image', 'Hero photo', 'image', self::IMG.'hero.jpg', null],
             ['cover', 'hero_tagline', 'Hero tagline', 'text', 'Two hearts, one story — and a seat saved just for you.', null],
 
@@ -250,12 +251,12 @@ class WeddingContentSeeder extends Seeder
             ['entourage', 'entourage_title', 'Section title', 'text', 'Our Families and Sponsors', 'The big title of the section with your families, sponsors and entourage.'],
             ['entourage', 'entourage_menu_label', 'Menu label', 'text', 'Families & Sponsors', 'The short name of that section in the website menu.'],
 
-            ['save_the_date', 'std_heading', 'Card heading', 'text', 'Save the Date', 'The save-the-date card. Your names, the date and the venues fill in by themselves.'],
-            ['save_the_date', 'std_intro', 'Card opening line', 'textarea', "Together with our families\nwe,", 'Shown above your names. Press Enter for a new line.'],
-            ['save_the_date', 'std_invite', 'Card invitation line', 'text', 'Invite you to celebrate our wedding', 'Shown below your names.'],
-            ['save_the_date', 'std_ceremony_line', 'Line before the ceremony venue', 'text', 'Ceremony will be held at', 'The venue is the first event in Ceremony & Reception.'],
+            ['invitation', 'std_heading', 'Save-the-date card heading', 'text', 'Save the Date', 'At the top of the card when the heading on every invitation is empty. Leave empty to hide.'],
+            ['invitation', 'std_intro', 'Save-the-date card: line above your names', 'textarea', "Together with our families\nwe,", 'Press Enter for a new line. Leave empty to hide.'],
+            ['invitation', 'std_invite', 'Save-the-date card: line below your names', 'text', 'Invite you to celebrate our wedding', 'Leave empty to hide.'],
+            ['invitation', 'std_ceremony_line', 'Line before the ceremony venue', 'text', 'Ceremony will be held at', 'On the save-the-date card, the printed card and the email. The venue is the first event in Ceremony & Reception.'],
             ['save_the_date', 'show_std_film', 'Show “Our Little Film”', 'toggle', '1', 'The film beside the save-the-date card. Switch it off to show the card on its own.'],
-            ['save_the_date', 'std_reception_line', 'Line before the reception venue', 'text', 'Reception follows at', 'The venue is the second event in Ceremony & Reception.'],
+            ['invitation', 'std_reception_line', 'Line before the reception venue', 'text', 'Reception follows at', 'On the save-the-date card, the printed card and the email. The venue is the second event in Ceremony & Reception.'],
         ];
 
         foreach ($settings as $i => [$group, $key, $label, $type, $value, $help]) {

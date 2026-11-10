@@ -4,7 +4,7 @@ import LineIcon from '@/Components/LineIcon.vue';
 import BohoCorner from '@/Components/Wedding/BohoCorner.vue';
 import { gsap, reducedMotion } from '@/lib/motion';
 
-defineProps({
+const props = defineProps({
     settings: { type: Object, required: true },
     wedding: { type: Object, required: true },
     venue: { type: String, default: null }, // the ceremony venue
@@ -13,6 +13,9 @@ defineProps({
 
 // The garden theme decorates all four corners, like a printed floral invitation.
 const theme = inject('decorTheme', computed(() => 'boho'));
+
+// The heading on every invitation (Site Settings > Invitation Wording) wins over this screen's own.
+const heading = computed(() => (props.settings.invite_heading ?? '').trim() || (props.settings.cover_kicker ?? '').trim());
 
 const emit = defineEmits(['open', 'reveal', 'done']);
 
@@ -93,7 +96,7 @@ function open() {
                         <p class="mt-1 font-serif text-2xl italic text-ink md:text-3xl">{{ guestName }}</p>
                     </div>
 
-                    <p class="ig-reveal max-w-xs font-sans text-[0.7rem] uppercase leading-[2] tracking-[0.32em] text-ink-soft sm:max-w-md md:text-xs">{{ settings.cover_kicker }}</p>
+                    <p v-if="heading" class="ig-reveal max-w-xs whitespace-pre-line font-sans text-[0.7rem] uppercase leading-[2] tracking-[0.32em] text-ink-soft sm:max-w-md md:text-xs">{{ heading }}</p>
 
                     <h1 class="mt-2 font-script font-normal leading-[1.05] text-caramel">
                         <span class="ig-reveal block text-[clamp(3.6rem,14vw,7rem)] [@media(max-height:700px)]:text-[3.4rem]">{{ settings.bride_name }}</span>
@@ -103,7 +106,7 @@ function open() {
                         <span class="ig-reveal block text-[clamp(3.6rem,14vw,7rem)] [@media(max-height:700px)]:text-[3.4rem]">{{ settings.groom_name }}</span>
                     </h1>
 
-                    <p class="ig-reveal mt-5 max-w-sm font-sans text-[0.7rem] uppercase leading-[2] tracking-[0.3em] text-ink-soft md:max-w-lg md:text-xs">{{ settings.invite_line }}</p>
+                    <p v-if="settings.invite_line" class="ig-reveal mt-5 max-w-sm font-sans text-[0.7rem] uppercase leading-[2] tracking-[0.3em] text-ink-soft md:max-w-lg md:text-xs">{{ settings.invite_line }}</p>
 
                     <!-- Month and time | day | weekday and year -->
                     <div class="ig-reveal mt-6 grid grid-cols-[1fr_auto_1fr] items-center font-serif uppercase text-cocoa md:mt-8">

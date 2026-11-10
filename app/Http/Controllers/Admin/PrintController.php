@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AttireSample;
+use App\Models\EntourageMember;
 use App\Models\MotifColor;
 use App\Models\Setting;
 use App\Models\WeddingEvent;
@@ -82,14 +83,19 @@ class PrintController extends Controller
         'attire_labels' => ['print_attire_labels', true],
         'attire_text' => ['print_attire_text', true],
         'attire_columns' => ['print_attire_columns', 2], // outfit pictures per row
+        // The Families & Sponsors card. A missing heading starts as the website's section title.
+        'entourage_heading' => ['print_entourage_heading', null],
+        'entourage_families' => ['print_entourage_families', true],
+        'entourage_columns' => ['print_entourage_columns', 2], // columns for long lists of names
+        'entourage_hidden' => ['print_entourage_hidden', []], // group names left off the card, stored as JSON
     ];
 
     /** The printable designs, by key. */
-    public const DESIGNS = ['save-the-date' => 'Save the Date', 'photo-qr' => 'Photo QR sign', 'attire' => 'Attire & Motif'];
+    public const DESIGNS = ['save-the-date' => 'Save the Date', 'photo-qr' => 'Photo QR sign', 'attire' => 'Attire & Motif', 'entourage' => 'Families & Sponsors'];
 
     /** The lines of text (and the QR code) whose size can be fine-tuned, in card order. */
     public const ITEMS = [
-        'heading' => 'Save the Date heading',
+        'heading' => 'Heading',
         'monogram' => 'Monogram and wreath',
         'and' => '“and” between the names',
         'date' => 'Weekday, time, month and year',
@@ -115,6 +121,11 @@ class PrintController extends Controller
         'attire_titles' => 'Principal Sponsors / Our Guests',
         'attire_styles' => 'Formal / Semi-Formal',
         'attire_details' => 'Dress code details',
+        // The Families & Sponsors card
+        'entourage_heading' => 'Heading',
+        'entourage_families' => 'Families line',
+        'entourage_groups' => 'Group titles',
+        'entourage_names' => 'Names',
         'hashtag' => 'Hashtag', // last on every card
     ];
 
@@ -123,7 +134,9 @@ class PrintController extends Controller
 
     private const MAX_ITEM = 200;
 
-    private const SWITCHES = ['qr', 'hashtag', ...self::TEXT_STYLES, ...self::ATTIRE_SWITCHES];
+    private const SWITCHES = ['qr', 'hashtag', 'entourage_families', ...self::TEXT_STYLES, ...self::ATTIRE_SWITCHES];
+
+    private const ENTOURAGE_OPTIONS = ['entourage_heading', 'entourage_families', 'entourage_columns', 'entourage_hidden'];
 
     private const ATTIRE_SWITCHES = ['attire_palette', 'attire_color_names', 'attire_pictures', 'attire_labels', 'attire_text'];
 
@@ -160,6 +173,7 @@ class PrintController extends Controller
             $value = match (true) {
                 in_array($field, self::SWITCHES, true) => $options[$field] ? '1' : '0',
                 $field === 'item_sizes' => json_encode((object) $options['item_sizes']),
+                $field === 'entourage_hidden' => json_encode(array_values($options['entourage_hidden'])),
                 default => (string) ($options[$field] ?? ''),
             };
             Setting::updateOrCreate(['key' => $key], [
@@ -190,6 +204,7 @@ class PrintController extends Controller
             'look' => collect($options)->only([...self::SIZES, ...self::COLORS, ...self::TEXT_STYLES, 'names_layout'])
                 ->put('item_sizes', (object) $options['item_sizes']),
             'attire' => collect($options)->only(self::ATTIRE_OPTIONS),
+            'entourage' => collect($options)->only(self::ENTOURAGE_OPTIONS),
             'filename' => sprintf('%s - %s & %s - %s.pdf', self::DESIGNS[$options['design']], $card['bride'], $card['groom'], $options['label']),
         ]);
     }
@@ -201,6 +216,13 @@ class PrintController extends Controller
      */
     private function resolve(array $input): array
     {
+        // The PDF link carries these two as JSON text (so an empty list still overrides the saved one).
+        foreach (['item_sizes', 'entourage_hidden'] as $field) {
+            if (is_string($input[$field] ?? null)) {
+                $input[$field] = json_decode($input[$field], true) ?: [];
+            }
+        }
+
         $data = validator($input, [
             'paper' => ['required', Rule::in([...array_keys(self::PAPERS), 'custom'])],
             'orientation' => ['required', Rule::in(['portrait', 'landscape'])],
@@ -221,6 +243,10 @@ class PrintController extends Controller
             'attire_message' => ['nullable', 'string', 'max:200'],
             'attire_audience' => ['required', Rule::in(['all', 'guests', 'sponsors'])],
             'attire_columns' => ['required', Rule::in([1, 2, 3])],
+            'entourage_heading' => ['nullable', 'string', 'max:80'],
+            'entourage_columns' => ['required', Rule::in([1, 2, 3])],
+            'entourage_hidden' => ['nullable', 'array'],
+            'entourage_hidden.*' => ['string', 'max:80'],
             'item_sizes' => ['nullable', 'array'],
             'item_sizes.*' => ['integer', 'between:'.self::MIN_ITEM.','.self::MAX_ITEM],
         ])->validate();
@@ -231,6 +257,8 @@ class PrintController extends Controller
             ->map(fn ($percent) => (int) $percent)
             ->reject(fn (int $percent) => $percent === 100)
             ->all();
+
+        $data['entourage_hidden'] = collect($data['entourage_hidden'] ?? [])->map(fn ($group) => (string) $group)->unique()->values()->all();
 
         if ($data['paper'] === 'custom') {
             $toMm = $data['unit'] === 'in' ? 25.4 : 1;
@@ -269,7 +297,7 @@ class PrintController extends Controller
     {
         $values = Setting::where('group', 'print')->pluck('value', 'key');
 
-        return collect(self::SETTINGS)->map(function (array $setting, string $field) use ($values) {
+        $options = collect(self::SETTINGS)->map(function (array $setting, string $field) use ($values) {
             [$key, $default] = $setting;
             $value = $values[$key] ?? null;
 
@@ -277,10 +305,15 @@ class PrintController extends Controller
                 $value === null => $default,
                 in_array($field, self::SWITCHES, true) => $value === '1',
                 in_array($field, self::SIZES, true) => (int) $value,
-                $field === 'item_sizes' => (array) (json_decode($value, true) ?: []),
+                $field === 'item_sizes', $field === 'entourage_hidden' => (array) (json_decode($value, true) ?: []),
                 default => $value,
             };
         })->all();
+
+        // A first-time Families & Sponsors heading: the website's title for that section.
+        $options['entourage_heading'] ??= trim((string) Setting::where('key', 'entourage_title')->value('value')) ?: 'Our Families and Sponsors';
+
+        return $options;
     }
 
     /** @return array<string, mixed> Everything printed on the card, from Site Settings and Ceremony & Reception. */
@@ -300,7 +333,8 @@ class PrintController extends Controller
         $reception = $place($events->get(1));
 
         return [
-            'heading' => $text('std_heading', 'Save the Date'),
+            // The invitation heading wins over the card's own (Site Settings > Invitation Wording); empty hides it.
+            'heading' => $text('invite_heading') ?: $text('std_heading'),
             'bride' => $text('bride_name'),
             'groom' => $text('groom_name'),
             'weekday' => $date->format('l'),
@@ -320,6 +354,15 @@ class PrintController extends Controller
             // The photo-sharing sign: where its QR code leads (the site's upload page unless another album is set).
             'shareUrl' => $text('capture_upload_url') ?: Setting::siteUrl().'/share',
             'captureMessage' => $text('capture_message'),
+            // The Families & Sponsors card: visible people, grouped like the website.
+            'entourage' => [
+                'title' => $text('entourage_title', 'Our Families and Sponsors'),
+                'families' => $text('families_line'),
+                'groups' => EntourageMember::visible()->orderBy('group_order')->orderBy('sort_order')->orderBy('id')->get()
+                    ->groupBy('group_name')
+                    ->map(fn ($members, $group) => ['group' => (string) $group, 'names' => $members->pluck('name')->values()])
+                    ->values(),
+            ],
             // The Attire & Motif card: only items still marked visible in their admin lists.
             'attire' => [
                 'sponsors' => $text('dress_sponsors_attire'),

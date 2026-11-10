@@ -27,6 +27,10 @@ const SEAL = (() => {
 })();
 
 const text = (key, fallback) => (props.settings[key] ?? '').trim() || fallback;
+
+// The heading on every invitation wins over the card's own; an empty line is left off the card.
+const heading = computed(() => text('invite_heading', '') || text('std_heading', ''));
+const longHeading = computed(() => Math.max(...heading.value.split('\n').map((line) => line.trim().length)) > 18);
 const initials = computed(() => [props.settings.bride_name, props.settings.groom_name].map((name) => (name ?? '').trim().charAt(0).toUpperCase()));
 const ceremony = computed(() => props.events[0] ?? null);
 const reception = computed(() => props.events[1] ?? null);
@@ -83,8 +87,14 @@ function play() {
                         </span>
                     </PampasWreath>
 
-                    <p class="mt-3 font-serif text-[0.95rem] font-semibold uppercase tracking-[0.34em] text-rust">{{ text('std_heading', 'Save the Date') }}</p>
-                    <p class="mt-6 whitespace-pre-line font-sans text-[0.68rem] uppercase leading-[2] tracking-[0.3em] text-ink-soft">{{ text('std_intro', 'Together with our families') }}</p>
+                    <p
+                        v-if="heading"
+                        class="mt-3 whitespace-pre-line font-serif font-semibold uppercase text-rust"
+                        :class="longHeading ? 'text-[0.8rem] leading-[1.9] tracking-[0.2em]' : 'text-[0.95rem] tracking-[0.34em]'"
+                    >
+                        {{ heading }}
+                    </p>
+                    <p v-if="text('std_intro', '')" class="mt-6 whitespace-pre-line font-sans text-[0.68rem] uppercase leading-[2] tracking-[0.3em] text-ink-soft">{{ text('std_intro', '') }}</p>
 
                     <h3 class="mt-2 font-script font-normal leading-[1.05] text-caramel">
                         <span class="block text-[3.6rem] sm:text-7xl">{{ settings.bride_name }}</span>
@@ -94,7 +104,7 @@ function play() {
                         <span class="block text-[3.6rem] sm:text-7xl">{{ settings.groom_name }}</span>
                     </h3>
 
-                    <p class="mx-auto mt-5 max-w-xs font-sans text-[0.68rem] uppercase leading-[2] tracking-[0.3em] text-ink-soft">{{ text('std_invite', 'Invite you to celebrate our wedding') }}</p>
+                    <p v-if="text('std_invite', '')" class="mx-auto mt-5 max-w-xs font-sans text-[0.68rem] uppercase leading-[2] tracking-[0.3em] text-ink-soft">{{ text('std_invite', '') }}</p>
 
                     <!-- Month and time | day | weekday and year -->
                     <div class="mt-7 grid grid-cols-[1fr_auto_1fr] items-center font-serif uppercase text-cocoa">

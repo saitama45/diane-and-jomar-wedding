@@ -5,6 +5,7 @@ import LineIcon from '@/Components/LineIcon.vue';
 import ImagePreviewModal from '@/Components/Admin/ImagePreviewModal.vue';
 import ToggleSwitch from '@/Components/Admin/ToggleSwitch.vue';
 import AttireCard from '@/Components/Print/AttireCard.vue';
+import EntourageCard from '@/Components/Print/EntourageCard.vue';
 import PhotoQrCard from '@/Components/Print/PhotoQrCard.vue';
 import SaveTheDateCard from '@/Components/Print/SaveTheDateCard.vue';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
@@ -34,12 +35,13 @@ const SWATCHES = [
 ];
 
 const COLOR_FIELDS = [
-    { key: 'names_color', group: 'names', label: 'Names', note: 'Your names and the script lines', attireNote: 'The heading and the script labels' },
-    { key: 'accent_color', group: 'accent', label: 'Accents', note: 'Heading, monogram, day, RSVP and hashtag', attireNote: 'Principal Sponsors, Our Guests and hashtag' },
-    { key: 'details_color', group: 'details', label: 'Details', note: 'Date, venues, addresses and small lines', attireNote: 'Message, colour names and dress code' },
+    { key: 'names_color', group: 'names', label: 'Names', note: 'Your names and the script lines', attireNote: 'The heading and the script labels', entourageNote: 'The heading and the group titles' },
+    { key: 'accent_color', group: 'accent', label: 'Accents', note: 'Heading, monogram, day, RSVP and hashtag', attireNote: 'Principal Sponsors, Our Guests and hashtag', entourageNote: 'The families line and hashtag' },
+    { key: 'details_color', group: 'details', label: 'Details', note: 'Date, venues, addresses and small lines', attireNote: 'Message, colour names and dress code', entourageNote: 'The names' },
 ];
 
 const DESIGN_INFO = {
+    entourage: { icon: 'users', note: 'Your families, sponsors and entourage' },
     'save-the-date': { icon: 'envelope', note: 'Your names, the date and the venues' },
     'photo-qr': { icon: 'camera', note: 'For the tables: guests scan it to send you their photos' },
     attire: { icon: 'hanger', note: 'Your colours, outfit pictures and dress code' },
@@ -55,9 +57,10 @@ const ATTIRE_SWITCHES = [
 
 // Which lines each design offers in Each line.
 const DESIGN_ITEMS = {
-    'save-the-date': (key) => !key.startsWith('attire_'),
+    'save-the-date': (key) => !key.startsWith('attire_') && !key.startsWith('entourage_'),
     'photo-qr': (key) => ['qr', 'hashtag'].includes(key),
     attire: (key) => key.startsWith('attire_') || key === 'hashtag',
+    entourage: (key) => key.startsWith('entourage_') || key === 'hashtag',
 };
 
 // Bold / italic switches per text group (off = the designed mix of weights and styles).
@@ -76,19 +79,28 @@ const form = useForm({
     width: String(props.options.width),
     height: String(props.options.height),
     attire_columns: Number(props.options.attire_columns),
+    entourage_columns: Number(props.options.entourage_columns),
+    entourage_hidden: [...(props.options.entourage_hidden ?? [])],
     // Every line at its saved percent (100 = as designed).
     item_sizes: Object.fromEntries(props.items.map(({ key }) => [key, Number(props.options.item_sizes?.[key] ?? 100)])),
 });
 
 const isQrSign = computed(() => form.design === 'photo-qr');
 const isAttire = computed(() => form.design === 'attire');
-const isSaveTheDate = computed(() => !isQrSign.value && !isAttire.value);
+const isEntourage = computed(() => form.design === 'entourage');
+const isSaveTheDate = computed(() => !isQrSign.value && !isAttire.value && !isEntourage.value);
+
+// Families & Sponsors: groups are on the card unless left off here.
+const isShown = (group) => !form.entourage_hidden.includes(group);
+function toggleGroup(group) {
+    form.entourage_hidden = isShown(group) ? [...form.entourage_hidden, group] : form.entourage_hidden.filter((g) => g !== group);
+}
 
 // What each fine-tunable line says on this card (lines the card does not show are left out).
 const itemText = computed(() => {
     const c = props.card;
     return {
-        heading: c.heading,
+        heading: c.heading ? c.heading.replace(/\n+/g, ' / ') : null,
         monogram: [c.bride, c.groom].map((n) => (n ?? '').charAt(0)).join(' & '),
         and: form.names_layout === 'stacked' ? 'and' : '&',
         date: `${c.weekday} · ${c.time} · ${c.month} ${c.year}`,
@@ -114,6 +126,10 @@ const itemText = computed(() => {
         attire_titles: 'The small titles',
         attire_styles: form.attire_text ? [c.attire.sponsors, c.attire.guests].filter(Boolean).join(' / ') : null,
         attire_details: form.attire_text ? 'Gentlemen, Ladies and the guests note' : null,
+        entourage_heading: form.entourage_heading,
+        entourage_families: form.entourage_families ? c.entourage.families : null,
+        entourage_groups: c.entourage.groups.filter((g) => isShown(g.group)).map((g) => g.group).join(', ') || null,
+        entourage_names: c.entourage.groups.length ? `${c.entourage.groups.filter((g) => isShown(g.group)).reduce((n, g) => n + g.names.length, 0)} names` : null,
     };
 });
 const shownItems = computed(() => props.items.filter(({ key }) => itemText.value[key] && (DESIGN_ITEMS[form.design] ?? DESIGN_ITEMS['save-the-date'])(key)));
@@ -166,6 +182,14 @@ const look = computed(() => ({
 }));
 
 // The Attire & Motif card's wording, audience and switches.
+// The Families & Sponsors card's wording, groups and columns.
+const entourage = computed(() => ({
+    entourage_heading: form.entourage_heading ?? '',
+    entourage_families: !!form.entourage_families,
+    entourage_columns: Number(form.entourage_columns),
+    entourage_hidden: [...form.entourage_hidden],
+}));
+
 const attire = computed(() => ({
     attire_heading: form.attire_heading ?? '',
     attire_message: form.attire_message ?? '',
@@ -183,7 +207,7 @@ function resetLook() {
 }
 
 // The chosen design, for the live preview and the full-size drawing behind Preview.
-const cardComponent = computed(() => (isAttire.value ? AttireCard : isQrSign.value ? PhotoQrCard : SaveTheDateCard));
+const cardComponent = computed(() => (isEntourage.value ? EntourageCard : isAttire.value ? AttireCard : isQrSign.value ? PhotoQrCard : SaveTheDateCard));
 const cardProps = computed(() => ({
     card: props.card,
     width: design.value.width,
@@ -192,6 +216,7 @@ const cardProps = computed(() => ({
     hashtag: form.hashtag,
     look: look.value,
     ...(isAttire.value ? { attire: attire.value } : {}),
+    ...(isEntourage.value ? { entourage: entourage.value } : {}),
     ...(isSaveTheDate.value ? { qr: form.qr } : {}),
 }));
 
@@ -268,7 +293,9 @@ function openPdf() {
         hashtag: form.hashtag ? '1' : '0',
         ...onOff(flat),
         ...onOff(attire.value),
-        ...Object.fromEntries(Object.entries(overrides).map(([key, percent]) => [`item_sizes[${key}]`, percent])),
+        ...onOff({ ...entourage.value, entourage_hidden: JSON.stringify(entourage.value.entourage_hidden) }),
+        // JSON text, so an empty list still overrides what was saved before.
+        item_sizes: JSON.stringify(overrides),
     });
     window.open(`/admin/print/save-the-date?${query}`, '_blank');
     rememberChoices();
@@ -410,6 +437,59 @@ function openPdf() {
                 </div>
             </section>
 
+            <!-- The Families & Sponsors card -->
+            <section v-if="isEntourage" class="rounded-2xl bg-white p-5 ring-1 ring-ink/10">
+                <h2 class="font-serif text-2xl text-ink">Families &amp; Sponsors</h2>
+                <p class="mt-1 text-sm text-ink-soft">The names come from Entourage (people you hid there stay off the card), the families line from Site Settings → The Couple.</p>
+
+                <div class="mt-4 max-w-md">
+                    <label for="entourage-heading" class="admin-label">Heading</label>
+                    <input id="entourage-heading" v-model="form.entourage_heading" type="text" maxlength="80" class="admin-input" />
+                    <p class="mt-1 text-xs text-ink-soft">Leave empty to leave the heading off the card.</p>
+                    <p v-if="form.errors.entourage_heading" class="mt-1 text-sm text-red-700">{{ form.errors.entourage_heading }}</p>
+                </div>
+
+                <div class="mt-4 flex items-start gap-3">
+                    <ToggleSwitch v-model="form.entourage_families" label="Families line" :disabled="!card.entourage.families" />
+                    <div>
+                        <p class="text-sm font-medium text-ink">Families line <span v-if="card.entourage.families" class="font-normal text-ink-soft">· {{ card.entourage.families }}</span></p>
+                        <p class="text-xs text-ink-soft">{{ card.entourage.families ? 'Under the heading.' : 'No families line yet: add one in Site Settings → The Couple.' }}</p>
+                    </div>
+                </div>
+
+                <p class="mt-5 text-sm font-medium text-ink">Groups on the card</p>
+                <p v-if="!card.entourage.groups.length" class="mt-1 text-sm text-ink-soft">No one in Entourage yet.</p>
+                <div v-else class="mt-2 grid gap-2 sm:grid-cols-2">
+                    <label
+                        v-for="group in card.entourage.groups"
+                        :key="group.group"
+                        class="flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2 ring-1 transition"
+                        :class="isShown(group.group) ? 'bg-[#f3eadd] ring-cocoa' : 'ring-ink/10 hover:ring-ink/30'"
+                    >
+                        <input type="checkbox" class="size-4 accent-[#7b5539]" :checked="isShown(group.group)" @change="toggleGroup(group.group)" />
+                        <span class="min-w-0 flex-1">
+                            <span class="block truncate text-sm font-medium text-ink">{{ group.group }}</span>
+                            <span class="block text-xs text-ink-soft">{{ group.names.length }} {{ group.names.length === 1 ? 'name' : 'names' }}</span>
+                        </span>
+                    </label>
+                </div>
+
+                <p class="mt-5 text-sm font-medium text-ink">Columns for long lists</p>
+                <p class="text-xs text-ink-soft">Groups with more than four names.</p>
+                <div class="mt-2 inline-flex rounded-xl bg-[#f3eadd] p-1 text-sm">
+                    <button
+                        v-for="count in [1, 2, 3]"
+                        :key="count"
+                        type="button"
+                        class="rounded-lg px-4 py-1.5 tabular-nums transition"
+                        :class="Number(form.entourage_columns) === count ? 'bg-white text-ink shadow-sm' : 'text-ink-soft hover:text-ink'"
+                        @click="form.entourage_columns = count"
+                    >
+                        {{ count }}
+                    </button>
+                </div>
+            </section>
+
             <!-- The Attire & Motif card -->
             <section v-if="isAttire" class="rounded-2xl bg-white p-5 ring-1 ring-ink/10">
                 <h2 class="font-serif text-2xl text-ink">Attire &amp; Motif</h2>
@@ -527,7 +607,7 @@ function openPdf() {
                     <div v-for="field in COLOR_FIELDS" :key="field.key" class="flex flex-wrap items-center gap-x-4 gap-y-2">
                         <div class="w-44">
                             <p class="text-sm font-medium text-ink">{{ field.label }}</p>
-                            <p class="text-xs text-ink-soft">{{ isAttire ? field.attireNote : field.note }}</p>
+                            <p class="text-xs text-ink-soft">{{ isAttire ? field.attireNote : isEntourage ? field.entourageNote : field.note }}</p>
                         </div>
                         <div class="flex items-center gap-1">
                             <button
@@ -614,7 +694,7 @@ function openPdf() {
                 <p class="font-medium text-ink">Printing tips</p>
                 <ul class="mt-2 list-disc space-y-1 pl-5">
                     <li>In the print window choose <strong>Actual size</strong> (or 100%), not “Fit to page”, and the same paper size as here.</li>
-                    <li>The names, date and venues come from Site Settings and Ceremony &amp; Reception; the heading and the lines before each venue from Site Settings → Save the Date.</li>
+                    <li>The names, date and venues come from Site Settings and Ceremony &amp; Reception; the heading and the lines around your names and venues from Site Settings → Invitation Wording.</li>
                     <li>A print shop can take the downloaded PDF as it is.</li>
                 </ul>
             </section>
