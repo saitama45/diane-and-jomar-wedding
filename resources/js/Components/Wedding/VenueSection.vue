@@ -80,7 +80,8 @@ onBeforeUnmount(() => {
         <div class="mx-auto max-w-6xl px-5 md:px-8">
             <SectionTitle kicker="When &amp; Where" title="The Venue" />
 
-            <div v-if="events.length" class="mt-16 grid gap-16 md:grid-cols-2 md:gap-10 lg:gap-20">
+            <!-- A single venue sits in the middle; two or more pair up -->
+            <div v-if="events.length" class="mt-16 grid gap-16" :class="events.length === 1 ? 'mx-auto max-w-xl' : 'md:grid-cols-2 md:gap-10 lg:gap-20'">
                 <article v-for="event in events" :key="event.id" class="text-center">
                     <div class="venue-arch arch relative mx-auto aspect-[3/4] w-full max-w-[340px] bg-linen shadow-[0_30px_60px_-30px_rgb(58_42_32/0.5)]">
                         <img v-if="event.image" :src="event.image" :alt="event.venue" loading="lazy" class="h-full w-full object-cover" />
