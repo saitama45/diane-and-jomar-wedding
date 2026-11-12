@@ -40,11 +40,14 @@ onMounted(() => {
                 .from(arch.querySelector('img'), { scale: 1.35, duration: 2.2, ease: 'power2.out' }, 0);
         });
 
-        gsap.from('.timeline-line', {
-            scaleY: 0,
-            ease: 'none',
-            scrollTrigger: { trigger: '.timeline', start: 'top 70%', end: 'bottom 60%', scrub: true },
-        });
+        // The timeline is left out when the order of the day is hidden.
+        if (props.schedule.length) {
+            gsap.from('.timeline-line', {
+                scaleY: 0,
+                ease: 'none',
+                scrollTrigger: { trigger: '.timeline', start: 'top 70%', end: 'bottom 60%', scrub: true },
+            });
+        }
         gsap.utils.toArray('.timeline-item').forEach((item) => {
             gsap.from(item.querySelectorAll('.ti-anim'), {
                 y: 30,

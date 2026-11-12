@@ -72,15 +72,18 @@ onMounted(() => {
         drawOnScroll(barong.value, { duration: 2.4, stagger: 0.15 });
         drawOnScroll(gown.value, { duration: 2.4, stagger: 0.15 });
 
-        gsap.from('.swatch', {
-            y: 40,
-            scale: 0.4,
-            opacity: 0,
-            duration: 1.1,
-            stagger: 0.12,
-            ease: 'back.out(2)',
-            scrollTrigger: { trigger: '.swatches', start: 'top 85%', once: true },
-        });
+        // The palette is left out when the motif colours are hidden.
+        if (props.colors.length) {
+            gsap.from('.swatch', {
+                y: 40,
+                scale: 0.4,
+                opacity: 0,
+                duration: 1.1,
+                stagger: 0.12,
+                ease: 'back.out(2)',
+                scrollTrigger: { trigger: '.swatches', start: 'top 85%', once: true },
+            });
+        }
     }, root.value);
 });
 

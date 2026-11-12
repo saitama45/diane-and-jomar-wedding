@@ -45,6 +45,8 @@ class SettingsController extends Controller
         'url' => ['nullable', 'string', 'max:500'],
         'toggle' => ['nullable', 'in:0,1'],
         'email' => ['nullable', 'email', 'max:255'],
+        // A point on a photo, "x% y%" (the hero photo's focus, picked on the photo itself).
+        'focus' => ['nullable', 'regex:/^(100|[1-9]?\d)% (100|[1-9]?\d)%$/'],
     ];
 
     public function edit(): Response

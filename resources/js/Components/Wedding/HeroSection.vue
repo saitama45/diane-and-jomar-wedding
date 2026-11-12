@@ -1,5 +1,6 @@
 <script setup>
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { coverFocus, namesPlace, parseFocus } from '@/lib/focus';
 import { gsap, reducedMotion, scrollToTarget, SplitText } from '@/lib/motion';
 
 const props = defineProps({
@@ -7,6 +8,35 @@ const props = defineProps({
     wedding: { type: Object, required: true },
     active: { type: Boolean, default: false },
 });
+
+// Where the faces are (picked on the hero photo in Site Settings > Cover & Hero). A wide screen shows only a
+// band of a tall or square photo, so the crop is worked out from the photo's real size: the faces land in the
+// upper part of a wide screen (centred across on a phone) and the slow zoom grows from them (lib/focus.js).
+const focus = computed(() => parseFocus(props.settings.hero_focus));
+const photo = ref();
+const crop = ref(null);
+
+function fit() {
+    const img = photo.value;
+    if (!img?.naturalWidth || !img.clientWidth) return;
+    crop.value = coverFocus({ w: img.naturalWidth, h: img.naturalHeight }, { w: img.clientWidth, h: img.clientHeight }, focus.value);
+}
+
+const photoStyle = computed(() => {
+    const point = `${Math.round(focus.value.x * 100)}% ${Math.round(focus.value.y * 100)}%`;
+    return { objectPosition: crop.value?.position ?? point, transformOrigin: crop.value?.origin ?? point };
+});
+
+// On wide screens the names step out of the faces' way: below them when they are high, above them when they
+// are low. A phone shows the photo's whole height, so there the names stay centred.
+const contentPlace = computed(() => {
+    const place = namesPlace(crop.value?.at.y ?? focus.value.y);
+    if (place === 'below') return 'lg:landscape:justify-end lg:landscape:pb-[max(9rem,15vh)]';
+    if (place === 'above') return 'lg:landscape:justify-start lg:landscape:pt-[max(8rem,17vh)]';
+    return '';
+});
+
+let resize;
 
 const root = ref();
 const names = ref();
@@ -61,8 +91,13 @@ function play() {
 
 onMounted(() => {
     frame = requestAnimationFrame(runTimecode);
+    resize = new ResizeObserver(fit);
+    resize.observe(photo.value);
+    fit(); // a cached photo has loaded already
     if (props.active) play();
 });
+
+watch(focus, fit);
 
 watch(
     () => props.active,
@@ -71,6 +106,7 @@ watch(
 
 onBeforeUnmount(() => {
     cancelAnimationFrame(frame);
+    resize?.disconnect();
     ctx?.revert();
 });
 </script>
@@ -78,7 +114,7 @@ onBeforeUnmount(() => {
 <template>
     <section id="home" ref="root" class="relative h-[100svh] min-h-[640px] overflow-hidden bg-film text-paper">
         <div class="hero-media absolute inset-0">
-            <img :src="settings.hero_image" alt="" class="hero-img h-full w-full object-cover" fetchpriority="high" />
+            <img ref="photo" :src="settings.hero_image" alt="" class="hero-img h-full w-full object-cover" :style="photoStyle" fetchpriority="high" @load="fit" />
         </div>
         <div class="absolute inset-0 bg-gradient-to-b from-film/55 via-film/20 to-film/85"></div>
         <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,rgb(43_29_21/0.7)_100%)]"></div>
@@ -101,10 +137,11 @@ onBeforeUnmount(() => {
             <span class="vf-meta absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 text-base font-light text-paper/40 md:block">+</span>
         </div>
 
-        <div class="hero-content relative z-10 flex h-full flex-col items-center justify-center px-6 text-center">
+        <div class="hero-content relative z-10 flex h-full flex-col items-center justify-center px-6 text-center" :class="contentPlace">
             <p class="hero-kicker kicker text-gold-light">We're getting married</p>
 
-            <h1 ref="names" class="mt-4 font-script text-[clamp(3.8rem,13vw,10rem)] leading-[1.05] drop-shadow-[0_4px_30px_rgb(0_0_0/0.35)]">
+            <!-- Sized by the screen's height too, so on a short laptop screen the names leave room for the faces -->
+            <h1 ref="names" class="mt-4 font-script text-[clamp(3.8rem,min(13vw,17vh),10rem)] leading-[1.05] drop-shadow-[0_4px_30px_rgb(0_0_0/0.35)]">
                 <span class="hero-name inline-block">{{ settings.bride_name }}</span>
                 <span class="hero-amp mx-2 inline-block text-gold-light md:mx-4">&amp;</span>
                 <span class="hero-name inline-block">{{ settings.groom_name }}</span>

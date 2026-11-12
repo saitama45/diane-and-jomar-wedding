@@ -181,6 +181,7 @@ class WeddingContentSeeder extends Seeder
             ['invitation', 'cover_kicker', 'Opening screen and email heading', 'text', 'The Wedding Celebration of', 'Above your names when the heading on every invitation is empty. Leave empty to hide.'],
             ['invitation', 'invite_line', 'Opening screen and email: line below your names', 'text', 'Together with our families, we joyfully invite you to celebrate our wedding', 'Leave empty to hide.'],
             ['cover', 'hero_image', 'Hero photo', 'image', self::IMG.'hero.jpg', null],
+            ['cover', 'hero_focus', 'Where your faces are', 'focus', '51% 17%', 'Click between your faces on the hero photo. A computer screen shows only a band of a tall or square photo: your faces stay in it, near the top, and your names move below them.'],
             ['cover', 'hero_tagline', 'Hero tagline', 'text', 'Two hearts, one story — and a seat saved just for you.', null],
 
             ['story', 'story_letter', 'Love letter', 'textarea',

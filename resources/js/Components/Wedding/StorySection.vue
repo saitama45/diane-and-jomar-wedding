@@ -43,6 +43,10 @@ onMounted(() => {
             scrollTrigger: { trigger: '.polaroid-stack', start: 'top bottom', end: 'bottom top', scrub: true },
         });
 
+        // No chapters (the love story is hidden): there is no reel. Building its pinned scroll anyway threw
+        // on wide screens and stopped every reveal animation below, which left the rest of the page blank.
+        if (!track.value) return;
+
         const mm = gsap.matchMedia();
 
         // Desktop: pin the reel and scrub it sideways like film through a gate.

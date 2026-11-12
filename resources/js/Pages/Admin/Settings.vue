@@ -1,6 +1,7 @@
 <script setup>
 import { Head, useForm } from '@inertiajs/vue3';
 import LineIcon from '@/Components/LineIcon.vue';
+import FocusPicker from '@/Components/Admin/FocusPicker.vue';
 import MediaField from '@/Components/Admin/MediaField.vue';
 import ToggleSwitch from '@/Components/Admin/ToggleSwitch.vue';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
@@ -19,6 +20,12 @@ const form = useForm({
 });
 
 const submit = () => form.put('/admin/settings', { preserveScroll: true });
+
+// A photo's focus (setting `<name>_focus` for photo `<name>_image`) is picked on the photo itself, under it.
+const focusSettings = Object.fromEntries(props.groups.flatMap((group) => group.settings.filter((s) => s.type === 'focus').map((s) => [s.key, s])));
+const focusOf = (setting) => (setting.type === 'image' ? focusSettings[setting.key.replace(/_image$/, '_focus')] : null);
+const listed = (group) => group.settings.filter((s) => s.type !== 'focus');
+const coupleNames = () => [form.values.bride_name, form.values.groom_name].filter(Boolean).join(' & ');
 
 const inputType = { number: 'number', date: 'date', datetime: 'datetime-local', url: 'url', email: 'email' };
 </script>
@@ -45,11 +52,24 @@ const inputType = { number: 'number', date: 'date', datetime: 'datetime-local', 
             <section v-for="group in groups" :id="`group-${group.key}`" :key="group.key" class="admin-card scroll-mt-6 p-6 md:p-8">
                 <h2 class="font-serif text-2xl text-ink">{{ group.title }}</h2>
                 <div class="mt-6 grid gap-6 md:grid-cols-2">
-                    <div v-for="setting in group.settings" :key="setting.key" :class="['textarea', 'image', 'audio', 'video'].includes(setting.type) ? 'md:col-span-2' : ''">
+                    <div v-for="setting in listed(group)" :key="setting.key" :class="['textarea', 'image', 'audio', 'video'].includes(setting.type) ? 'md:col-span-2' : ''">
                         <label :for="setting.key" class="admin-label">{{ setting.label }}</label>
 
                         <textarea v-if="setting.type === 'textarea'" :id="setting.key" v-model="form.values[setting.key]" rows="4" class="admin-input"></textarea>
-                        <MediaField v-else-if="['image', 'audio', 'video'].includes(setting.type)" :id="setting.key" v-model="form.values[setting.key]" :kind="setting.type" />
+                        <template v-else-if="['image', 'audio', 'video'].includes(setting.type)">
+                            <MediaField :id="setting.key" v-model="form.values[setting.key]" :kind="setting.type" />
+                            <template v-if="focusOf(setting) && form.values[setting.key]">
+                                <FocusPicker
+                                    :id="focusOf(setting).key"
+                                    v-model="form.values[focusOf(setting).key]"
+                                    :src="form.values[setting.key]"
+                                    :label="focusOf(setting).label"
+                                    :help="focusOf(setting).help"
+                                    :names="coupleNames()"
+                                />
+                                <p v-if="form.errors[`values.${focusOf(setting).key}`]" class="mt-1.5 text-sm text-red-700">{{ form.errors[`values.${focusOf(setting).key}`] }}</p>
+                            </template>
+                        </template>
                         <div v-else-if="setting.type === 'toggle'" class="flex items-center gap-3">
                             <ToggleSwitch
                                 :id="setting.key"
