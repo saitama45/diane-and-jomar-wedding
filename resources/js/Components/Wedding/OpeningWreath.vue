@@ -7,7 +7,7 @@
  * write themselves in gold; flowers bloom; the gold catches the light; the names and the date appear.
  * `timeline()` builds it as a GSAP timeline (about 7 s); IntroGate plays it and adds the way out.
  */
-import { computed, inject, ref } from 'vue';
+import { computed, inject, onMounted, ref } from 'vue';
 import { GARDEN_BLOSSOMS, gardenPainter, onCircle, painter } from '@/lib/bohoArt';
 import { gsap } from '@/lib/motion';
 import GardenBloom from './GardenBloom.vue';
@@ -171,33 +171,57 @@ const TWINKLES = Array.from({ length: 12 }, () => {
 });
 const star = (s) => `M0 ${-s} L${s * 0.16} ${-s * 0.16} L${s} 0 L${s * 0.16} ${s * 0.16} L0 ${s} L${-s * 0.16} ${s * 0.16} L${-s} 0 L${-s * 0.16} ${-s * 0.16}Z`;
 
-// Two tilted rings: the second is drawn over the first, then the first again over the second just round
-// their upper crossing (the #ow-link mask), so they look linked. `from` is the side each slides in from.
-const BAND = { rx: 18, ry: 14, tilt: -12 };
+// Two tilted rings round the middle of the circle: the second is drawn over the first, then the first again
+// over the second just round their upper crossing (the #ow-link mask), so they look linked. `from` is the
+// side each slides in from.
+const BAND = { rx: 18, ry: 14, tilt: -12, width: 6.2 };
 const BANDS = [
-    { cx: 197, cy: 213, from: -1 },
-    { cx: 218, cy: 220, from: 1 },
+    { cx: C[0] - 10.5, cy: C[1] - 3.5, from: -1 },
+    { cx: C[0] + 10.5, cy: C[1] + 3.5, from: 1 },
 ];
 const tilted = (b, [x, y], turn) => {
     const a = (turn * Math.PI) / 180;
     return [b.cx + x * Math.cos(a) - y * Math.sin(a), b.cy + x * Math.sin(a) + y * Math.cos(a)];
 };
+const edgeOf = (b) => Array.from({ length: 360 }, (_, i) => tilted(b, [BAND.rx * Math.cos((i * Math.PI) / 180), BAND.ry * Math.sin((i * Math.PI) / 180)], BAND.tilt));
 // Below zero inside a ring's ellipse, above zero outside it.
 const outside = (b, [x, y]) => {
     const [u, v] = tilted({ cx: 0, cy: 0 }, [x - b.cx, y - b.cy], -BAND.tilt);
     return (u / BAND.rx) ** 2 + (v / BAND.ry) ** 2 - 1;
 };
 const LINK = (() => {
-    const edge = Array.from({ length: 360 }, (_, i) => tilted(BANDS[0], [BAND.rx * Math.cos((i * Math.PI) / 180), BAND.ry * Math.sin((i * Math.PI) / 180)], BAND.tilt));
+    const edge = edgeOf(BANDS[0]);
     const crossings = edge.filter((p, i) => Math.sign(outside(BANDS[1], p)) !== Math.sign(outside(BANDS[1], edge[(i + 1) % edge.length])));
     return crossings.reduce((top, p) => (p[1] < top[1] ? p : top));
 })();
 const BAND_LAYERS = [...BANDS, { ...BANDS[0], link: true }];
 
+// The initials stand either side of the rings, a gap away, on one baseline with their capitals centred on the
+// rings (Cormorant's capitals are about 0.63 em tall).
+const RINGS_LEFT = Math.min(...edgeOf(BANDS[0]).map(([x]) => x)) - BAND.width / 2;
+const RINGS_RIGHT = Math.max(...edgeOf(BANDS[1]).map(([x]) => x)) + BAND.width / 2;
+const LETTER = { size: 80, gap: 8, baseline: C[1] + 80 * 0.315 };
+
 const root = ref();
 const ring = ref();
 const spark = ref();
 const shine = ref();
+
+// Letters differ in width (a J is much narrower than a D), so the monogram is measured and moved to sit in
+// the middle of the circle; again once the font has loaded, since the fallback font measures differently.
+const monogramShift = ref(0);
+function centreMonogram() {
+    if (!root.value) return;
+    const boxes = [...root.value.querySelectorAll('.ow-letter')].map((el) => el.getBBox()).filter((box) => box.width > 0);
+    const left = Math.min(RINGS_LEFT, ...boxes.map((box) => box.x));
+    const right = Math.max(RINGS_RIGHT, ...boxes.map((box) => box.x + box.width));
+    monogramShift.value = C[0] - (left + right) / 2;
+}
+onMounted(() => {
+    centreMonogram();
+    document.fonts?.load(`500 ${LETTER.size}px "Cormorant Garamond"`).then(centreMonogram, () => {});
+    document.fonts?.ready.then(centreMonogram);
+});
 
 function timeline() {
     const q = gsap.utils.selector(root.value);
@@ -420,25 +444,31 @@ defineExpose({ timeline });
                     </g>
                 </g>
 
-                <!-- The wedding rings -->
-                <g v-for="(b, i) in BAND_LAYERS" :key="`band${i}`" class="ow-band" :data-from="b.from" :mask="b.link ? 'url(#ow-link)' : undefined">
-                    <g :transform="`rotate(${BAND.tilt} ${b.cx} ${b.cy})`" fill="none">
-                        <ellipse :cx="b.cx" :cy="b.cy" :rx="BAND.rx" :ry="BAND.ry" stroke="#7d5320" stroke-width="6.2" />
-                        <ellipse :cx="b.cx" :cy="b.cy" :rx="BAND.rx" :ry="BAND.ry" stroke="url(#ow-gold)" stroke-width="4.6" />
-                        <ellipse :cx="b.cx" :cy="b.cy" :rx="BAND.rx - 1.3" :ry="BAND.ry - 1.3" stroke="#fff4d2" stroke-width="0.8" stroke-opacity="0.8" />
-                        <ellipse :cx="b.cx" :cy="b.cy" :rx="BAND.rx" :ry="BAND.ry" stroke="url(#ow-shine)" stroke-width="4.6" />
+                <!-- The monogram: the wedding rings between the initials, moved to the middle of the circle -->
+                <g :transform="`translate(${monogramShift.toFixed(2)} 0)`">
+                    <g v-for="(b, i) in BAND_LAYERS" :key="`band${i}`" class="ow-band" :data-from="b.from" :mask="b.link ? 'url(#ow-link)' : undefined">
+                        <g :transform="`rotate(${BAND.tilt} ${b.cx} ${b.cy})`" fill="none">
+                            <ellipse :cx="b.cx" :cy="b.cy" :rx="BAND.rx" :ry="BAND.ry" stroke="#7d5320" :stroke-width="BAND.width" />
+                            <ellipse :cx="b.cx" :cy="b.cy" :rx="BAND.rx" :ry="BAND.ry" stroke="url(#ow-gold)" stroke-width="4.6" />
+                            <ellipse :cx="b.cx" :cy="b.cy" :rx="BAND.rx - 1.3" :ry="BAND.ry - 1.3" stroke="#fff4d2" stroke-width="0.8" stroke-opacity="0.8" />
+                            <ellipse :cx="b.cx" :cy="b.cy" :rx="BAND.rx" :ry="BAND.ry" stroke="url(#ow-shine)" stroke-width="4.6" />
+                        </g>
                     </g>
-                </g>
 
-                <!-- The initials, either side of the rings: the first a little higher, the second lower -->
-                <g class="font-serif" font-weight="500" text-anchor="middle" font-size="80">
-                    <g class="ow-initial" data-from="-1">
-                        <text class="ow-letter" x="146" y="222" fill="url(#ow-gold)" stroke="#a87a35" stroke-width="0.8">{{ initials[0] }}</text>
-                        <text x="146" y="222" fill="url(#ow-shine)">{{ initials[0] }}</text>
+                    <g class="font-serif" font-weight="500" :font-size="LETTER.size">
+                        <g class="ow-initial" data-from="-1">
+                            <text class="ow-letter" :x="RINGS_LEFT - LETTER.gap" :y="LETTER.baseline" text-anchor="end" fill="url(#ow-gold)" stroke="#a87a35" stroke-width="0.8">{{ initials[0] }}</text>
+                            <text :x="RINGS_LEFT - LETTER.gap" :y="LETTER.baseline" text-anchor="end" fill="url(#ow-shine)">{{ initials[0] }}</text>
+                        </g>
+                        <g class="ow-initial" data-from="1">
+                            <text class="ow-letter" :x="RINGS_RIGHT + LETTER.gap" :y="LETTER.baseline" text-anchor="start" fill="url(#ow-gold)" stroke="#a87a35" stroke-width="0.8">{{ initials[1] }}</text>
+                            <text :x="RINGS_RIGHT + LETTER.gap" :y="LETTER.baseline" text-anchor="start" fill="url(#ow-shine)">{{ initials[1] }}</text>
+                        </g>
                     </g>
-                    <g class="ow-initial" data-from="1">
-                        <text class="ow-letter" x="258" y="240" fill="url(#ow-gold)" stroke="#a87a35" stroke-width="0.8">{{ initials[1] }}</text>
-                        <text x="258" y="240" fill="url(#ow-shine)">{{ initials[1] }}</text>
+
+                    <!-- The glint where the rings cross -->
+                    <g :transform="`translate(${LINK[0].toFixed(1)} ${LINK[1].toFixed(1)})`">
+                        <path class="ow-glint" :d="star(9)" fill="#fffaf0" opacity="0" />
                     </g>
                 </g>
 
@@ -477,13 +507,10 @@ defineExpose({ timeline });
                 <!-- The same gleam, softer, sweeping the whole wreath (only round the ring: #ow-halo) -->
                 <rect x="-20" y="-20" width="440" height="440" fill="url(#ow-shine)" mask="url(#ow-halo)" opacity="0.55" />
 
-                <!-- Gold dust, twinkles, the glint where the rings cross, and the spark (the pen) -->
+                <!-- Gold dust, twinkles and the spark (the pen) -->
                 <circle v-for="(d, i) in TRAIL" :key="`tr${i}`" class="ow-trail" :cx="d.x" :cy="d.y" :r="d.r" fill="#f4d58c" opacity="0" />
                 <g v-for="(t, i) in TWINKLES" :key="`tw${i}`" :transform="`translate(${t.x.toFixed(1)} ${t.y.toFixed(1)})`">
                     <path class="ow-twinkle" :d="star(t.size)" fill="#fff2c6" opacity="0" />
-                </g>
-                <g :transform="`translate(${LINK[0].toFixed(1)} ${LINK[1].toFixed(1)})`">
-                    <path class="ow-glint" :d="star(9)" fill="#fffaf0" opacity="0" />
                 </g>
                 <g ref="spark" opacity="0">
                     <circle r="18" fill="url(#ow-spark)" />
