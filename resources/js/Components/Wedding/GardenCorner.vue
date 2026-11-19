@@ -10,7 +10,7 @@
  * into place by `turn` (an SVG transform, so the printed cards' renderer turns it too).
  */
 import { computed } from 'vue';
-import { gardenPainter } from '@/lib/bohoArt';
+import { GARDEN_BLOSSOMS, gardenPainter } from '@/lib/bohoArt';
 import GardenBloom from './GardenBloom.vue';
 import GardenFilters from './GardenFilters.vue';
 
@@ -129,13 +129,7 @@ function foliage() {
 const ARRANGEMENTS = { 'top-left': bouquet(), 'top-right': goldArt(), 'bottom-left': wildflowers(), 'bottom-right': foliage() };
 const art = computed(() => ARRANGEMENTS[props.corner] ?? ARRANGEMENTS['top-left']);
 
-const BLOSSOMS = {
-    lilac: { fill: '#c6a6e0', line: '#a786c6', heart: '#7f58a0' },
-    blush: { fill: '#f1b3b7', line: '#de8f95', heart: '#c0606a' },
-    rust: { fill: '#c64f2b', line: '#a83f22', heart: '#f0b443' },
-    apricot: { fill: '#ef9d5e', line: '#d9803f', heart: '#8a4a1c' },
-    cream: { fill: '#f7e9d3', line: '#dcc49f', heart: '#d9a441' },
-};
+const BLOSSOMS = GARDEN_BLOSSOMS;
 </script>
 
 <template>

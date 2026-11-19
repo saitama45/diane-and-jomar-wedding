@@ -152,6 +152,15 @@ export function painter(seed) {
     return { pampas, palmFan, rose, leafSprig, bunnyTail };
 }
 
+/** The small blossoms of the "Watercolor Garden" theme (`gardenPainter().blossom`): petals, outline, heart. */
+export const GARDEN_BLOSSOMS = {
+    lilac: { fill: '#c6a6e0', line: '#a786c6', heart: '#7f58a0' },
+    blush: { fill: '#f1b3b7', line: '#de8f95', heart: '#c0606a' },
+    rust: { fill: '#c64f2b', line: '#a83f22', heart: '#f0b443' },
+    apricot: { fill: '#ef9d5e', line: '#d9803f', heart: '#8a4a1c' },
+    cream: { fill: '#f7e9d3', line: '#dcc49f', heart: '#d9a441' },
+};
+
 /*
  * The "Watercolor Garden" theme: big peach blooms with a teal and ochre eye, lilac blossoms, small rust
  * flowers, sage and eucalyptus leaves, gold line-art leaves and gold dots. Same rules as `painter`:

@@ -1,7 +1,8 @@
 <script setup>
-import { computed, inject, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, inject, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import LineIcon from '@/Components/LineIcon.vue';
 import BohoCorner from '@/Components/Wedding/BohoCorner.vue';
+import OpeningWreath from '@/Components/Wedding/OpeningWreath.vue';
 import { gsap, reducedMotion } from '@/lib/motion';
 
 const props = defineProps({
@@ -21,14 +22,15 @@ const emit = defineEmits(['open', 'reveal', 'done']);
 
 const root = ref();
 const scene = ref();
+const flora = ref();
 const content = ref();
-const leader = ref();
-const sweep = ref();
-const flash = ref();
-const count = ref(3);
+const film = ref();
+const wreath = ref();
+const skipButton = ref();
 const opening = ref(false);
 
 let ctx;
+let filmTimeline;
 
 onMounted(() => {
     if (reducedMotion()) return;
@@ -40,9 +42,12 @@ onMounted(() => {
     }, root.value);
 });
 
-onBeforeUnmount(() => ctx?.revert());
+onBeforeUnmount(() => {
+    ctx?.revert();
+    filmTimeline?.kill();
+});
 
-function open() {
+async function open() {
     if (opening.value) return;
     opening.value = true;
 
@@ -55,25 +60,32 @@ function open() {
         return;
     }
 
+    // The motion graphic (OpeningWreath) is only rendered now, so the first visit stays light.
+    await nextTick();
+
     const tl = gsap.timeline({ onComplete: () => emit('done') });
+    filmTimeline = tl;
 
+    // The invitation's words and corner flowers clear, leaving the cream paper; the wreath plays on it,
+    // then flies toward the guest as the paper fades and the website appears behind.
     tl.to(content.value, { opacity: 0, y: -24, filter: 'blur(10px)', duration: 0.6, ease: 'power2.in' })
-        .set(leader.value, { display: 'grid' })
-        .fromTo(leader.value, { opacity: 0 }, { opacity: 1, duration: 0.3 }, '-=0.1');
+        .to(flora.value, { opacity: 0, scale: 1.04, duration: 0.9, ease: 'power2.inOut' }, 0)
+        .set(film.value, { autoAlpha: 1 }, 0.5)
+        .add(wreath.value.timeline(), 0.55)
+        .addLabel('exit', '+=0.5')
+        .call(() => {
+            tl.timeScale(1);
+            emit('reveal');
+        }, null, 'exit')
+        .set(root.value, { pointerEvents: 'none' }, 'exit')
+        .to(skipButton.value, { autoAlpha: 0, duration: 0.3 }, 'exit')
+        .to(wreath.value.$el, { scale: 2.6, opacity: 0, filter: 'blur(4px)', duration: 1.3, ease: 'power3.in' }, 'exit')
+        .to(scene.value, { opacity: 0, duration: 1.1, ease: 'power2.inOut' }, 'exit+=0.2');
+}
 
-    [3, 2, 1].forEach((n) => {
-        tl.call(() => (count.value = n)).fromTo(
-            sweep.value,
-            { '--sweep': '0deg' },
-            { '--sweep': '360deg', duration: 0.72, ease: 'none' },
-        );
-    });
-
-    tl.to(flash.value, { opacity: 1, duration: 0.14, ease: 'power1.in' })
-        .set([scene.value, leader.value], { opacity: 0 })
-        .call(() => emit('reveal'))
-        .to(flash.value, { opacity: 0, duration: 1.1, ease: 'power2.out' })
-        .set(root.value, { pointerEvents: 'none' }, '<');
+// Skip fast-forwards to the way out rather than cutting, so the website still arrives the same way.
+function skip() {
+    filmTimeline?.timeScale(8);
 }
 </script>
 
@@ -82,12 +94,14 @@ function open() {
         <!-- A cream boho invitation: painted florals in two corners, watercolour washes in the other two -->
         <div ref="scene" class="boho-paper absolute inset-0">
             <div class="linen absolute inset-0 opacity-60" aria-hidden="true"></div>
-            <BohoCorner corner="top-left" :behind="false" class="ig-flora size-[25vh]! opacity-100! sm:size-[36vh]! lg:size-[50vh]!" />
-            <BohoCorner corner="bottom-right" :behind="false" class="ig-flora size-[25vh]! opacity-100! sm:size-[36vh]! lg:size-[50vh]!" />
-            <template v-if="theme === 'garden'">
-                <BohoCorner corner="top-right" :behind="false" class="ig-flora size-[22vh]! opacity-100! sm:size-[32vh]! lg:size-[44vh]!" />
-                <BohoCorner corner="bottom-left" :behind="false" class="ig-flora size-[22vh]! opacity-100! sm:size-[32vh]! lg:size-[44vh]!" />
-            </template>
+            <div ref="flora" class="absolute inset-0">
+                <BohoCorner corner="top-left" :behind="false" class="ig-flora size-[25vh]! opacity-100! sm:size-[36vh]! lg:size-[50vh]!" />
+                <BohoCorner corner="bottom-right" :behind="false" class="ig-flora size-[25vh]! opacity-100! sm:size-[36vh]! lg:size-[50vh]!" />
+                <template v-if="theme === 'garden'">
+                    <BohoCorner corner="top-right" :behind="false" class="ig-flora size-[22vh]! opacity-100! sm:size-[32vh]! lg:size-[44vh]!" />
+                    <BohoCorner corner="bottom-left" :behind="false" class="ig-flora size-[22vh]! opacity-100! sm:size-[32vh]! lg:size-[44vh]!" />
+                </template>
+            </div>
 
             <div ref="content" class="relative z-10 h-full overflow-y-auto">
                 <div class="flex min-h-full flex-col items-center justify-center px-6 py-10 text-center">
@@ -147,31 +161,12 @@ function open() {
             </div>
         </div>
 
-        <!-- Projector countdown leader -->
-        <div ref="leader" class="absolute inset-0 hidden place-items-center overflow-hidden bg-[#d2bc9c] text-ink">
-            <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,rgb(43_29_21/0.75)_100%)]"></div>
-            <div
-                ref="sweep"
-                class="absolute aspect-square w-[min(78vw,78vh)] rounded-full [--sweep:0deg]"
-                style="background: conic-gradient(rgb(58 42 32 / 0.5) var(--sweep), transparent var(--sweep))"
-            ></div>
-            <svg class="absolute aspect-square w-[min(78vw,78vh)]" viewBox="0 0 400 400" aria-hidden="true">
-                <g fill="none" stroke="#3a2a20" stroke-opacity="0.85">
-                    <circle cx="200" cy="200" r="196" stroke-width="2.5" />
-                    <circle cx="200" cy="200" r="168" stroke-width="1.5" />
-                </g>
-            </svg>
-            <div class="absolute inset-x-0 top-1/2 h-0.5 bg-ink/70"></div>
-            <div class="absolute inset-y-0 left-1/2 w-0.5 bg-ink/70"></div>
-            <span class="relative font-serif text-[min(38vw,38vh)] font-light leading-none">{{ count }}</span>
-
-            <!-- Scratches and flicker -->
-            <span class="absolute inset-y-0 left-[18%] w-px animate-[grain_0.4s_steps(2)_infinite] bg-ink/30"></span>
-            <span class="absolute inset-y-0 left-[71%] w-px animate-[grain_0.6s_steps(3)_infinite] bg-paper/60"></span>
-            <span class="absolute inset-0 animate-[rec-blink_0.18s_steps(1)_infinite] bg-paper/10"></span>
-            <p class="absolute bottom-8 kicker text-ink/60">A Love Story · Reel One</p>
+        <!-- The opening motion graphic: a gold ring, the wreath, the rings and initials (OpeningWreath.vue) -->
+        <div v-if="opening" ref="film" class="invisible absolute inset-0 z-20 grid place-items-center overflow-hidden">
+            <OpeningWreath ref="wreath" :names="[settings.bride_name, settings.groom_name]" :date="wedding.long" />
+            <button ref="skipButton" type="button" class="absolute bottom-5 right-5 px-3 py-2 kicker text-ink-soft/70 transition-colors hover:text-rust" @click="skip">
+                Skip
+            </button>
         </div>
-
-        <div ref="flash" class="pointer-events-none absolute inset-0 bg-cream opacity-0"></div>
     </div>
 </template>
