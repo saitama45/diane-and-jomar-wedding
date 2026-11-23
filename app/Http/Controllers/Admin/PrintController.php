@@ -73,6 +73,9 @@ class PrintController extends Controller
         'names_layout' => ['print_names_layout', 'stacked'],
         // Fine-tuning per line of text: item key => percent (only the ones not at 100 %), stored as JSON.
         'item_sizes' => ['print_item_sizes', []],
+        // The save-the-date card's reply-by line, typed over here for the printed card only (the website's RSVP
+        // deadline stays as it is). Empty = "Kindly reply by" the RSVP deadline (Site Settings > Wedding Day).
+        'reply_by' => ['print_reply_by', null],
         // The Attire & Motif card: its wording, who it is for, and what it shows.
         'attire_heading' => ['print_attire_heading', 'Attire & Motif'],
         'attire_message' => ['print_attire_message', "We'd love to see you in these tones"],
@@ -202,6 +205,7 @@ class PrintController extends Controller
                 'background' => $options['background'],
                 'qr' => $options['qr'],
                 'hashtag' => $options['hashtag'],
+                'reply_by' => $options['reply_by'],
             ],
             'look' => collect($options)->only([...self::SIZES, ...self::COLORS, ...self::TEXT_STYLES, 'names_layout'])
                 ->put('item_sizes', (object) $options['item_sizes']),
@@ -240,6 +244,7 @@ class PrintController extends Controller
                 $field => ['required', 'regex:/^#[0-9a-fA-F]{6}$/'],
             ]),
             'names_layout' => ['required', Rule::in(['stacked', 'line'])],
+            'reply_by' => ['nullable', 'string', 'max:120'],
             'design' => ['required', Rule::in(array_keys(self::DESIGNS))],
             'attire_heading' => ['nullable', 'string', 'max:80'],
             'attire_message' => ['nullable', 'string', 'max:200'],
@@ -333,6 +338,7 @@ class PrintController extends Controller
         ] : null;
         $ceremony = $place($events->get(0));
         $reception = $place($events->get(1));
+        $deadline = filled($settings['rsvp_deadline'] ?? null) ? Carbon::parse($settings['rsvp_deadline'])->format('F j, Y') : null;
 
         return [
             // The invitation heading wins over the card's own (Site Settings > Invitation Wording); empty hides it.
@@ -350,7 +356,9 @@ class PrintController extends Controller
             // A reception at the same place needs no second address.
             'reception' => $reception && $reception['venue'] !== $ceremony['venue'] ? $reception : null,
             'city' => $text('city_line'),
-            'deadline' => filled($settings['rsvp_deadline'] ?? null) ? Carbon::parse($settings['rsvp_deadline'])->format('F j, Y') : null,
+            'deadline' => $deadline,
+            // The save-the-date card's reply-by line unless it is typed over on Print Cards (`reply_by`).
+            'replyBy' => $deadline ? "Kindly reply by {$deadline}" : null,
             'hashtag' => $text('hashtag'),
             'siteUrl' => Setting::siteUrl(),
             // The photo-sharing sign: where its QR code leads (the site's upload page unless another album is set).

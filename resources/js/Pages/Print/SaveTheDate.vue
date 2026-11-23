@@ -15,7 +15,7 @@ import { cardToPdf, designSize, printDpi } from '@/lib/pdf';
 const props = defineProps({
     design: { type: String, default: 'save-the-date' }, // save-the-date | photo-qr (the photo-sharing sign) | attire
     card: { type: Object, required: true },
-    paper: { type: Object, required: true }, // label, width_mm, height_mm, background, qr, hashtag
+    paper: { type: Object, required: true }, // label, width_mm, height_mm, background, qr, hashtag, reply_by
     look: { type: Object, default: () => ({}) }, // text sizes and colours
     attire: { type: Object, default: () => ({}) }, // the Attire & Motif card's wording and switches
     entourage: { type: Object, default: () => ({}) }, // the Families & Sponsors card's wording, groups and columns
@@ -90,6 +90,6 @@ onBeforeUnmount(() => pdfUrl.value && URL.revokeObjectURL(pdfUrl.value));
         <EntourageCard v-if="design === 'entourage'" ref="cardRef" :card="card" :width="size.width" :height="size.height" :background="paper.background" :hashtag="paper.hashtag" :look="look" :entourage="entourage" />
         <AttireCard v-else-if="design === 'attire'" ref="cardRef" :card="card" :width="size.width" :height="size.height" :background="paper.background" :hashtag="paper.hashtag" :look="look" :attire="attire" />
         <PhotoQrCard v-else-if="design === 'photo-qr'" ref="cardRef" :card="card" :width="size.width" :height="size.height" :background="paper.background" :hashtag="paper.hashtag" :look="look" />
-        <SaveTheDateCard v-else ref="cardRef" :card="card" :width="size.width" :height="size.height" :background="paper.background" :qr="paper.qr" :hashtag="paper.hashtag" :look="look" />
+        <SaveTheDateCard v-else ref="cardRef" :card="card" :width="size.width" :height="size.height" :background="paper.background" :qr="paper.qr" :hashtag="paper.hashtag" :look="look" :reply-by="paper.reply_by" />
     </div>
 </template>

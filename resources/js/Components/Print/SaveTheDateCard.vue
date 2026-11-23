@@ -23,7 +23,10 @@ const props = defineProps({
     qr: { type: Boolean, default: true },
     hashtag: { type: Boolean, default: true },
     look: { type: Object, default: () => ({}) },
+    replyBy: { type: String, default: null }, // typed on Print Cards; empty = "Kindly reply by" the RSVP deadline
 });
+
+const replyLine = computed(() => (props.replyBy ?? '').trim() || props.card.replyBy || null);
 
 const PADDING = 64;
 const COLORS = { names: '#a9714b', accent: '#8e3b1f', details: '#7b5539' };
@@ -168,7 +171,7 @@ defineExpose({ ready });
                     <span v-if="qr && qrSvg" class="block shrink-0 [&_svg]:size-full" :style="{ width: px(88, 'qr'), height: px(88, 'qr'), padding: px(6), background: '#fffaf2', boxSizing: 'content-box' }" v-html="qrSvg"></span>
                     <div :class="qr && qrSvg ? 'text-left' : 'text-center'">
                         <p class="font-serif tracking-[0.24em]" :style="text('rsvp', 'accent', 26, { weight: 600 })">RSVP</p>
-                        <p v-if="card.deadline" class="font-serif" :style="text('reply_by', 'details', 16, { italic: true, soft: true })">Kindly reply by {{ card.deadline }}</p>
+                        <p v-if="replyLine" class="font-serif" :style="text('reply_by', 'details', 16, { italic: true, soft: true })">{{ replyLine }}</p>
                         <p v-if="host" class="mt-0.5 font-sans tracking-[0.1em]" :style="text('website', 'details', 12, { soft: true })">{{ host }}</p>
                     </div>
                 </div>

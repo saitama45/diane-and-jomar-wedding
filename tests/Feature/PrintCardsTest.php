@@ -49,6 +49,27 @@ class PrintCardsTest extends TestCase
             ->where('paper.qr', false));
     }
 
+    public function test_the_reply_by_line_can_be_typed_for_the_printed_card_only(): void
+    {
+        $this->actingAs(User::first());
+
+        // As designed: "Kindly reply by" the RSVP deadline.
+        $this->get('/admin/print')->assertInertia(fn (Assert $page) => $page
+            ->where('card.replyBy', 'Kindly reply by March 24, 2027')
+            ->where('options.reply_by', null));
+
+        $this->put('/admin/print', ['reply_by' => 'Kindly reply by December 15, 2026'])->assertSessionHasNoErrors();
+
+        $this->assertSame('Kindly reply by December 15, 2026', Setting::where('key', 'print_reply_by')->value('value'));
+        $this->assertSame('2027-03-24', Setting::where('key', 'rsvp_deadline')->value('value')); // the website's deadline stays
+
+        $this->get('/admin/print/save-the-date')->assertInertia(fn (Assert $page) => $page->where('paper.reply_by', 'Kindly reply by December 15, 2026'));
+        // An empty line in the link goes back to the RSVP deadline, whatever was saved.
+        $this->get('/admin/print/save-the-date?reply_by=')->assertInertia(fn (Assert $page) => $page->where('paper.reply_by', null));
+
+        $this->put('/admin/print', ['reply_by' => str_repeat('x', 121)])->assertSessionHasErrors('reply_by');
+    }
+
     public function test_the_chosen_paper_is_remembered_and_odd_sizes_are_refused(): void
     {
         $this->actingAs(User::first());

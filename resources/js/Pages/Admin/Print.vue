@@ -1,6 +1,6 @@
 <script setup>
 import { Head, useForm } from '@inertiajs/vue3';
-import { computed, nextTick, onBeforeUnmount, provide, ref } from 'vue';
+import { computed, nextTick, onBeforeUnmount, provide, ref, watch } from 'vue';
 import LineIcon from '@/Components/LineIcon.vue';
 import ImagePreviewModal from '@/Components/Admin/ImagePreviewModal.vue';
 import ToggleSwitch from '@/Components/Admin/ToggleSwitch.vue';
@@ -86,6 +86,16 @@ const form = useForm({
     item_sizes: Object.fromEntries(props.items.map(({ key }) => [key, Number(props.options.item_sizes?.[key] ?? 100)])),
 });
 
+// The save-the-date card's reply-by line: "Kindly reply by" the RSVP deadline unless typed over here. The box
+// starts with the line as printed, so only the date needs retyping; typing it back (or emptying the box) returns
+// to the RSVP deadline. It changes the printed card only, never the website's deadline.
+const replyText = ref((form.reply_by ?? '').trim() || (props.card.replyBy ?? ''));
+watch(replyText, (value) => {
+    const typed = value.trim();
+    form.reply_by = typed && typed !== props.card.replyBy ? typed : null;
+});
+const replyByTyped = computed(() => !!form.reply_by);
+
 const isQrSign = computed(() => form.design === 'photo-qr');
 const isAttire = computed(() => form.design === 'attire');
 const isEntourage = computed(() => form.design === 'entourage');
@@ -114,7 +124,7 @@ const itemText = computed(() => {
         reception_address: c.reception?.address || null,
         reception_time: c.reception?.time ?? null,
         rsvp: 'RSVP',
-        reply_by: c.deadline ? `Kindly reply by ${c.deadline}` : null,
+        reply_by: form.reply_by || c.replyBy,
         website: c.siteUrl.replace(/^https?:\/\//, ''),
         qr: isQrSign.value ? 'The camera and its QR code' : form.qr ? 'Scan to open your website' : null,
         hashtag: form.hashtag && c.hashtag ? c.hashtag : null,
@@ -219,7 +229,7 @@ const cardProps = computed(() => ({
     look: look.value,
     ...(isAttire.value ? { attire: attire.value } : {}),
     ...(isEntourage.value ? { entourage: entourage.value } : {}),
-    ...(isSaveTheDate.value ? { qr: form.qr } : {}),
+    ...(isSaveTheDate.value ? { qr: form.qr, replyBy: form.reply_by } : {}),
 }));
 
 function rememberChoices() {
@@ -293,6 +303,7 @@ function openPdf() {
         design: form.design,
         qr: form.qr ? '1' : '0',
         hashtag: form.hashtag ? '1' : '0',
+        reply_by: form.reply_by ?? '', // always sent, so going back to the RSVP deadline wins over a saved line
         ...onOff(flat),
         ...onOff(attire.value),
         ...onOff({ ...entourage.value, entourage_hidden: JSON.stringify(entourage.value.entourage_hidden) }),
@@ -426,6 +437,20 @@ function openPdf() {
                         <p class="text-sm font-medium text-ink">RSVP QR code</p>
                         <p class="text-xs text-ink-soft">Guests scan it to open your website and reply. It points to {{ card.siteUrl }}.</p>
                     </div>
+                </div>
+
+                <div v-if="isSaveTheDate" class="mt-5 max-w-md">
+                    <label for="reply-by" class="admin-label">Reply-by line</label>
+                    <input id="reply-by" v-model="replyText" type="text" maxlength="120" class="admin-input" :placeholder="card.replyBy ?? 'Kindly reply by …'" />
+                    <p class="mt-1 text-xs text-ink-soft">
+                        Under RSVP on this card only.
+                        <template v-if="card.deadline">The website still takes replies until {{ card.deadline }} (Site Settings → Wedding Day → RSVP deadline).</template>
+                        <template v-else>No RSVP deadline yet: set one in Site Settings → Wedding Day, or type the line here.</template>
+                    </p>
+                    <button v-if="replyByTyped && card.replyBy" type="button" class="mt-1 text-xs font-medium text-rust hover:underline" @click="replyText = card.replyBy">
+                        Use the RSVP deadline again
+                    </button>
+                    <p v-if="form.errors.reply_by" class="mt-1 text-sm text-red-700">{{ form.errors.reply_by }}</p>
                 </div>
 
                 <div class="mt-4 flex items-start gap-3">
