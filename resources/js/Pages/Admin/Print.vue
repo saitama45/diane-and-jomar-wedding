@@ -9,7 +9,7 @@ import EntourageCard from '@/Components/Print/EntourageCard.vue';
 import PhotoQrCard from '@/Components/Print/PhotoQrCard.vue';
 import SaveTheDateCard from '@/Components/Print/SaveTheDateCard.vue';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { cardToJpeg, designSize, printDpi } from '@/lib/pdf';
+import { cardToJpeg, designSize, jpegDpi, printDpi } from '@/lib/pdf';
 
 defineOptions({ layout: AdminLayout });
 
@@ -175,7 +175,9 @@ const sizeError = computed(() => {
 
 const design = computed(() => (sizeError.value ? designSize(148, 210) : designSize(paperMm.value.width, paperMm.value.height)));
 const previewScale = computed(() => Math.min(380 / design.value.width, 540 / design.value.height));
-const dpi = computed(() => (sizeError.value ? null : printDpi(paperMm.value.width, paperMm.value.height)));
+// The PDF is always 300 dpi; the JPG (one picture) only drops below that for very large custom sizes.
+const dpi = computed(() => (sizeError.value ? null : printDpi()));
+const jpgDpi = computed(() => (sizeError.value ? null : jpegDpi(paperMm.value.width, paperMm.value.height)));
 const describe = computed(() => {
     const { width, height } = paperMm.value;
     const inches = (mm) => (mm / 25.4).toFixed(2).replace(/\.?0+$/, '');
@@ -408,7 +410,10 @@ function openPdf() {
                 </div>
 
                 <p v-if="sizeError" class="mt-3 text-sm text-red-700">{{ sizeError }}</p>
-                <p v-else class="mt-3 text-sm text-ink-soft">{{ describe }} · printed at {{ dpi }} dpi</p>
+                <p v-else class="mt-3 text-sm text-ink-soft">
+                    {{ describe }} · printed at {{ dpi }} dpi
+                    <span v-if="jpgDpi < dpi" class="block text-xs">This size is very large: the JPG from Preview is {{ jpgDpi }} dpi, so print from the PDF (always {{ dpi }} dpi).</span>
+                </p>
                 <p v-for="field in ['paper', 'width', 'height']" v-show="form.errors[field]" :key="field" class="mt-1 text-sm text-red-700">{{ form.errors[field] }}</p>
             </section>
 
@@ -749,7 +754,7 @@ function openPdf() {
         :src="previewUrl"
         :error="previewError"
         :title="designTitle"
-        :subtitle="`${paperLabel} · ${dpi} dpi`"
+        :subtitle="`${paperLabel} · ${jpgDpi} dpi`"
         :filename="jpgName"
         @close="closePreview"
     />

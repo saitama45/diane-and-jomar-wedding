@@ -27,7 +27,8 @@ provide('decorImage', computed(() => props.card.decorImage));
 provide('decorTheme', computed(() => props.card.theme ?? 'boho'));
 
 const size = computed(() => designSize(props.paper.width_mm, props.paper.height_mm));
-const dpi = computed(() => printDpi(props.paper.width_mm, props.paper.height_mm));
+const dpi = printDpi();
+const progress = ref(null); // large papers are drawn in strips: [done, strips]
 const mm = (value) => Number(value.toFixed(1));
 const title = computed(() => ({ 'photo-qr': 'Photo QR sign', attire: 'Attire & Motif', entourage: 'Families & Sponsors' })[props.design] ?? 'Save the Date');
 
@@ -42,6 +43,7 @@ onMounted(async () => {
             widthMm: props.paper.width_mm,
             heightMm: props.paper.height_mm,
             title: props.filename.replace(/\.pdf$/, ''),
+            onProgress: (done, strips) => (progress.value = strips > 1 ? [done, strips] : null),
         });
         pdfUrl.value = URL.createObjectURL(blob);
     } catch (e) {
@@ -80,7 +82,8 @@ onBeforeUnmount(() => pdfUrl.value && URL.revokeObjectURL(pdfUrl.value));
             <div v-else>
                 <span class="mx-auto block size-10 animate-spin rounded-full border-2 border-paper/20 border-t-gold-light"></span>
                 <p class="mt-4 font-serif text-xl">Preparing your PDF…</p>
-                <p class="mt-1 text-sm text-paper/60">Drawing the card at print quality, this takes a few seconds.</p>
+                <p class="mt-1 text-sm text-paper/60">Drawing the card at {{ dpi }} dpi, this takes a few seconds.</p>
+                <p v-if="progress" class="mt-1 text-sm text-paper/60">A large card is drawn in parts: {{ progress[0] }} of {{ progress[1] }} done.</p>
             </div>
         </div>
     </div>
