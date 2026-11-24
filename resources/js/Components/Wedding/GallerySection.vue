@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import LineIcon from '@/Components/LineIcon.vue';
 import SectionTitle from './SectionTitle.vue';
 import { gsap, lockScroll, reducedMotion, ScrollTrigger } from '@/lib/motion';
+import { photoAt, webPhoto } from '@/lib/photo';
 
 const props = defineProps({
     settings: { type: Object, required: true },
@@ -86,7 +87,7 @@ onBeforeUnmount(() => {
                         @click="open(i)"
                     >
                         <span class="block overflow-hidden">
-                            <img :src="photo.image" :alt="photo.caption ?? ''" loading="lazy" class="w-full transition duration-[1.4s] ease-[var(--ease-film)] group-hover:scale-110" />
+                            <img v-bind="webPhoto(photo.image, '(min-width: 1152px) 360px, (min-width: 768px) 31vw, 46vw')" :alt="photo.caption ?? ''" loading="lazy" class="w-full transition duration-[1.4s] ease-[var(--ease-film)] group-hover:scale-110" />
                         </span>
                         <figcaption v-if="photo.caption" class="absolute inset-x-0 bottom-2 truncate px-2 text-center font-script text-xl text-ink-soft md:bottom-3 md:text-2xl">
                             {{ photo.caption }}
@@ -110,7 +111,7 @@ onBeforeUnmount(() => {
                 >
                     <Transition name="fade" mode="out-in">
                         <figure :key="current.id" class="flex max-h-full flex-col items-center">
-                            <img :src="current.image" :alt="current.caption ?? ''" class="max-h-[78vh] w-auto max-w-full object-contain shadow-2xl" />
+                            <img :src="photoAt(current.image, 1600)" :alt="current.caption ?? ''" class="max-h-[78vh] w-auto max-w-full object-contain shadow-2xl" />
                             <figcaption class="mt-4 text-center text-paper">
                                 <span v-if="current.caption" class="font-script text-3xl">{{ current.caption }}</span>
                                 <span class="mt-1 block kicker text-paper/50">{{ active + 1 }} / {{ photos.length }}</span>

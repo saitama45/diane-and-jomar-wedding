@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import LineIcon from '@/Components/LineIcon.vue';
 import { gsap, reducedMotion, vReveal } from '@/lib/motion';
+import { webPhoto } from '@/lib/photo';
 
 const props = defineProps({
     settings: { type: Object, required: true },
@@ -55,7 +56,7 @@ onBeforeUnmount(() => {
 
 <template>
     <section ref="root" class="relative overflow-hidden bg-cocoa py-28 md:py-40">
-        <img :src="settings.countdown_image" alt="" loading="lazy" class="cd-bg absolute inset-0 h-[125%] w-full -translate-y-[10%] object-cover opacity-45 mix-blend-luminosity" />
+        <img v-bind="webPhoto(settings.countdown_image)" alt="" loading="lazy" class="cd-bg absolute inset-0 h-[125%] w-full -translate-y-[10%] object-cover opacity-45 mix-blend-luminosity" />
         <div class="absolute inset-0 bg-gradient-to-b from-espresso/55 via-transparent to-espresso/70"></div>
 
         <div class="cd-strip film-strip absolute inset-x-0 top-0 h-[26px] p-0! opacity-90"></div>

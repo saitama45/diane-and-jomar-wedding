@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import LineIcon from '@/Components/LineIcon.vue';
+import { photoAt } from '@/lib/photo';
 
 const model = defineModel({ type: String, default: '' });
 
@@ -94,7 +95,7 @@ async function upload(event) {
 <template>
     <div class="flex gap-4">
         <div v-if="kind === 'image'" class="grid size-20 shrink-0 place-items-center overflow-hidden rounded-lg bg-linen ring-1 ring-ink/10">
-            <img v-if="model" :src="model" alt="" class="h-full w-full object-cover" />
+            <img v-if="model" :src="photoAt(model, 480)" alt="" class="h-full w-full object-cover" />
             <LineIcon v-else name="image" :size="22" class="text-ink-soft/50" />
         </div>
         <div class="min-w-0 flex-1 space-y-2">

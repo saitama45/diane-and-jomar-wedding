@@ -2,6 +2,7 @@
 import BohoCorner from '@/Components/Wedding/BohoCorner.vue';
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { gsap, reducedMotion, vReveal } from '@/lib/motion';
+import { webPhoto } from '@/lib/photo';
 
 const props = defineProps({
     settings: { type: Object, required: true },
@@ -44,7 +45,7 @@ onBeforeUnmount(() => ctx?.revert());
         <!-- Title inside a strip of film -->
         <div class="ent-banner film-strip mx-auto max-w-5xl -rotate-1 px-3 shadow-[0_30px_50px_-30px_rgb(43_29_21/0.6)]">
             <div class="grid grid-cols-1 gap-3" :class="longTitle ? 'sm:grid-cols-[1fr_4fr_1fr]' : 'sm:grid-cols-[1fr_3fr_1fr]'">
-                <img v-if="photos[0]" :src="photos[0]" alt="" loading="lazy" class="hidden h-full min-h-32 w-full object-cover opacity-60 grayscale sm:block" />
+                <img v-if="photos[0]" v-bind="webPhoto(photos[0], '20vw')" alt="" loading="lazy" class="hidden h-full min-h-32 w-full object-cover opacity-60 grayscale sm:block" />
                 <div class="grid min-h-24 place-items-center bg-paper px-4 py-3 sm:min-h-32">
                     <h2
                         class="text-balance text-center font-script leading-[1.1] text-ink"
@@ -53,7 +54,7 @@ onBeforeUnmount(() => ctx?.revert());
                         {{ title }}
                     </h2>
                 </div>
-                <img v-if="photos[1]" :src="photos[1]" alt="" loading="lazy" class="hidden h-full min-h-32 w-full object-cover opacity-60 grayscale sm:block" />
+                <img v-if="photos[1]" v-bind="webPhoto(photos[1], '20vw')" alt="" loading="lazy" class="hidden h-full min-h-32 w-full object-cover opacity-60 grayscale sm:block" />
             </div>
         </div>
 

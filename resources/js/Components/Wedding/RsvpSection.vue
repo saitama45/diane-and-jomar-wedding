@@ -4,6 +4,7 @@ import { useForm } from '@inertiajs/vue3';
 import confetti from 'canvas-confetti';
 import LineIcon from '@/Components/LineIcon.vue';
 import { gsap, reducedMotion, vReveal } from '@/lib/motion';
+import { webPhoto } from '@/lib/photo';
 
 const props = defineProps({
     settings: { type: Object, required: true },
@@ -87,7 +88,7 @@ onBeforeUnmount(() => ctx?.revert());
 
 <template>
     <section id="rsvp" ref="root" class="relative overflow-hidden bg-film py-24 text-paper md:py-32">
-        <img :src="settings.rsvp_image" alt="" loading="lazy" class="rsvp-bg absolute inset-0 h-[120%] w-full -translate-y-[8%] object-cover opacity-30 grayscale" />
+        <img v-bind="webPhoto(settings.rsvp_image)" alt="" loading="lazy" class="rsvp-bg absolute inset-0 h-[120%] w-full -translate-y-[8%] object-cover opacity-30 grayscale" />
         <div class="absolute inset-0 bg-gradient-to-br from-film via-[#4a2416]/85 to-rust/80"></div>
         <div class="light-leak -right-[10%] top-[10%] h-[50vh] w-[40vw] bg-[#e2894f]/25"></div>
         <div class="light-leak -left-[10%] bottom-0 h-[40vh] w-[40vw] bg-[#b8562f]/25 [animation-delay:-6s]"></div>

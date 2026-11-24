@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { coverFocus, namesPlace, parseFocus } from '@/lib/focus';
 import { gsap, reducedMotion, scrollToTarget, SplitText } from '@/lib/motion';
+import { webPhoto } from '@/lib/photo';
 
 const props = defineProps({
     settings: { type: Object, required: true },
@@ -114,7 +115,7 @@ onBeforeUnmount(() => {
 <template>
     <section id="home" ref="root" class="relative h-[100svh] min-h-[640px] overflow-hidden bg-film text-paper">
         <div class="hero-media absolute inset-0">
-            <img ref="photo" :src="settings.hero_image" alt="" class="hero-img h-full w-full object-cover" :style="photoStyle" fetchpriority="high" @load="fit" />
+            <img ref="photo" v-bind="webPhoto(settings.hero_image, '(orientation: portrait) 100vh, 100vw')" alt="" class="hero-img h-full w-full object-cover" :style="photoStyle" fetchpriority="high" @load="fit" />
         </div>
         <div class="absolute inset-0 bg-gradient-to-b from-film/55 via-film/20 to-film/85"></div>
         <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,rgb(43_29_21/0.7)_100%)]"></div>

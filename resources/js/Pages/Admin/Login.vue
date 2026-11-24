@@ -1,6 +1,7 @@
 <script setup>
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import LineIcon from '@/Components/LineIcon.vue';
+import { webPhoto } from '@/lib/photo';
 
 const page = usePage();
 const form = useForm({ email: '', password: '', remember: true });
@@ -12,7 +13,7 @@ const submit = () => form.post('/admin/login', { onFinish: () => form.reset('pas
     <Head title="Admin sign in" />
 
     <div class="relative grid min-h-screen place-items-center overflow-hidden bg-film px-5 py-12">
-        <img src="/images/dummy/cover.jpg" alt="" class="absolute inset-0 h-full w-full object-cover opacity-30" />
+        <img v-bind="webPhoto('/images/dummy/cover.jpg')" alt="" class="absolute inset-0 h-full w-full object-cover opacity-30" />
         <div class="absolute inset-0 bg-gradient-to-b from-film/60 to-film/95"></div>
         <div class="light-leak -left-1/4 top-0 h-[50vh] w-[60vw] bg-[#ff9a5a]/30"></div>
 

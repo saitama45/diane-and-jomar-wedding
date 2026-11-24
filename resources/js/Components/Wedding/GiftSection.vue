@@ -5,6 +5,7 @@ import QRCode from 'qrcode';
 import LineIcon from '@/Components/LineIcon.vue';
 import { copyText } from '@/lib/copy';
 import { vReveal } from '@/lib/motion';
+import { webPhoto } from '@/lib/photo';
 
 const props = defineProps({
     settings: { type: Object, required: true },
@@ -45,7 +46,7 @@ async function copy() {
         <BohoCorner corner="bottom-right" />
         <div class="mx-auto grid max-w-6xl items-center gap-14 px-5 md:px-8 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20">
             <div v-reveal="{ type: 'clip', duration: 1.6 }" class="arch relative mx-auto aspect-[3/4] w-full max-w-sm shadow-[0_30px_60px_-30px_rgb(58_42_32/0.5)]">
-                <img :src="settings.gift_image" alt="" loading="lazy" class="h-full w-full object-cover" />
+                <img v-bind="webPhoto(settings.gift_image, '384px')" alt="" loading="lazy" class="h-full w-full object-cover" />
                 <div class="absolute inset-3 rounded-t-full border border-paper/60"></div>
             </div>
 

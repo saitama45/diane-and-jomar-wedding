@@ -3,6 +3,7 @@ import BohoCorner from '@/Components/Wedding/BohoCorner.vue';
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import SectionTitle from './SectionTitle.vue';
 import { gsap, reducedMotion, vReveal } from '@/lib/motion';
+import { webPhoto } from '@/lib/photo';
 
 const props = defineProps({
     settings: { type: Object, required: true },
@@ -115,12 +116,12 @@ onBeforeUnmount(() => ctx?.revert());
                 <!-- Polaroids -->
                 <div class="polaroid-stack relative mx-auto h-[440px] w-full max-w-[380px] lg:col-span-5">
                     <figure class="polaroid-drop polaroid absolute left-0 top-6 w-[72%] rotate-[-7deg]">
-                        <img :src="secondPhoto" alt="" loading="lazy" class="aspect-square w-full object-cover sepia-[.2]" />
+                        <img v-bind="webPhoto(secondPhoto, '290px')" alt="" loading="lazy" class="aspect-square w-full object-cover sepia-[.2]" />
                         <figcaption class="absolute inset-x-0 bottom-3 text-center font-script text-2xl text-ink-soft">since day one</figcaption>
                     </figure>
                     <figure class="polaroid-drop polaroid absolute right-0 top-24 w-[76%] rotate-[5deg]">
                         <span class="tape -top-3 left-1/2 -translate-x-1/2 rotate-2"></span>
-                        <img :src="settings.polaroid_image" alt="" loading="lazy" class="aspect-square w-full object-cover" />
+                        <img v-bind="webPhoto(settings.polaroid_image, '290px')" alt="" loading="lazy" class="aspect-square w-full object-cover" />
                         <figcaption class="absolute inset-x-0 bottom-3 text-center font-script text-3xl text-ink">
                             {{ settings.polaroid_caption }}
                         </figcaption>
@@ -144,7 +145,7 @@ onBeforeUnmount(() => ctx?.revert());
                 >
                     <div class="grid gap-0 bg-[#22170f] sm:grid-cols-2">
                         <div class="relative aspect-[4/3] overflow-hidden sm:aspect-auto">
-                            <img v-if="story.image" :src="story.image" alt="" loading="lazy" class="absolute inset-0 h-full w-full object-cover" />
+                            <img v-if="story.image" v-bind="webPhoto(story.image, '(min-width: 1024px) 310px, (min-width: 640px) 50vw, 100vw')" alt="" loading="lazy" class="absolute inset-0 h-full w-full object-cover" />
                         </div>
                         <div class="p-6 text-paper md:p-8">
                             <p class="font-mono text-[10px] tracking-[0.3em] text-[#e7a64a]">SCENE {{ String(i + 1).padStart(2, '0') }} · {{ story.date_label }}</p>

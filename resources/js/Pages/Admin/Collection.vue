@@ -7,6 +7,7 @@ import MediaField from '@/Components/Admin/MediaField.vue';
 import ToggleSwitch from '@/Components/Admin/ToggleSwitch.vue';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { copyText } from '@/lib/copy';
+import { photoAt } from '@/lib/photo';
 
 defineOptions({ layout: AdminLayout });
 
@@ -181,7 +182,7 @@ function display(item, column) {
                             class="px-4 py-3 transition-opacity"
                             :class="[column === 'image' || column === 'hex' ? 'w-16' : '', collection.section && !item.is_active ? 'opacity-45' : '']"
                         >
-                            <img v-if="column === 'image'" :src="item.image" alt="" class="size-12 rounded-md object-cover ring-1 ring-ink/10" />
+                            <img v-if="column === 'image'" :src="photoAt(item.image, 480)" alt="" class="size-12 rounded-md object-cover ring-1 ring-ink/10" />
                             <span v-else-if="column === 'hex'" class="block size-9 rounded-full ring-1 ring-ink/10" :style="{ backgroundColor: item.hex }"></span>
                             <span v-else class="line-clamp-2 text-ink">{{ display(item, column) }}</span>
                         </td>

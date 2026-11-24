@@ -3,6 +3,7 @@ import BohoCorner from '@/Components/Wedding/BohoCorner.vue';
 import { computed } from 'vue';
 import FilmStrip from './FilmStrip.vue';
 import { scrollToTarget, vReveal } from '@/lib/motion';
+import { webPhoto } from '@/lib/photo';
 
 const props = defineProps({
     settings: { type: Object, required: true },
@@ -18,7 +19,7 @@ const initials = computed(() => [props.settings.bride_name, props.settings.groom
         <BohoCorner corner="top-right" />
         <div class="mx-auto grid max-w-6xl items-center gap-12 px-5 md:px-8 lg:grid-cols-2 lg:gap-20">
             <div v-reveal="{ type: 'left', duration: 1.4 }" class="film-strip px-3 shadow-[0_30px_60px_-30px_rgb(43_29_21/0.6)]">
-                <img :src="settings.closing_image" alt="" loading="lazy" class="aspect-[4/5] w-full object-cover grayscale transition duration-[1.5s] hover:grayscale-0" />
+                <img v-bind="webPhoto(settings.closing_image, '(min-width: 1152px) 540px, (min-width: 1024px) 45vw, 100vw')" alt="" loading="lazy" class="aspect-[4/5] w-full object-cover grayscale transition duration-[1.5s] hover:grayscale-0" />
             </div>
 
             <div class="text-center lg:text-left">

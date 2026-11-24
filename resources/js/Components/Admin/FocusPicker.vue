@@ -6,6 +6,7 @@
  */
 import { computed, ref } from 'vue';
 import { coverFocus, namesPlace, parseFocus } from '@/lib/focus';
+import { photoAt } from '@/lib/photo';
 
 const model = defineModel({ type: String, default: '50% 50%' });
 
@@ -91,7 +92,7 @@ function nudge(event) {
                 @pointercancel="up"
                 @keydown="nudge"
             >
-                <img :src="src" alt="" draggable="false" class="block max-h-72 w-auto max-w-full" @load="onLoad" />
+                <img :src="photoAt(src, 960)" alt="" draggable="false" class="block max-h-72 w-auto max-w-full" @load="onLoad" />
                 <span
                     class="pointer-events-none absolute size-9 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-[0_0_0_1px_rgb(0_0_0/0.35),0_2px_10px_rgb(0_0_0/0.4)]"
                     :style="{ left: `${point.x}%`, top: `${point.y}%` }"
@@ -104,7 +105,7 @@ function nudge(event) {
             <!-- What a computer screen and a phone show -->
             <figure>
                 <div class="relative aspect-video w-64 overflow-hidden rounded-md bg-film ring-1 ring-ink/15">
-                    <img :src="src" alt="" class="absolute inset-0 h-full w-full scale-110 object-cover" :style="computer.style" />
+                    <img :src="photoAt(src, 960)" alt="" class="absolute inset-0 h-full w-full scale-110 object-cover" :style="computer.style" />
                     <div class="absolute inset-0 bg-gradient-to-b from-film/55 via-film/20 to-film/85"></div>
                     <div class="absolute inset-0 flex flex-col items-center px-2 text-center text-paper" :class="computerNames">
                         <p class="font-script text-2xl leading-none drop-shadow-[0_2px_8px_rgb(0_0_0/0.4)]">{{ names }}</p>
@@ -115,7 +116,7 @@ function nudge(event) {
             </figure>
             <figure>
                 <div class="relative aspect-[9/19.5] w-24 overflow-hidden rounded-xl bg-film ring-1 ring-ink/15">
-                    <img :src="src" alt="" class="absolute inset-0 h-full w-full scale-110 object-cover" :style="phone.style" />
+                    <img :src="photoAt(src, 960)" alt="" class="absolute inset-0 h-full w-full scale-110 object-cover" :style="phone.style" />
                     <div class="absolute inset-0 bg-gradient-to-b from-film/55 via-film/20 to-film/85"></div>
                     <div class="absolute inset-0 flex flex-col items-center justify-center px-1 text-center text-paper">
                         <p class="font-script text-[0.95rem] leading-tight drop-shadow-[0_2px_6px_rgb(0_0_0/0.4)]">{{ names }}</p>

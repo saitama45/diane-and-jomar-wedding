@@ -5,6 +5,7 @@ import BohoCorner from './BohoCorner.vue';
 import PampasWreath from './PampasWreath.vue';
 import SectionTitle from './SectionTitle.vue';
 import { vReveal } from '@/lib/motion';
+import { webPhoto } from '@/lib/photo';
 
 const props = defineProps({
     settings: { type: Object, required: true },
@@ -172,7 +173,7 @@ function play() {
                         </template>
 
                         <button v-else type="button" class="group absolute inset-0 grid place-items-center" aria-label="Play our save-the-date film" @click="play">
-                            <img :src="settings.std_image" alt="" loading="lazy" class="absolute inset-0 h-full w-full object-cover opacity-80 transition duration-[1.5s] group-hover:scale-105 group-hover:opacity-100" />
+                            <img v-bind="webPhoto(settings.std_image, '(min-width: 1024px) 50vw, 100vw')" alt="" loading="lazy" class="absolute inset-0 h-full w-full object-cover opacity-80 transition duration-[1.5s] group-hover:scale-105 group-hover:opacity-100" />
                             <span class="absolute inset-0 bg-film/30"></span>
                             <span class="relative grid size-20 place-items-center rounded-full border border-paper/80 text-paper backdrop-blur-sm transition group-hover:scale-110 group-hover:bg-paper/15 md:size-24">
                                 <span class="absolute inset-0 rounded-full border border-paper/60 [animation:pulse-ring_2.2s_ease-out_infinite]"></span>

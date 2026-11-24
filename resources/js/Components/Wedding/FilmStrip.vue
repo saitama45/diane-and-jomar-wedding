@@ -1,5 +1,6 @@
 <script setup>
 import { computed, reactive } from 'vue';
+import { photoAt } from '@/lib/photo';
 
 const props = defineProps({
     images: { type: Array, default: () => [] },
@@ -35,7 +36,7 @@ function measure(src, event) {
                 <img
                     v-for="(src, i) in frames"
                     :key="i"
-                    :src="src"
+                    :src="photoAt(src, 480)"
                     alt=""
                     fetchpriority="low"
                     decoding="async"

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Support\PhotoVariants;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -20,6 +21,10 @@ class UploadController extends Controller
         $request->validate(['file' => $rules]);
 
         $path = $request->file('file')->store('uploads', 'public');
+
+        if ($request->input('kind') !== 'audio') {
+            PhotoVariants::prepare('storage/'.$path); // the website's web-sized copies, made now so no guest waits
+        }
 
         return response()->json(['url' => '/storage/'.$path]);
     }

@@ -4,7 +4,9 @@ use App\Http\Controllers\Admin;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\GuestPhotoController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PhotoController;
 use App\Http\Controllers\RsvpController;
+use App\Support\PhotoVariants;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
@@ -12,6 +14,14 @@ Route::post('/rsvp', [RsvpController::class, 'store'])->middleware('throttle:10,
 Route::get('/calendar/{event}.ics', CalendarController::class)->name('calendar');
 Route::get('/share', [GuestPhotoController::class, 'create'])->name('share');
 Route::post('/share', [GuestPhotoController::class, 'store'])->middleware('throttle:300,1')->name('share.store'); // generous: guests at the venue share one Wi-Fi (or mobile-network) address
+
+// Web-sized photo copies: reached only until a copy exists, then IIS serves the file. No session (sessions are
+// database rows, and a page asks for dozens of photos).
+Route::get('/storage/variants/{width}/{path}', PhotoController::class)
+    ->whereIn('width', PhotoVariants::WIDTHS)
+    ->where('path', '.+\.webp')
+    ->withoutMiddleware('web')
+    ->name('photo');
 
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware('guest')->group(function () {

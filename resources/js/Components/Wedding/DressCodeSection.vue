@@ -4,6 +4,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import LineIcon from '@/Components/LineIcon.vue';
 import SectionTitle from './SectionTitle.vue';
 import { drawOnScroll, gsap, lockScroll, reducedMotion, vReveal } from '@/lib/motion';
+import { photoAt, webPhoto } from '@/lib/photo';
 
 const props = defineProps({
     settings: { type: Object, required: true },
@@ -118,7 +119,7 @@ onBeforeUnmount(() => {
                             @click="open(sample)"
                         >
                             <span class="block overflow-hidden">
-                                <img :src="sample.image" :alt="wearer(sample) ? `${wearer(sample)} dress code` : 'Dress code'" loading="lazy" class="w-full object-cover transition duration-700 group-hover:scale-[1.03]" />
+                                <img v-bind="webPhoto(sample.image, '(min-width: 768px) 480px, 100vw')" :alt="wearer(sample) ? `${wearer(sample)} dress code` : 'Dress code'" loading="lazy" class="w-full object-cover transition duration-700 group-hover:scale-[1.03]" />
                             </span>
                             <span v-if="wearer(sample) || sample.caption" class="mt-3 flex flex-wrap items-baseline justify-between gap-x-4 px-1">
                                 <span v-if="wearer(sample)" class="font-script text-3xl text-cocoa">{{ wearer(sample) }}</span>
@@ -215,7 +216,7 @@ onBeforeUnmount(() => {
                 >
                     <Transition name="fade" mode="out-in">
                         <figure :key="current.id" class="flex max-h-full flex-col items-center">
-                            <img :src="current.image" :alt="wearer(current) ? `${wearer(current)} dress code` : 'Dress code'" class="max-h-[80vh] w-auto max-w-full object-contain shadow-2xl" />
+                            <img :src="photoAt(current.image, 1600)" :alt="wearer(current) ? `${wearer(current)} dress code` : 'Dress code'" class="max-h-[80vh] w-auto max-w-full object-contain shadow-2xl" />
                             <figcaption class="mt-4 text-center text-paper">
                                 <span v-if="wearer(current)" class="font-script text-3xl">{{ wearer(current) }}</span>
                                 <span v-if="current.caption" class="ml-3 font-serif italic text-paper/80">{{ current.caption }}</span>
